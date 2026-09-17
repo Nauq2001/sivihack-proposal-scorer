@@ -78,37 +78,44 @@ select.field{padding:7px 10px;border-radius:8px;border:1px solid var(--line);bac
 .doc-foot{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;padding:10px 16px;border-top:1px solid var(--line);font-size:12.5px;color:var(--ink-3)}
 .docs-notice{margin-top:16px}
 
-/* Criteria board — MoSCoW columns. Colour is one accent ramp by importance, on
-   purpose: the red/amber/green in Review means requirement status, not weight. */
+/* Criteria board — MoSCoW columns. Importance is carried by one colour ramp on
+   purpose: red/amber/green in Review means requirement status, not weight. */
 .board-bar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 20px;margin-bottom:14px}
 .board-bar p{margin:0;color:var(--ink-2);max-width:74ch}
 .board{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;align-items:start}
 .column{display:flex;flex-direction:column;gap:10px;padding:12px;border-radius:12px;background:var(--surface-2);border:1px solid transparent}
-.column[data-prio="dealbreaker"]{background:color-mix(in srgb,var(--accent) 13%,var(--surface-2))}
-.column[data-prio="important"]{background:color-mix(in srgb,var(--accent) 7%,var(--surface-2))}
-.column[data-prio="minor"]{background:color-mix(in srgb,var(--accent) 2%,var(--surface-2))}
+.column[data-prio="dealbreaker"]{background:color-mix(in srgb,var(--accent) 16%,var(--surface-2))}
+.column[data-prio="important"]{background:color-mix(in srgb,var(--accent) 9%,var(--surface-2))}
+.column[data-prio="minor"]{background:color-mix(in srgb,var(--accent) 4%,var(--surface-2))}
 .column[data-prio="skip"]{background:none;border-style:dashed;border-color:var(--line)}
-.column.over{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
-.col-head{display:grid;gap:2px}
+.column.over{border-color:var(--accent);border-style:solid;box-shadow:0 0 0 3px var(--accent-soft)}
+.col-head{display:grid;gap:3px}
 .col-title{display:flex;align-items:center;gap:8px}
 .col-title h2{margin:0;font-size:14px;font-weight:600}
-.col-dot{width:10px;height:10px;border-radius:50%;flex:none;background:var(--accent)}
-[data-prio="important"] .col-dot{background:color-mix(in srgb,var(--accent) 62%,transparent)}
-[data-prio="minor"] .col-dot{background:color-mix(in srgb,var(--accent) 32%,transparent)}
-[data-prio="skip"] .col-dot{background:none;border:1px dashed var(--ink-3)}
-.col-weight{margin-left:auto;font-size:12px;font-weight:600;color:var(--ink-2);font-variant-numeric:tabular-nums}
-.col-head p{margin:0;font-size:12.5px;color:var(--ink-3);line-height:1.35}
+.col-count{margin-left:auto;min-width:20px;height:20px;padding:0 6px;border-radius:999px;background:var(--surface);color:var(--ink-2);font-size:12px;font-weight:600;display:grid;place-items:center;font-variant-numeric:tabular-nums}
+.col-head p{margin:0;font-size:12.5px;color:var(--ink-3);line-height:1.4}
 .col-body{display:flex;flex-direction:column;gap:8px}
 
-.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px;cursor:grab}
-.card:active{cursor:grabbing}
-.card h3{margin:0;font-size:14px;font-weight:600}
-.card-desc{margin:4px 0 0;font-size:13px;color:var(--ink-2)}
-.card-why{margin:8px 0 0;padding-left:10px;border-left:2px solid var(--line);font-size:12.5px;color:var(--ink-2)}
-.tag{display:inline-block;margin-top:8px;padding:2px 7px;border-radius:5px;background:var(--accent-soft);color:var(--accent);font-size:11.5px;font-weight:500}
+/* Weight colour ramp, used by the column dots and by each card's own dot. */
+.col-dot,.card-dot{width:10px;height:10px;border-radius:50%;flex:none;background:var(--accent);display:inline-block}
+[data-prio="important"] .col-dot,.card-dot[data-prio="important"]{background:color-mix(in srgb,var(--accent) 58%,transparent)}
+[data-prio="minor"] .col-dot,.card-dot[data-prio="minor"]{background:color-mix(in srgb,var(--accent) 28%,transparent)}
+[data-prio="skip"] .col-dot,.card-dot[data-prio="skip"]{background:none;border:1px dashed var(--ink-3)}
+
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px}
+.card-toggle{display:flex;align-items:center;gap:8px;width:100%;padding:10px 11px;border:0;background:none;border-radius:10px;text-align:left;cursor:pointer}
+.card-name{font-size:13.5px;font-weight:600;line-height:1.3;min-width:0}
+.card-toggle .chev{margin-left:auto;flex:none;color:var(--ink-3);transition:transform .15s ease}
+.card[data-open="true"] .chev{transform:rotate(180deg)}
+.card[data-open="true"]{cursor:grab}
+.card[data-open="true"]:active{cursor:grabbing}
+.card-body{padding:0 11px 11px;display:grid;gap:8px}
+.card-desc{margin:0;font-size:13px;color:var(--ink-2)}
+.card-why{margin:0;padding-left:10px;border-left:2px solid var(--line);font-size:12.5px;color:var(--ink-2)}
+.card-body .cites{margin:0}
+.tag{flex:none;padding:1px 6px;border-radius:5px;background:var(--accent-soft);color:var(--accent);font-size:11px;font-weight:600;letter-spacing:.02em}
 .tag[data-kind="custom"]{background:var(--surface-2);color:var(--ink-2)}
-.card .cites{margin-top:8px}
-.card-actions{display:flex;gap:2px;margin-top:10px;padding-top:8px;border-top:1px solid var(--line)}
+.card-actions{display:flex;gap:2px;padding-top:8px;border-top:1px solid var(--line)}
 .card-actions .icon-btn{width:28px;height:26px;font-size:13px}
 .card-actions .remove{margin-left:auto}
 .card-actions .remove:hover{color:var(--bad);border-color:var(--bad)}
@@ -125,7 +132,7 @@ select.field{padding:7px 10px;border-radius:8px;border:1px solid var(--line);bac
 .board-foot{margin:18px 0 0;color:var(--ink-3);font-size:13px;max-width:78ch}
 .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 
-.lvl{display:inline-block;font-size:12px;font-weight:500;color:var(--ink-3)}
+.lvl{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:500;color:var(--ink-3)}
 .lvl[data-prio="dealbreaker"]{color:var(--accent)}
 .lvl[data-prio="important"]{color:var(--ink-2)}
 

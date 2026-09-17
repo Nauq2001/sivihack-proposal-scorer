@@ -57,14 +57,15 @@ Response:
 
 | Trường | Ghi chú |
 |---|---|
-| `source` | `base` = 6 tiêu chí gốc (`pu`, `scope`, `price`, `time`, `comp`, `risk`) · `ai` = tiêu chí AI đọc thêm từ RFP này |
-| `suggested_priority` | `dealbreaker` (×3) · `important` (×2) · `minor` (×1) · `skip` (×0) |
+| `source` | `base` = 7 tiêu chí gốc theo Appendix A (`pu`, `scope`, `price`, `time`, `comp`, `tone`, `risk`) · `ai` = tiêu chí AI đọc thêm từ RFP này |
+| `suggested_priority` | `dealbreaker` · `important` · `minor` · `skip`. Hệ số tương ứng 3 · 2 · 1 · 0, nhưng **giao diện không hiện số** — người dùng chỉ thấy tên cột, màu đậm nhạt và một câu giải thích |
 | `why` | 1–2 câu **giải thích vì sao đặt ở mức đó**. Người dùng đọc câu này ngay trên thẻ, nên phải nói được điều gì trong RFP dẫn tới mức ưu tiên |
 | `citations` | Trích dẫn RFP chứng minh cho `why`, cùng quy tắc ở mục 3.4 |
 
-**Luôn trả đủ 6 tiêu chí `base`**, kể cả khi RFP không nói gì nhiều về chúng (khi đó
-đặt `minor`). Tiêu chí `ai` là phần thêm: chỉ đề xuất khi **thật sự có căn cứ trong
-RFP** và **chưa được 6 tiêu chí gốc phủ**. Hai ví dụ trong file mẫu:
+**Luôn trả đủ 7 tiêu chí `base`**, kể cả khi RFP không nói gì nhiều về chúng (khi đó
+đặt `minor` và để `citations` rỗng — xem `tone` trong file mẫu: RFP không nhắc gì tới
+văn phong nên không có trích dẫn nào, đừng bịa ra một câu cho có). Tiêu chí `ai` là phần thêm: chỉ đề xuất khi **thật sự có căn cứ trong
+RFP** và **chưa được 7 tiêu chí gốc phủ**. Hai ví dụ trong file mẫu:
 
 - `accuracy` — RFP giải thích lý do của Req. 7: quyết định tồn kho dựa trên hệ thống này
 - `legacy` — hệ thống cũ chỉ xuất hiện ở phần Background, không nằm trong 7 yêu cầu
@@ -95,7 +96,7 @@ Người dùng có thể kéo thẻ sang cột khác, xoá thẻ, hoặc tự th
 | Trường | Kiểu | Ghi chú |
 |---|---|---|
 | `rfp.text`, `proposal.text` | string | Markdown hoặc plain text. Hiện chưa gửi PDF |
-| `criteria[].id` | string | 6 id gốc, cộng với id của tiêu chí `ai` và `custom` người dùng giữ lại |
+| `criteria[].id` | string | 7 id gốc, cộng với id của tiêu chí `ai` và `custom` người dùng giữ lại |
 | `criteria[].priority` | `dealbreaker` \| `important` \| `minor` \| `skip` | Cột người dùng đang để thẻ đó |
 | `criteria[].source` | `base` \| `ai` \| `custom` | |
 

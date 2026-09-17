@@ -8,7 +8,7 @@
     "duration_ms": 11800
   },
   "overall": {
-    "score": 1.4,
+    "score": 1.44,
     "verdict": "not_ready",
     "summary": "Pricing and timeline are both deferred, four of the seven RFP requirements are never mentioned, and nothing ties the proposal to NordFrame’s situation."
   },
@@ -73,16 +73,15 @@
       "id": "comp",
       "name": "Completeness vs. RFP",
       "description": "Every explicit RFP requirement is addressed.",
-      "weight": "dealbreaker",
       "score": 2,
       "comment": "Requirements 3, 5, 6 and 7 are not mentioned; 1, 2 and 4 are only touched on in a phrase each.",
-      "citations": []
+      "citations": [],
+      "priority": "dealbreaker"
     },
     {
       "id": "risk",
       "name": "Risks & assumptions",
       "description": "Dependencies and risks are flagged, not hidden.",
-      "weight": "dealbreaker",
       "score": 1,
       "comment": "No assumptions, dependencies or risks anywhere, although the RFP asks for them explicitly.",
       "citations": [
@@ -102,13 +101,13 @@
             "limitation"
           ]
         }
-      ]
+      ],
+      "priority": "dealbreaker"
     },
     {
       "id": "price",
       "name": "Pricing clarity",
       "description": "Price stated, broken down, easy to follow.",
-      "weight": "important",
       "score": 1,
       "comment": "No figure at all, although the client published a €80,000–€120,000 budget.",
       "citations": [
@@ -124,13 +123,13 @@
           "label": "RFP, Budget",
           "quote": "€80,000–€120,000 total, including first year of support"
         }
-      ]
+      ],
+      "priority": "important"
     },
     {
       "id": "time",
       "name": "Timeline clarity",
       "description": "Concrete milestones and dates.",
-      "weight": "important",
       "score": 1,
       "comment": "No dates or milestones against the 3-month pilot and 6-month rollout the RFP sets.",
       "citations": [
@@ -146,13 +145,13 @@
           "label": "RFP, Timeline",
           "quote": "Working pilot at one warehouse within 3 months"
         }
-      ]
+      ],
+      "priority": "important"
     },
     {
       "id": "accuracy",
       "name": "Data accuracy & validation",
       "description": "Says how inventory figures are checked against reality before anyone relies on them.",
-      "weight": "important",
       "score": 1,
       "comment": "Nothing about checking the figures: no validation step, no parallel run against the current spreadsheets, no mention of who confirms the data is right.",
       "citations": [
@@ -166,13 +165,13 @@
             "parallel run"
           ]
         }
-      ]
+      ],
+      "priority": "important"
     },
     {
       "id": "pu",
       "name": "Problem understanding",
       "description": "Reflects the client’s actual stated problem and goals, not a generic pitch.",
-      "weight": "minor",
       "score": 3,
       "comment": "Restates the need for “better visibility” but never mentions the 6 sites, Germany and Austria, or the spreadsheet and legacy setup the RFP describes.",
       "citations": [
@@ -188,13 +187,13 @@
           "label": "RFP, Background",
           "quote": "6 regional warehouses across Germany and Austria"
         }
-      ]
+      ],
+      "priority": "minor"
     },
     {
       "id": "scope",
       "name": "Scope & deliverables",
       "description": "Deliverables are specific; clear what is and isn’t included.",
-      "weight": "minor",
       "score": 2,
       "comment": "Three one-line features with no detail: no site count, no alert thresholds or recipients, no user roles, and nothing about what is out of scope.",
       "citations": [
@@ -204,13 +203,35 @@
           "label": "Proposal, Features",
           "quote": "Real-time inventory dashboard"
         }
+      ],
+      "priority": "minor"
+    },
+    {
+      "id": "tone",
+      "name": "Tone & persuasiveness",
+      "description": "Reads as confident, client-focused and professional, not boilerplate.",
+      "priority": "minor",
+      "score": 2,
+      "comment": "Generic claims (“modern, scalable cloud architecture”, “talented team”) with no NordFrame-specific evidence or references.",
+      "citations": [
+        {
+          "source": "proposal",
+          "found": true,
+          "label": "Proposal, Our Approach",
+          "quote": "modern, scalable cloud architecture and industry best practices"
+        },
+        {
+          "source": "proposal",
+          "found": true,
+          "label": "Proposal, Why BrightPath",
+          "quote": "talented team of engineers"
+        }
       ]
     },
     {
       "id": "legacy",
       "name": "Legacy system & spreadsheets",
       "description": "Says what happens to the old legacy system and the spreadsheets after go-live.",
-      "weight": "minor",
       "score": 1,
       "comment": "The legacy system and the spreadsheets are never mentioned, so it is unclear whether NordFrame would end up running two systems.",
       "citations": [
@@ -223,7 +244,8 @@
             "spreadsheet"
           ]
         }
-      ]
+      ],
+      "priority": "minor"
     }
   ],
   "requirements": [

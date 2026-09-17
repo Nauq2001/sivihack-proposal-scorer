@@ -160,7 +160,7 @@ export default function ReviewStep({ result, criteria, sampleId, source, error, 
       <section className="block">
         <div className="block-head">
           <h2>Scores by criterion</h2>
-          <p>A Deal-breaker counts three times as much as a Minor criterion</p>
+          <p>Ordered by how much each one counts, set on the criteria board</p>
         </div>
         <div className="panel">
           {ordered.map((c) => {
@@ -171,7 +171,8 @@ export default function ReviewStep({ result, criteria, sampleId, source, error, 
                 <div className="cr-name">
                   <strong>{c.name}</strong>
                   <span className="lvl" data-prio={c.priority}>
-                    {PRIORITY_LABEL[c.priority]}{counted ? ` ×${PRIORITY_WEIGHT[c.priority]}` : ', not counted'}
+                    <i className="card-dot" data-prio={c.priority} aria-hidden="true" />
+                    {PRIORITY_LABEL[c.priority]}{counted ? '' : ' — not counted'}
                   </span>
                 </div>
                 {s ? <Pips score={s.score} /> : <div className="pips">{[1, 2, 3, 4, 5].map((n) => <i key={n} className="pip" />)}<b>–</b></div>}

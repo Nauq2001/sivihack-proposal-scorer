@@ -3,10 +3,10 @@
 
 /** MoSCoW-style columns. The weight is the multiplier in the overall score. */
 export const PRIORITIES = [
-  { id: 'dealbreaker', label: 'Deal-breaker', weight: 3, hint: 'Get this wrong and the client drops the proposal' },
-  { id: 'important', label: 'Important', weight: 2, hint: 'Weighs on the decision' },
-  { id: 'minor', label: 'Minor', weight: 1, hint: 'Nice to get right' },
-  { id: 'skip', label: 'Don’t score', weight: 0, hint: 'Still reviewed, but kept out of the score' },
+  { id: 'dealbreaker', label: 'Deal-breaker', weight: 3, hint: 'Counts most. Get this wrong and the client drops the proposal.' },
+  { id: 'important', label: 'Important', weight: 2, hint: 'Counts a lot in the decision.' },
+  { id: 'minor', label: 'Minor', weight: 1, hint: 'Counts a little. Worth fixing, rarely decisive.' },
+  { id: 'skip', label: 'Don’t score', weight: 0, hint: 'Still reviewed, but left out of the score.' },
 ]
 
 export const PRIORITY_IDS = PRIORITIES.map((p) => p.id)

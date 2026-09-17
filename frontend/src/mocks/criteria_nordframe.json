@@ -15,7 +15,12 @@
       "suggested_priority": "dealbreaker",
       "why": "The RFP lists seven numbered requirements and puts each one in bold. A buyer who writes a checklist reads the answer as a checklist.",
       "citations": [
-        { "source": "rfp", "found": true, "label": "RFP, Requirements", "quote": "Requirements" }
+        {
+          "source": "rfp",
+          "found": true,
+          "label": "RFP, Requirements",
+          "quote": "Requirements"
+        }
       ]
     },
     {
@@ -26,7 +31,12 @@
       "suggested_priority": "dealbreaker",
       "why": "Requirement 7 explains why it is asked for, which is rare. The client is telling you that hidden risk is the thing they fear.",
       "citations": [
-        { "source": "rfp", "found": true, "label": "RFP, Req. 7", "quote": "inventory decisions will be made based on this system" }
+        {
+          "source": "rfp",
+          "found": true,
+          "label": "RFP, Req. 7",
+          "quote": "inventory decisions will be made based on this system"
+        }
       ]
     },
     {
@@ -37,7 +47,12 @@
       "suggested_priority": "important",
       "why": "The budget is published as a range and states that it includes the first year of support, so a vague price is easy to spot.",
       "citations": [
-        { "source": "rfp", "found": true, "label": "RFP, Budget", "quote": "€80,000–€120,000 total, including first year of support" }
+        {
+          "source": "rfp",
+          "found": true,
+          "label": "RFP, Budget",
+          "quote": "€80,000–€120,000 total, including first year of support"
+        }
       ]
     },
     {
@@ -48,7 +63,12 @@
       "suggested_priority": "important",
       "why": "Two hard dates are given: a pilot at one site within 3 months and all 6 sites within 6 months.",
       "citations": [
-        { "source": "rfp", "found": true, "label": "RFP, Timeline", "quote": "Working pilot at one warehouse within 3 months" }
+        {
+          "source": "rfp",
+          "found": true,
+          "label": "RFP, Timeline",
+          "quote": "Working pilot at one warehouse within 3 months"
+        }
       ]
     },
     {
@@ -59,7 +79,12 @@
       "suggested_priority": "important",
       "why": "The RFP does not list this as a requirement, but it gives the reason behind Requirement 7: stock decisions will be made from this dashboard. A proposal that never says how the numbers are verified leaves that risk with the client.",
       "citations": [
-        { "source": "rfp", "found": true, "label": "RFP, Req. 7", "quote": "inventory decisions will be made based on this system" }
+        {
+          "source": "rfp",
+          "found": true,
+          "label": "RFP, Req. 7",
+          "quote": "inventory decisions will be made based on this system"
+        }
       ]
     },
     {
@@ -70,7 +95,12 @@
       "suggested_priority": "minor",
       "why": "Worth checking, but Completeness already tests it against each requirement. Scoring both at a high weight counts the same gap twice.",
       "citations": [
-        { "source": "rfp", "found": true, "label": "RFP, Background", "quote": "6 regional warehouses across Germany and Austria" }
+        {
+          "source": "rfp",
+          "found": true,
+          "label": "RFP, Background",
+          "quote": "6 regional warehouses across Germany and Austria"
+        }
       ]
     },
     {
@@ -81,8 +111,22 @@
       "suggested_priority": "minor",
       "why": "Same overlap as Problem understanding: the scope constraints sit inside the numbered requirements.",
       "citations": [
-        { "source": "rfp", "found": true, "label": "RFP, Req. 3", "quote": "no migration to a new database" }
+        {
+          "source": "rfp",
+          "found": true,
+          "label": "RFP, Req. 3",
+          "quote": "no migration to a new database"
+        }
       ]
+    },
+    {
+      "id": "tone",
+      "name": "Tone & persuasiveness",
+      "description": "Reads as confident, client-focused and professional, not boilerplate.",
+      "source": "base",
+      "suggested_priority": "minor",
+      "why": "The RFP says nothing about presentation, and this buyer is working through a checklist. Worth fixing, but it rarely decides a deal on its own.",
+      "citations": []
     },
     {
       "id": "legacy",
@@ -92,7 +136,12 @@
       "suggested_priority": "minor",
       "why": "The legacy system appears only in the Background, never in the numbered requirements, so the checklist will not catch a proposal that ignores it. Someone still has to switch it off.",
       "citations": [
-        { "source": "rfp", "found": true, "label": "RFP, Background", "quote": "split across spreadsheets and an outdated legacy system" }
+        {
+          "source": "rfp",
+          "found": true,
+          "label": "RFP, Background",
+          "quote": "split across spreadsheets and an outdated legacy system"
+        }
       ]
     }
   ]
