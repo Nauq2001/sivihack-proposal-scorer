@@ -1,0 +1,48 @@
+{
+  "rfp": {
+    "name": "rfp_nordframe.md",
+    "text": "# Request for Proposal — Warehouse Inventory Dashboard\n\n**Client:** NordFrame Logistics GmbH (fictional)\n**Industry:** Logistics / Warehousing\n\n## Background\nNordFrame Logistics operates 6 regional warehouses across Germany and\nAustria. Our current inventory tracking is split across spreadsheets and an\noutdated legacy system, making it hard to get a real-time view of stock\nlevels across sites.\n\n## Requirements\n1. A **web-based dashboard** showing real-time inventory levels across all 6\n   warehouses.\n2. **Automated low-stock alerts** sent to warehouse managers when items fall\n   below a configurable threshold.\n3. Integration with our **existing PostgreSQL inventory database** — no\n   migration to a new database.\n4. **Role-based access** — warehouse managers should only see their own\n   site; HQ staff should see all sites.\n5. A **data migration / onboarding plan** for rolling this out across all 6\n   sites with minimal disruption.\n6. **Support & maintenance terms** after go-live (response times, SLAs).\n7. Clear documentation of any **assumptions, limitations, or risks**, since\n   inventory decisions will be made based on this system.\n\n## Budget\n€80,000–€120,000 total, including first year of support.\n\n## Timeline\nWorking pilot at one warehouse within 3 months; full rollout to all 6 sites\nwithin 6 months.\n\n## Decision Date\nEnd of this quarter.\n"
+  },
+  "proposal": {
+    "name": "response_1_weak.md",
+    "text": "# Proposal: Inventory Visibility Solution for NordFrame Logistics\n\n**Submitted by:** BrightPath Software Solutions (fictional)\n**Variant: WEAK — generic, deferred on key items**\n\n## Introduction\nThank you for considering BrightPath for your inventory management needs.\nWe are a software company with experience delivering dashboards and data\nsolutions for logistics and retail clients across Europe.\n\n## Our Understanding\nNordFrame needs better visibility into warehouse inventory. We propose\nbuilding a modern dashboard solution to solve this.\n\n## Our Approach\nWe will build a cloud-based dashboard that displays inventory data in real\ntime. Managers will be able to log in and view stock levels. The system\nwill be built using modern, scalable cloud architecture and industry best\npractices to ensure reliability and performance.\n\n## Features\n- Real-time inventory dashboard\n- Notifications for low stock\n- Secure login for different users\n\n## Timeline\nWe will begin work shortly after contract signing and aim to deliver the\nsolution in a timely manner, with regular updates along the way.\n\n## Pricing\nPricing will be provided upon further discussion of detailed requirements,\nand will depend on final scope.\n\n## Why BrightPath\nWe have a talented team of engineers passionate about solving real business\nproblems with technology. We look forward to partnering with NordFrame\nLogistics on this exciting project.\n"
+  },
+  "criteria": [
+    {
+      "id": "pu",
+      "name": "Problem understanding",
+      "description": "Reflects the client's actual stated problem and goals, not a generic pitch.",
+      "weight": "low"
+    },
+    {
+      "id": "scope",
+      "name": "Scope & deliverables",
+      "description": "Deliverables are specific; clear what is and isn't included.",
+      "weight": "low"
+    },
+    {
+      "id": "price",
+      "name": "Pricing clarity",
+      "description": "Price stated, broken down, easy to follow.",
+      "weight": "medium"
+    },
+    {
+      "id": "time",
+      "name": "Timeline clarity",
+      "description": "Concrete milestones and dates.",
+      "weight": "medium"
+    },
+    {
+      "id": "comp",
+      "name": "Completeness vs. RFP",
+      "description": "Every explicit RFP requirement is addressed.",
+      "weight": "high"
+    },
+    {
+      "id": "risk",
+      "name": "Risks & assumptions",
+      "description": "Dependencies and risks are flagged, not hidden.",
+      "weight": "high"
+    }
+  ]
+}

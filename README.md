@@ -54,7 +54,23 @@ Khong sua code, chi sua file `.env`.
 3. Sua giao dien trong `frontend/src/App.jsx` cho dung use case that.
 4. Uu tien lam 1 luong end-to-end chay duoc truoc (dau vao -> AI -> hien ket qua), roi moi lam dep UI hay them tinh nang phu.
 
-## 6. De bai & du lieu mau
+## 6. Frontend Proposal Scorer
+
+`frontend/` khong con la demo goi AI nua, no la app that voi 3 buoc:
+
+1. **Documents** - dan hoac upload RFP + proposal (.md/.txt)
+2. **Criteria** - dat trong so Low/Medium/High cho 6 tieu chi, co goi y doc tu RFP
+3. **Review** - diem tong, dai trang thai 9 yeu cau RFP, de xuat sua cho tung loi,
+   va khung nguon ben phai: bam vao trich dan la doan goc duoc to vang
+
+App goi `POST /api/review`. Khi backend chua chay, no tu dung ket qua luu san cho
+4 proposal mau va hien nhan "Stored sample result", nen demo khong bao gio chet.
+
+Hop dong API cho backend/AI: `docs/api/review-contract.md`
+Du lieu mau (response that): `frontend/src/mocks/*.json`
+Request mau: `docs/api/samples/request.example.json`
+
+## 7. De bai & du lieu mau
 
 - De bai Track 1 (Proposal Scorer - FPT Software Europe): `docs/challenge/track-1-proposal-scorer.pdf`
 - RFP + 4 proposal mau + vi du output: `docs/challenge/sample_data/`

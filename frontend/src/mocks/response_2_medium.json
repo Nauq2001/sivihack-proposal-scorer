@@ -1,0 +1,428 @@
+{
+  "schema_version": "1.0",
+  "meta": {
+    "rfp_name": "rfp_nordframe.md",
+    "proposal_name": "response_2_medium.md",
+    "model": "gemini-2.0-flash",
+    "generated_at": "2026-09-17T09:00:00Z",
+    "duration_ms": 11800
+  },
+  "overall": {
+    "score": 2.67,
+    "verdict": "revise",
+    "summary": "The functional scope matches the RFP well, but pricing and dates aren’t committed, and support terms and risks are missing."
+  },
+  "suggested_weights": {
+    "pu": "low",
+    "scope": "low",
+    "price": "medium",
+    "time": "medium",
+    "comp": "high",
+    "risk": "high"
+  },
+  "client_priorities": [
+    {
+      "id": "priority-1",
+      "title": "Continuity over new technology",
+      "text": "The RFP rules out a database migration and asks for rollout with minimal disruption. Proposals that change NordFrame’s infrastructure should lose points.",
+      "suggestion": "Completeness vs. RFP set to High",
+      "citations": [
+        {
+          "source": "rfp",
+          "found": true,
+          "label": "RFP, Req. 3",
+          "quote": "no migration to a new database"
+        },
+        {
+          "source": "rfp",
+          "found": true,
+          "label": "RFP, Req. 5",
+          "quote": "minimal disruption"
+        }
+      ]
+    },
+    {
+      "id": "priority-2",
+      "title": "Decisions will rely on this data",
+      "text": "The client asks for risks and limitations explicitly because stock decisions will be made from the dashboard.",
+      "suggestion": "Risks & assumptions set to High",
+      "citations": [
+        {
+          "source": "rfp",
+          "found": true,
+          "label": "RFP, Req. 7",
+          "quote": "inventory decisions will be made based on this system"
+        }
+      ]
+    },
+    {
+      "id": "priority-3",
+      "title": "Fixed budget and dates",
+      "text": "A published budget that includes Year 1 support, and a pilot deadline. Deferred pricing or undated plans are a real gap here.",
+      "suggestion": "Pricing and Timeline stay at Medium",
+      "citations": [
+        {
+          "source": "rfp",
+          "found": true,
+          "label": "RFP, Budget",
+          "quote": "€80,000–€120,000 total, including first year of support"
+        },
+        {
+          "source": "rfp",
+          "found": true,
+          "label": "RFP, Timeline",
+          "quote": "Working pilot at one warehouse within 3 months"
+        }
+      ]
+    }
+  ],
+  "criteria": [
+    {
+      "id": "pu",
+      "name": "Problem understanding",
+      "description": "Reflects the client’s actual stated problem and goals, not a generic pitch.",
+      "weight": "medium",
+      "score": 4,
+      "comment": "Names the 6 warehouses and the spreadsheet plus legacy setup. Doesn’t pick up the “minimal disruption” goal.",
+      "citations": [
+        {
+          "source": "proposal",
+          "found": true,
+          "label": "Proposal, Our Understanding",
+          "quote": "six warehouses currently rely on spreadsheets and a legacy system"
+        }
+      ]
+    },
+    {
+      "id": "scope",
+      "name": "Scope & deliverables",
+      "description": "Deliverables are specific; clear what is and isn’t included.",
+      "weight": "medium",
+      "score": 4,
+      "comment": "All four functional requirements are described specifically, including site-level roles and the no-migration constraint. Support and exclusions aren’t defined.",
+      "citations": [
+        {
+          "source": "proposal",
+          "found": true,
+          "label": "Proposal, Proposed Solution",
+          "quote": "no database migration"
+        }
+      ]
+    },
+    {
+      "id": "price",
+      "name": "Pricing clarity",
+      "description": "Price stated, broken down, easy to follow.",
+      "weight": "medium",
+      "score": 2,
+      "comment": "A €70,000–€110,000 range instead of a price. The low end is below the client’s range, and it’s unclear whether Year 1 support is included.",
+      "citations": [
+        {
+          "source": "proposal",
+          "found": true,
+          "label": "Proposal, Pricing",
+          "quote": "range from €70,000 to €110,000"
+        },
+        {
+          "source": "rfp",
+          "found": true,
+          "label": "RFP, Budget",
+          "quote": "including first year of support"
+        }
+      ]
+    },
+    {
+      "id": "time",
+      "name": "Timeline clarity",
+      "description": "Concrete milestones and dates.",
+      "weight": "medium",
+      "score": 2,
+      "comment": "Phases are named but have no dates. “Within the timeframe you’ve outlined” repeats the ask instead of committing to it.",
+      "citations": [
+        {
+          "source": "proposal",
+          "found": true,
+          "label": "Proposal, Timeline",
+          "quote": "Exact scheduling will be confirmed once we begin discovery"
+        }
+      ]
+    },
+    {
+      "id": "comp",
+      "name": "Completeness vs. RFP",
+      "description": "Every explicit RFP requirement is addressed.",
+      "weight": "medium",
+      "score": 3,
+      "comment": "Requirements 1–4 are covered, 5 only partly, 6 and 7 not at all.",
+      "citations": []
+    },
+    {
+      "id": "risk",
+      "name": "Risks & assumptions",
+      "description": "Dependencies and risks are flagged, not hidden.",
+      "weight": "medium",
+      "score": 1,
+      "comment": "No risks or assumptions, although both price and schedule depend on “discovery” and “integration complexity”.",
+      "citations": [
+        {
+          "source": "proposal",
+          "found": true,
+          "label": "Proposal, Pricing",
+          "quote": "depending on final integration complexity"
+        },
+        {
+          "source": "proposal",
+          "found": false,
+          "label": "Proposal: not found",
+          "searched_terms": [
+            "risk",
+            "assumption"
+          ]
+        }
+      ]
+    }
+  ],
+  "requirements": [
+    {
+      "id": "r1",
+      "short_label": "Dashboard",
+      "name": "Web dashboard for all 6 sites",
+      "ask": "A web-based dashboard showing real-time inventory levels across all 6 warehouses.",
+      "rfp_citation": {
+        "source": "rfp",
+        "found": true,
+        "label": "RFP, Req. 1",
+        "quote": "web-based dashboard"
+      },
+      "status": "met",
+      "status_label": "Addressed",
+      "finding": "Real-time inventory levels across all 6 warehouses.",
+      "suggested_fix": null,
+      "citations": [
+        {
+          "source": "proposal",
+          "found": true,
+          "label": "Proposal, Proposed Solution",
+          "quote": "real-time inventory levels across all 6 warehouses"
+        }
+      ]
+    },
+    {
+      "id": "r2",
+      "short_label": "Low-stock alerts",
+      "name": "Automated low-stock alerts",
+      "ask": "Alerts to warehouse managers when items fall below a configurable threshold.",
+      "rfp_citation": {
+        "source": "rfp",
+        "found": true,
+        "label": "RFP, Req. 2",
+        "quote": "Automated low-stock alerts"
+      },
+      "status": "met",
+      "status_label": "Addressed",
+      "finding": "Per-item configurable thresholds, notifying warehouse managers automatically.",
+      "suggested_fix": null,
+      "citations": [
+        {
+          "source": "proposal",
+          "found": true,
+          "label": "Proposal, Proposed Solution",
+          "quote": "configurable thresholds per item"
+        }
+      ]
+    },
+    {
+      "id": "r3",
+      "short_label": "PostgreSQL",
+      "name": "Existing PostgreSQL, no migration",
+      "ask": "Integration with the existing PostgreSQL inventory database, with no migration to a new database.",
+      "rfp_citation": {
+        "source": "rfp",
+        "found": true,
+        "label": "RFP, Req. 3",
+        "quote": "no migration to a new database"
+      },
+      "status": "met",
+      "status_label": "Addressed",
+      "finding": "Built on the existing PostgreSQL database; states no migration is required.",
+      "suggested_fix": null,
+      "citations": [
+        {
+          "source": "proposal",
+          "found": true,
+          "label": "Proposal, Proposed Solution",
+          "quote": "no database migration"
+        }
+      ]
+    },
+    {
+      "id": "r4",
+      "short_label": "Access roles",
+      "name": "Role-based access",
+      "ask": "Warehouse managers see only their own site; HQ staff see all sites.",
+      "rfp_citation": {
+        "source": "rfp",
+        "found": true,
+        "label": "RFP, Req. 4",
+        "quote": "Role-based access"
+      },
+      "status": "met",
+      "status_label": "Addressed",
+      "finding": "Managers limited to their own site; HQ sees all sites.",
+      "suggested_fix": null,
+      "citations": [
+        {
+          "source": "proposal",
+          "found": true,
+          "label": "Proposal, Proposed Solution",
+          "quote": "warehouse managers see only their own site's data"
+        }
+      ]
+    },
+    {
+      "id": "r5",
+      "short_label": "Rollout plan",
+      "name": "Onboarding plan for 6 sites",
+      "ask": "A data migration / onboarding plan for all 6 sites with minimal disruption.",
+      "rfp_citation": {
+        "source": "rfp",
+        "found": true,
+        "label": "RFP, Req. 5",
+        "quote": "minimal disruption"
+      },
+      "status": "partial",
+      "status_label": "Vague",
+      "finding": "Warehouses will be onboarded “in phases”, but not in what order, when, or how disruption is avoided.",
+      "suggested_fix": "Turn the rollout bullet into a short plan: the pilot site and why, the order of the other 5 sites, and a parallel run with the existing spreadsheets before each cutover.",
+      "citations": [
+        {
+          "source": "proposal",
+          "found": true,
+          "label": "Proposal, Proposed Solution",
+          "quote": "onboard warehouses in phases"
+        }
+      ]
+    },
+    {
+      "id": "r6",
+      "short_label": "Support SLAs",
+      "name": "Support & maintenance terms",
+      "ask": "Support and maintenance terms after go-live, including response times and SLAs.",
+      "rfp_citation": {
+        "source": "rfp",
+        "found": true,
+        "label": "RFP, Req. 6",
+        "quote": "Support & maintenance terms"
+      },
+      "status": "missing",
+      "status_label": "Missing",
+      "finding": "Support after go-live isn’t mentioned, nor whether the price covers the first year of support the budget includes.",
+      "suggested_fix": "Add a “Support & maintenance” section: response times by severity, support hours, and confirmation that Year 1 support is included in the price.",
+      "citations": [
+        {
+          "source": "proposal",
+          "found": false,
+          "label": "Proposal: not found",
+          "searched_terms": [
+            "support",
+            "SLA",
+            "maintenance"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "r7",
+      "short_label": "Risks",
+      "name": "Assumptions, limitations, risks",
+      "ask": "Clear documentation of assumptions, limitations or risks, since inventory decisions will rely on the system.",
+      "rfp_citation": {
+        "source": "rfp",
+        "found": true,
+        "label": "RFP, Req. 7",
+        "quote": "assumptions, limitations, or risks"
+      },
+      "status": "missing",
+      "status_label": "Missing",
+      "finding": "No risks or assumptions are documented.",
+      "suggested_fix": "Add “Risks & assumptions”. The price depends on “integration complexity”, so name what drives it (schema quality, access rights) and what happens to cost and dates if discovery finds problems.",
+      "citations": [
+        {
+          "source": "proposal",
+          "found": false,
+          "label": "Proposal: not found",
+          "searched_terms": [
+            "risk",
+            "assumption"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "budget",
+      "short_label": "Budget",
+      "name": "Within budget",
+      "ask": "€80,000–€120,000 total, including the first year of support.",
+      "rfp_citation": {
+        "source": "rfp",
+        "found": true,
+        "label": "RFP, Budget",
+        "quote": "€80,000–€120,000 total, including first year of support"
+      },
+      "status": "partial",
+      "status_label": "Range only",
+      "finding": "A €70,000–€110,000 range with a firm quote after discovery. The low end is below the client’s range and Year 1 support isn’t stated as included.",
+      "suggested_fix": "Give one estimated total inside €80,000–€120,000 with a line-item breakdown including Year 1 support, and state the maximum change after discovery (for example ±10%).",
+      "citations": [
+        {
+          "source": "proposal",
+          "found": true,
+          "label": "Proposal, Pricing",
+          "quote": "range from €70,000 to €110,000"
+        }
+      ]
+    },
+    {
+      "id": "timeline",
+      "short_label": "Timeline",
+      "name": "Pilot in 3 months, rollout in 6",
+      "ask": "Working pilot at one warehouse within 3 months; all 6 sites within 6 months.",
+      "rfp_citation": {
+        "source": "rfp",
+        "found": true,
+        "label": "RFP, Timeline",
+        "quote": "Working pilot at one warehouse within 3 months"
+      },
+      "status": "partial",
+      "status_label": "No dates",
+      "finding": "Discovery, pilot and rollout are named with no dates attached.",
+      "suggested_fix": "Date each phase, for example: discovery Weeks 1–3, pilot live at one site by Week 12, all 6 sites by Week 24.",
+      "citations": [
+        {
+          "source": "proposal",
+          "found": true,
+          "label": "Proposal, Timeline",
+          "quote": "within the timeframe you"
+        }
+      ]
+    }
+  ],
+  "other_issues": [
+    {
+      "id": "other-1",
+      "status": "partial",
+      "label": "Unsupported",
+      "title": "Credentials without evidence",
+      "finding": "“Several mid-size distribution companies” gives the client nothing to verify.",
+      "suggested_fix": "Name one comparable project, anonymised if needed: number of sites, database, time to go-live.",
+      "citations": [
+        {
+          "source": "proposal",
+          "found": true,
+          "label": "Proposal, Why Clarion",
+          "quote": "several mid-size distribution companies"
+        }
+      ]
+    }
+  ]
+}
