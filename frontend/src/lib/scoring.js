@@ -1,32 +1,26 @@
-/** Criteria, weights and the overall score. Shared with the backend contract:
- *  see docs/api/review-contract.md. */
+/** Criteria priorities and the overall score.
+ *  Shared with the backend contract: see docs/api/review-contract.md */
 
-export const CRITERIA = [
-  { id: 'pu', name: 'Problem understanding', description: 'Reflects the client’s actual stated problem and goals, not a generic pitch.' },
-  { id: 'scope', name: 'Scope & deliverables', description: 'Deliverables are specific; clear what is and isn’t included.' },
-  { id: 'price', name: 'Pricing clarity', description: 'Price stated, broken down, easy to follow.' },
-  { id: 'time', name: 'Timeline clarity', description: 'Concrete milestones and dates.' },
-  { id: 'comp', name: 'Completeness vs. RFP', description: 'Every explicit RFP requirement is addressed.' },
-  { id: 'risk', name: 'Risks & assumptions', description: 'Dependencies and risks are flagged, not hidden.' },
+/** MoSCoW-style columns. The weight is the multiplier in the overall score. */
+export const PRIORITIES = [
+  { id: 'dealbreaker', label: 'Deal-breaker', weight: 3, hint: 'Get this wrong and the client drops the proposal' },
+  { id: 'important', label: 'Important', weight: 2, hint: 'Weighs on the decision' },
+  { id: 'minor', label: 'Minor', weight: 1, hint: 'Nice to get right' },
+  { id: 'skip', label: 'Don’t score', weight: 0, hint: 'Still reviewed, but kept out of the score' },
 ]
 
-export const LEVELS = [
-  ['low', 'Low'],
-  ['medium', 'Medium'],
-  ['high', 'High'],
-]
-export const LEVEL_WEIGHT = { low: 1, medium: 2, high: 3 }
-export const LEVEL_NAME = { low: 'Low', medium: 'Medium', high: 'High' }
+export const PRIORITY_IDS = PRIORITIES.map((p) => p.id)
+export const PRIORITY_WEIGHT = Object.fromEntries(PRIORITIES.map((p) => [p.id, p.weight]))
+export const PRIORITY_LABEL = Object.fromEntries(PRIORITIES.map((p) => [p.id, p.label]))
 
-export const DEFAULT_LEVELS = Object.fromEntries(CRITERIA.map((c) => [c.id, 'medium']))
-
-/** Weighted average of the per-criterion scores the backend returned. Kept on
- *  the client so changing a weight updates the score without a new request. */
-export function overallScore(criteria, levels) {
-  const scored = criteria.filter((c) => typeof c.score === 'number')
-  const total = scored.reduce((sum, c) => sum + LEVEL_WEIGHT[levels[c.id] || 'medium'], 0)
-  if (!total) return 0
-  return scored.reduce((sum, c) => sum + c.score * LEVEL_WEIGHT[levels[c.id] || 'medium'], 0) / total
+/** Weighted average of the scores the backend returned. Kept on the client so
+ *  moving a card updates the score without a new request. */
+export function overallScore(criteria, scoreById) {
+  const counted = criteria.filter((c) => PRIORITY_WEIGHT[c.priority] > 0 && typeof scoreById[c.id]?.score === 'number')
+  const total = counted.reduce((sum, c) => sum + PRIORITY_WEIGHT[c.priority], 0)
+  if (!total) return { score: 0, counted: [] }
+  const score = counted.reduce((sum, c) => sum + scoreById[c.id].score * PRIORITY_WEIGHT[c.priority], 0) / total
+  return { score, counted }
 }
 
 export function verdictOf(score) {
@@ -39,14 +33,24 @@ export function scoreTone(score) {
   return score <= 2 ? 'bad' : score < 4 ? 'warn' : 'good'
 }
 
-export function weightNote(levels, suggested) {
-  if (suggested && CRITERIA.every((c) => levels[c.id] === suggested[c.id])) return 'Weighted for this client’s priorities'
-  if (CRITERIA.every((c) => levels[c.id] === 'medium')) return 'All criteria at Medium'
-  return 'Custom weights'
+export function matchesSuggestion(criteria) {
+  return criteria.every((c) => !c.suggested_priority || c.priority === c.suggested_priority)
 }
 
-export function criteriaPayload(levels) {
-  return CRITERIA.map((c) => ({ id: c.id, name: c.name, description: c.description, weight: levels[c.id] || 'medium' }))
+export function weightNote(criteria) {
+  if (matchesSuggestion(criteria)) return 'Weighted for this client’s priorities'
+  return 'Weighted by you'
+}
+
+/** What goes to POST /api/review. */
+export function criteriaPayload(criteria) {
+  return criteria.map((c) => ({
+    id: c.id,
+    name: c.name,
+    description: c.description,
+    priority: c.priority,
+    source: c.source,
+  }))
 }
 
 export const STATUS_GLYPH = { met: '✓', partial: '~', missing: '✕', conflict: '≠' }

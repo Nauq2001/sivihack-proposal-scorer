@@ -5,9 +5,9 @@ import ReviewStep from './components/ReviewStep.jsx'
 import RunProgress from './components/RunProgress.jsx'
 import SourcePane from './components/SourcePane.jsx'
 import { CitationContext } from './components/Citation.jsx'
-import { RFP, SAMPLES, matchSample, sampleById } from './data/samples.js'
-import { reviewProposal } from './api/review.js'
-import { CRITERIA, DEFAULT_LEVELS, criteriaPayload, weightNote } from './lib/scoring.js'
+import { RFP, SAMPLES, SUGGESTED_CRITERIA, matchSample, sampleById } from './data/samples.js'
+import { reviewProposal, suggestCriteria } from './api/review.js'
+import { criteriaPayload, weightNote } from './lib/scoring.js'
 
 const STEPS = [
   ['docs', 'Documents'],
@@ -16,12 +16,16 @@ const STEPS = [
 ]
 
 const firstSample = SAMPLES[0]
+const withPriority = (list) => list.map((c) => ({ ...c, priority: c.suggested_priority || 'important' }))
 
 export default function App() {
   const [step, setStep] = useState('review')
   const [rfp, setRfp] = useState({ ...RFP })
   const [proposal, setProposal] = useState({ name: firstSample.name, text: firstSample.text })
-  const [levels, setLevels] = useState(DEFAULT_LEVELS)
+  const [criteria, setCriteria] = useState(() => withPriority(SUGGESTED_CRITERIA.criteria))
+  // The RFP the current suggestions were read from, so we only re-read when it changes.
+  const [criteriaFor, setCriteriaFor] = useState(RFP.text)
+  const [criteriaNotice, setCriteriaNotice] = useState(null)
   // run: {state: 'done'|'running'|'error', data, source: 'api'|'sample', error}
   const [run, setRun] = useState({ state: 'done', data: firstSample.result, source: 'sample' })
   const [citation, setCitation] = useState(null)
@@ -46,17 +50,36 @@ export default function App() {
     if (docked) setDrawer(false)
   }, [docked])
 
-  const openCitation = useCallback((c) => {
-    setCitation(c)
-    setTab(c.source === 'rfp' ? 'rfp' : 'prop')
-    if (!(window.matchMedia('(min-width: 1100px)').matches && step === 'review')) setDrawer(true)
-  }, [step])
-
   useEffect(() => {
     const onKey = (e) => { if (e.key === 'Escape') setDrawer(false) }
     document.addEventListener('keydown', onKey)
     return () => document.removeEventListener('keydown', onKey)
   }, [])
+
+  // A different RFP means different priorities, so read it again when the user
+  // opens the board.
+  useEffect(() => {
+    if (step !== 'criteria' || rfp.text === criteriaFor) return
+    let cancelled = false
+    setCriteriaNotice(null)
+    suggestCriteria(rfp)
+      .then((data) => {
+        if (cancelled) return
+        setCriteria((current) => [
+          ...withPriority(data.criteria),
+          ...current.filter((c) => c.source === 'custom'),
+        ])
+      })
+      .catch((err) => { if (!cancelled) setCriteriaNotice(`${err.message} Showing the criteria read from the sample RFP.`) })
+      .finally(() => { if (!cancelled) setCriteriaFor(rfp.text) })
+    return () => { cancelled = true }
+  }, [step, rfp.text, criteriaFor, rfp])
+
+  const openCitation = useCallback((c) => {
+    setCitation(c)
+    setTab(c.source === 'rfp' ? 'rfp' : 'prop')
+    if (!(window.matchMedia('(min-width: 1100px)').matches && step === 'review')) setDrawer(true)
+  }, [step])
 
   const go = (next) => {
     setStep(next)
@@ -96,7 +119,7 @@ export default function App() {
     setCitation(null)
     go('review')
     try {
-      const data = await reviewProposal({ rfp: useRfp, proposal: useProposal, criteria: criteriaPayload(levels) })
+      const data = await reviewProposal({ rfp: useRfp, proposal: useProposal, criteria: criteriaPayload(criteria) })
       setRun({ state: 'done', data, source: 'api' })
     } catch (err) {
       const stored = matchSample(useRfp.text, useProposal.text)
@@ -109,9 +132,9 @@ export default function App() {
     ['Reading the RFP', 'Pulling out every explicit requirement'],
     ['Mapping the proposal', `${(proposal.text.match(/^##\s/gm) || []).length} sections in ${proposal.name}`],
     ['Checking each requirement against the proposal', 'Matches, vague wording and contradictions'],
-    [`Scoring ${CRITERIA.length} criteria`, weightNote(levels, run.data?.suggested_weights)],
+    [`Scoring ${criteria.length} criteria`, weightNote(criteria)],
     ['Writing suggested fixes', 'One per gap, with citations'],
-  ]), [proposal.text, proposal.name, levels, run.data])
+  ]), [proposal.text, proposal.name, criteria])
 
   return (
     <CitationContext.Provider value={openCitation}>
@@ -152,15 +175,30 @@ export default function App() {
         )}
 
         {step === 'criteria' && (
-          <CriteriaStep
-            levels={levels}
-            suggested={run.data?.suggested_weights}
-            priorities={run.data?.client_priorities || []}
-            onLevel={(id, value) => setLevels((l) => ({ ...l, [id]: value }))}
-            onLevels={setLevels}
-            onGo={go}
-            onRun={() => runReview()}
-          />
+          <>
+            {criteriaNotice && <p className="notice" style={{ marginBottom: 16 }}>{criteriaNotice}</p>}
+            <CriteriaStep
+              criteria={criteria}
+              onPriority={(id, priority) => setCriteria((list) => list.map((c) => (c.id === id ? { ...c, priority } : c)))}
+              onMove={(id, dir) => setCriteria((list) => list.map((c) => {
+                if (c.id !== id) return c
+                const order = ['dealbreaker', 'important', 'minor', 'skip']
+                const next = order[Math.min(order.length - 1, Math.max(0, order.indexOf(c.priority) + dir))]
+                return { ...c, priority: next }
+              }))}
+              onRemove={(id) => setCriteria((list) => list.filter((c) => c.id !== id))}
+              onAdd={({ name, description, priority }) => setCriteria((list) => [
+                ...list,
+                { id: 'custom-' + Date.now(), name, description, priority, source: 'custom' },
+              ])}
+              onReset={() => setCriteria(() => [
+                ...withPriority(SUGGESTED_CRITERIA.criteria),
+                ...criteria.filter((c) => c.source === 'custom'),
+              ])}
+              onGo={go}
+              onRun={() => runReview()}
+            />
+          </>
         )}
 
         {step === 'review' && (
@@ -187,7 +225,7 @@ export default function App() {
             {run.state === 'done' && (
               <ReviewStep
                 result={run.data}
-                levels={levels}
+                criteria={criteria}
                 sampleId={sampleId}
                 source={run.source}
                 error={run.error}

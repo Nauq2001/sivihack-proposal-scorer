@@ -2,7 +2,7 @@ import { useRef, useState } from 'react'
 import { SAMPLES } from '../data/samples.js'
 import { Citations } from './Citation.jsx'
 import {
-  CRITERIA, LEVEL_NAME, STATUS_GLYPH, STATUS_LABEL,
+  PRIORITIES, PRIORITY_LABEL, PRIORITY_WEIGHT, STATUS_GLYPH, STATUS_LABEL,
   overallScore, scoreTone, verdictOf, weightNote,
 } from '../lib/scoring.js'
 
@@ -50,11 +50,13 @@ function Pips({ score }) {
   )
 }
 
-export default function ReviewStep({ result, levels, sampleId, source, error, onSample, onRun, onGo }) {
+export default function ReviewStep({ result, criteria, sampleId, source, error, onSample, onRun, onGo }) {
   const [flash, setFlash] = useState(null)
   const byId = Object.fromEntries(result.criteria.map((c) => [c.id, c]))
-  const score = overallScore(result.criteria, levels)
+  const { score } = overallScore(criteria, byId)
   const [tone, verdict] = verdictOf(score)
+  // Board order: deal-breakers first, then down to the ones left out.
+  const ordered = PRIORITIES.flatMap((p) => criteria.filter((c) => c.priority === p.id))
 
   const counts = { met: 0, partial: 0, missing: 0, conflict: 0 }
   result.requirements.forEach((r) => { counts[r.status] += 1 })
@@ -93,7 +95,7 @@ export default function ReviewStep({ result, levels, sampleId, source, error, on
       <section className="verdict" aria-label="Overall result">
         <div>
           <div className="score-big">{score.toFixed(1)}<small>/5</small></div>
-          <div className="score-cap">{weightNote(levels, result.suggested_weights)}</div>
+          <div className="score-cap">{weightNote(criteria)}</div>
         </div>
         <div>
           <span className="pill" data-tone={tone}>{verdict}</span>
@@ -158,21 +160,24 @@ export default function ReviewStep({ result, levels, sampleId, source, error, on
       <section className="block">
         <div className="block-head">
           <h2>Scores by criterion</h2>
-          <p>High counts three times as much as Low</p>
+          <p>A Deal-breaker counts three times as much as a Minor criterion</p>
         </div>
         <div className="panel">
-          {CRITERIA.filter((c) => byId[c.id]).map((c) => {
+          {ordered.map((c) => {
             const s = byId[c.id]
+            const counted = PRIORITY_WEIGHT[c.priority] > 0
             return (
-              <div className="cr" key={c.id}>
+              <div className="cr" key={c.id} data-off={!counted || !s}>
                 <div className="cr-name">
                   <strong>{c.name}</strong>
-                  <span className="lvl" data-lvl={levels[c.id]}>{LEVEL_NAME[levels[c.id]]} weight</span>
+                  <span className="lvl" data-prio={c.priority}>
+                    {PRIORITY_LABEL[c.priority]}{counted ? ` ×${PRIORITY_WEIGHT[c.priority]}` : ', not counted'}
+                  </span>
                 </div>
-                <Pips score={s.score} />
+                {s ? <Pips score={s.score} /> : <div className="pips">{[1, 2, 3, 4, 5].map((n) => <i key={n} className="pip" />)}<b>–</b></div>}
                 <div className="cr-body">
-                  <p>{s.comment}</p>
-                  <Citations items={s.citations} />
+                  <p>{s ? s.comment : 'Added after this run. Run the review again to score it.'}</p>
+                  {s && <Citations items={s.citations} />}
                 </div>
               </div>
             )

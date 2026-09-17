@@ -8,17 +8,9 @@
     "duration_ms": 11800
   },
   "overall": {
-    "score": 1.5,
+    "score": 1.33,
     "verdict": "not_ready",
     "summary": "It contradicts the no-migration constraint, adds AI modules nobody asked for, and promises 8-week delivery with no pilot, at a price that can’t cover that scope."
-  },
-  "suggested_weights": {
-    "pu": "low",
-    "scope": "low",
-    "price": "medium",
-    "time": "medium",
-    "comp": "high",
-    "risk": "high"
   },
   "client_priorities": [
     {
@@ -78,10 +70,92 @@
   ],
   "criteria": [
     {
+      "id": "comp",
+      "name": "Completeness vs. RFP",
+      "description": "Every explicit RFP requirement is addressed.",
+      "weight": "dealbreaker",
+      "score": 1,
+      "comment": "Contradicts requirement 3, leaves 4, 5 and 7 unaddressed, and covers 2 and 6 only partly.",
+      "citations": []
+    },
+    {
+      "id": "risk",
+      "name": "Risks & assumptions",
+      "description": "Dependencies and risks are flagged, not hidden.",
+      "weight": "dealbreaker",
+      "score": 1,
+      "comment": "A database migration and an 8-week schedule are the riskiest items here, and neither comes with a single assumption or risk.",
+      "citations": [
+        {
+          "source": "proposal",
+          "found": false,
+          "label": "Proposal: not found",
+          "searched_terms": [
+            "risk",
+            "assumption"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "price",
+      "name": "Pricing clarity",
+      "description": "Price stated, broken down, easy to follow.",
+      "weight": "important",
+      "score": 2,
+      "comment": "€98,000 is inside the budget but claims to cover a migration, three AI modules and a year of support, with no breakdown.",
+      "citations": [
+        {
+          "source": "proposal",
+          "found": true,
+          "label": "Proposal, Pricing",
+          "quote": "covering the full suite described above"
+        }
+      ]
+    },
+    {
+      "id": "time",
+      "name": "Timeline clarity",
+      "description": "Concrete milestones and dates.",
+      "weight": "important",
+      "score": 2,
+      "comment": "Concrete but not credible: 8 weeks for a platform migration plus all AI modules, and no pilot phase.",
+      "citations": [
+        {
+          "source": "proposal",
+          "found": true,
+          "label": "Proposal, Timeline",
+          "quote": "within 8 weeks"
+        },
+        {
+          "source": "rfp",
+          "found": true,
+          "label": "RFP, Timeline",
+          "quote": "Working pilot at one warehouse within 3 months"
+        }
+      ]
+    },
+    {
+      "id": "accuracy",
+      "name": "Data accuracy & validation",
+      "description": "Says how inventory figures are checked against reality before anyone relies on them.",
+      "weight": "important",
+      "score": 1,
+      "comment": "Proposes moving the data to another platform with no validation step anywhere, while adding forecasting on top of figures nobody has checked.",
+      "citations": [
+        {
+          "source": "proposal",
+          "found": true,
+          "label": "Proposal, Proposed Solution",
+          "quote": "migrating away from your current PostgreSQL database"
+        }
+      ]
+    },
+    {
       "id": "pu",
       "name": "Problem understanding",
       "description": "Reflects the client’s actual stated problem and goals, not a generic pitch.",
-      "weight": "medium",
+      "weight": "minor",
       "score": 1,
       "comment": "Reframes a dashboard brief as an “AI-Powered Supply Chain Intelligence Suite”. The client asked for continuity and minimal disruption.",
       "citations": [
@@ -103,7 +177,7 @@
       "id": "scope",
       "name": "Scope & deliverables",
       "description": "Deliverables are specific; clear what is and isn’t included.",
-      "weight": "medium",
+      "weight": "minor",
       "score": 2,
       "comment": "Scope grows to forecasting, automated reordering and supplier scoring, none of it requested, while role-based access and onboarding are left out.",
       "citations": [
@@ -122,67 +196,20 @@
       ]
     },
     {
-      "id": "price",
-      "name": "Pricing clarity",
-      "description": "Price stated, broken down, easy to follow.",
-      "weight": "medium",
-      "score": 2,
-      "comment": "€98,000 is inside the budget but claims to cover a migration, three AI modules and a year of support, with no breakdown.",
-      "citations": [
-        {
-          "source": "proposal",
-          "found": true,
-          "label": "Proposal, Pricing",
-          "quote": "covering the full suite described above"
-        }
-      ]
-    },
-    {
-      "id": "time",
-      "name": "Timeline clarity",
-      "description": "Concrete milestones and dates.",
-      "weight": "medium",
-      "score": 2,
-      "comment": "Concrete but not credible: 8 weeks for a platform migration plus all AI modules, and no pilot phase.",
-      "citations": [
-        {
-          "source": "proposal",
-          "found": true,
-          "label": "Proposal, Timeline",
-          "quote": "within 8 weeks"
-        },
-        {
-          "source": "rfp",
-          "found": true,
-          "label": "RFP, Timeline",
-          "quote": "Working pilot at one warehouse within 3 months"
-        }
-      ]
-    },
-    {
-      "id": "comp",
-      "name": "Completeness vs. RFP",
-      "description": "Every explicit RFP requirement is addressed.",
-      "weight": "medium",
+      "id": "legacy",
+      "name": "Legacy system & spreadsheets",
+      "description": "Says what happens to the old legacy system and the spreadsheets after go-live.",
+      "weight": "minor",
       "score": 1,
-      "comment": "Contradicts requirement 3, leaves 4, 5 and 7 unaddressed, and covers 2 and 6 only partly.",
-      "citations": []
-    },
-    {
-      "id": "risk",
-      "name": "Risks & assumptions",
-      "description": "Dependencies and risks are flagged, not hidden.",
-      "weight": "medium",
-      "score": 1,
-      "comment": "A database migration and an 8-week schedule are the riskiest items here, and neither comes with a single assumption or risk.",
+      "comment": "Silent on the legacy system and the spreadsheets, although it proposes replacing the database they feed.",
       "citations": [
         {
           "source": "proposal",
           "found": false,
           "label": "Proposal: not found",
           "searched_terms": [
-            "risk",
-            "assumption"
+            "legacy",
+            "spreadsheet"
           ]
         }
       ]

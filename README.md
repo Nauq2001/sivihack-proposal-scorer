@@ -59,12 +59,16 @@ Khong sua code, chi sua file `.env`.
 `frontend/` khong con la demo goi AI nua, no la app that voi 3 buoc:
 
 1. **Documents** - dan hoac upload RFP + proposal (.md/.txt)
-2. **Criteria** - dat trong so Low/Medium/High cho 6 tieu chi, co goi y doc tu RFP
+2. **Criteria** - bang 4 cot kieu MoSCoW (Deal-breaker x3, Important x2, Minor x1,
+   Don't score x0). Keo tha hoac bam mui ten de doi muc, them/xoa tieu chi.
+   AI doc RFP de xuat san vi tri tung the, kem cau trich dan giai thich vi sao
 3. **Review** - diem tong, dai trang thai 9 yeu cau RFP, de xuat sua cho tung loi,
    va khung nguon ben phai: bam vao trich dan la doan goc duoc to vang
 
 App goi `POST /api/review`. Khi backend chua chay, no tu dung ket qua luu san cho
 4 proposal mau va hien nhan "Stored sample result", nen demo khong bao gio chet.
+
+App goi 2 endpoint: `POST /api/criteria` (doc RFP ra tieu chi) va `POST /api/review`.
 
 Hop dong API cho backend/AI: `docs/api/review-contract.md`
 Du lieu mau (response that): `frontend/src/mocks/*.json`

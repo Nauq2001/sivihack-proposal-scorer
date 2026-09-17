@@ -13,10 +13,14 @@ import weakResult from '../mocks/response_1_weak.json'
 import mediumResult from '../mocks/response_2_medium.json'
 import strongResult from '../mocks/response_3_strong.json'
 import overResult from '../mocks/response_4_overpromise.json'
+import suggestedCriteria from '../mocks/criteria_nordframe.json'
 
 import { norm } from '../lib/markdown.js'
 
 export const RFP = { name: 'rfp_nordframe.md', text: rfpText }
+
+/** What POST /api/criteria returns for the NordFrame RFP. */
+export const SUGGESTED_CRITERIA = suggestedCriteria
 
 export const SAMPLES = [
   { id: 'weak', label: 'Response 1: BrightPath (weak)', name: 'response_1_weak.md', text: weakText, result: weakResult },
