@@ -1,0 +1,130 @@
+# Proposal Scorer — SiviHack 2026 (FPT Software Europe Challenge)
+
+## 1. Tóm tắt bài toán
+
+Trước khi một **proposal** (đề xuất) được gửi cho khách hàng, thường cần một người cấp cao review lại: kiểm tra xem proposal có trả lời đúng những gì khách hàng yêu cầu trong **RFP** (Request for Proposal) hay không, giá cả/timeline có rõ ràng không, có thiếu sót gì không.
+
+Vấn đề: việc review này hiện đang làm **thủ công**, tốn thời gian, phụ thuộc vào người review, và dễ bỏ sót lỗi khi làm gấp trước deadline.
+
+**Mục tiêu của chúng ta:** xây một công cụ AI — *Proposal Scorer* — tự động đọc cặp (RFP + Proposal), chấm điểm proposal theo một bộ tiêu chí (criteria), và đưa ra phản hồi **cụ thể, có thể hành động ngay** (không nói chung chung như "cần rõ ràng hơn").
+
+> ⚠️ Lưu ý quan trọng: đây là công cụ **đánh giá**, không phải công cụ **viết** proposal. Không được để AI tự sinh proposal mới.
+
+---
+
+## 2. Người dùng & mục tiêu trải nghiệm
+
+- **Người dùng chính:** Sales, pre-sales, account manager — cần một "ý kiến thứ hai" nhanh, trung thực, trước khi gửi proposal cho khách.
+- **Trải nghiệm mong muốn:** Dán hoặc upload proposal (và RFP) → nhận feedback có cấu trúc trong thời gian thực, tương đương một đồng nghiệp giàu kinh nghiệm review nhanh giúp.
+
+---
+
+## 3. Criteria (tiêu chí chấm điểm)
+
+Đề bài cung cấp sẵn 7 tiêu chí mẫu (Appendix A), mỗi tiêu chí có thang điểm 1–5:
+
+| # | Tiêu chí | Kiểm tra gì |
+|---|---|---|
+| 1 | Problem Understanding | Proposal có phản ánh đúng vấn đề/mục tiêu thực sự của khách (từ RFP) không, hay chỉ là bài chào hàng chung chung? |
+| 2 | Scope & Deliverables Clarity | Các hạng mục bàn giao có cụ thể, rõ ràng không? Có rõ cái gì bao gồm/không bao gồm không? |
+| 3 | Pricing Clarity | Giá có được nêu rõ ràng, chia nhỏ dễ hiểu không (hay là "sẽ báo sau")? |
+| 4 | Timeline Clarity | Mốc thời gian có cụ thể không (hay là "trong thời gian sớm nhất")? |
+| 5 | Completeness vs. RFP Requirements | Proposal có trả lời **đủ** từng yêu cầu mà RFP nêu ra không? |
+| 6 | Tone & Persuasiveness | Văn phong có chuyên nghiệp, tự tin, hướng đến khách hàng cụ thể không, hay là boilerplate? |
+| 7 | Risk/Assumptions Transparency | Các giả định, rủi ro, phụ thuộc có được nêu rõ không, hay bị giấu/bỏ qua? |
+
+Đề bài cho phép (và khuyến khích) làm **configurable**: người dùng có thể chỉnh trọng số (weight) từng tiêu chí, thêm/bớt tiêu chí — vì không phải proposal nào cũng nên bị đánh giá theo cùng một khuôn. Nâng cao hơn: để AI tự đọc RFP và **gợi ý** trọng số phù hợp cho khách hàng đó.
+
+---
+
+## 4. Dữ liệu mẫu được cung cấp
+
+| File | Vai trò |
+|---|---|
+| `rfp_nordframe.md` | RFP gốc — dùng chung cho mọi proposal bên dưới |
+| `response_1_weak.md` | Proposal **yếu** — chung chung, giá/timeline bị né tránh, thiếu nhiều yêu cầu |
+| `response_2_medium.md` | Proposal **trung bình** — scope chức năng ổn nhưng giá/timeline mơ hồ, không nêu rủi ro |
+| `response_3_strong.md` | Proposal **mạnh** — trả lời đầy đủ RFP, cụ thể, minh bạch (dùng làm chuẩn đối chiếu) |
+| `response_4_overpromise.md` | Proposal **hứa quá đà** — phình to phạm vi, vi phạm ràng buộc rõ ràng của RFP (đổi database dù RFP cấm), timeline/giá phi thực tế |
+| `scoring_example.md` | Ví dụ output mẫu (chấm `response_1_weak.md`) — cho thấy 3 mức độ output kỳ vọng |
+
+### 3 cấp độ output (từ ví dụ chấm mẫu)
+
+- **Level 1:** Chỉ chấm điểm theo rubric (bảng điểm 1–5 + nhận xét ngắn từng tiêu chí) — chưa so sánh với RFP.
+- **Level 2:** Thêm phần so sánh với RFP — chỉ ra từng yêu cầu **bị thiếu / mơ hồ / bị né**, kèm **gợi ý sửa cụ thể**.
+- **Level 3:** Thêm **trích dẫn nguồn** (citation) — chỉ thẳng vào câu/mục nào trong RFP và proposal dẫn đến điểm số đó, và có thể tự nhận diện **ưu tiên thực sự của khách hàng** dựa trên cách RFP nhấn mạnh điều gì (người dùng xác nhận/chỉnh lại trước khi chấm).
+
+→ Càng lên cao thì càng cụ thể, càng gần với "review của một đồng nghiệp thật".
+
+---
+
+## 5. Tiêu chí chấm điểm của Ban giám khảo (khác với criteria chấm proposal ở trên — đừng nhầm)
+
+1. Feedback có cụ thể, chỉ đúng vào phần/lỗi hay không (không nói chung chung)?
+2. Tool có thực sự dùng RFP để so sánh với proposal không, hay chỉ chấm proposal một mình?
+3. *(Bonus)* Tool có xử lý được tài liệu dài/phức tạp hơn (PDF, proposal từ PowerPoint xuất ra PDF) không?
+
+---
+
+## 6. Kiến trúc đề xuất (gợi ý, có thể điều chỉnh theo team)
+
+```
+┌─────────────┐     ┌──────────────────┐     ┌────────────────┐
+│  Frontend   │ --> │   Backend / API   │ --> │   LLM (chấm    │
+│ (upload/    │     │  (parse file,     │     │   điểm theo    │
+│  paste RFP  │     │   ghép prompt,    │     │   criteria +   │
+│  + Proposal)│     │   gọi LLM)        │     │   RFP)         │
+└─────────────┘     └──────────────────┘     └────────────────┘
+       ↑                                              │
+       └──────────── Hiển thị kết quả ◄────────────────┘
+       (bảng điểm, issue list, suggested fix, citation)
+```
+
+- **Input:** RFP (markdown/text/PDF) + Proposal (markdown/text/PDF)
+- **Xử lý:** Ghép cả hai văn bản + danh sách criteria (có thể kèm trọng số) vào một prompt, yêu cầu LLM trả về JSON có cấu trúc (điểm, nhận xét, issue, fix, citation)
+- **Output:** Hiển thị dạng bảng điểm + danh sách issue có thể click để xem chi tiết/trích dẫn
+
+---
+
+## 7. Chia đầu việc
+
+### Nhóm A — Xử lý dữ liệu & Backend
+- [ ] Viết hàm đọc file Markdown (RFP + Proposal) từ upload hoặc paste text
+- [ ] *(Bonus)* Thêm khả năng đọc PDF (dùng thư viện parse PDF, hoặc OCR nếu là ảnh scan)
+- [ ] Thiết kế schema JSON chuẩn cho output của LLM (điểm số, nhận xét, danh sách issue, suggested fix, citation) để frontend dễ render
+- [ ] Viết API endpoint nhận (RFP, Proposal, criteria + weights) → gọi LLM → trả JSON kết quả
+
+### Nhóm B — Prompt Engineering (phần lõi, quan trọng nhất)
+- [ ] Thiết kế prompt chấm điểm Level 1 (rubric cơ bản) — test với `response_1_weak.md` và so kết quả với `scoring_example.md`
+- [ ] Nâng lên Level 2 — thêm yêu cầu so sánh với RFP, liệt kê từng yêu cầu bị thiếu/mơ hồ kèm suggested fix
+- [ ] Nâng lên Level 3 — thêm citation (trích đúng câu/mục trong RFP và proposal), thử tính năng AI tự gợi ý trọng số ưu tiên dựa trên RFP
+- [ ] Test prompt trên cả 4 response (weak, medium, strong, overpromise) — đảm bảo tool phân biệt được rõ ràng "strong" > "medium" > "weak", và phát hiện được các vi phạm ràng buộc rõ ràng ở `response_4_overpromise.md` (ví dụ: RFP cấm đổi database nhưng proposal 4 lại đề xuất migrate)
+- [ ] Làm cơ chế configurable criteria (cho phép thêm/bớt/đổi trọng số tiêu chí)
+
+### Nhóm C — Frontend / UI
+- [ ] Màn hình upload/paste RFP + Proposal
+- [ ] Màn hình cấu hình criteria (danh sách tiêu chí + slider trọng số, có thể thêm tiêu chí mới)
+- [ ] Màn hình hiển thị kết quả: bảng điểm tổng quan + danh sách issue chi tiết (có thể mở rộng từng issue để xem trích dẫn/gợi ý sửa)
+- [ ] Đảm bảo chạy **live demo** được: cho giám khảo paste một cặp RFP/Proposal chưa từng thấy và ra kết quả ngay
+
+### Nhóm D — Kiểm thử & Trình bày (Demo)
+- [ ] Test toàn bộ pipeline với cả 4 response mẫu, ghi lại kết quả để so sánh
+- [ ] Chuẩn bị kịch bản demo: từ "vấn đề hiện tại" → "upload RFP+Proposal" → "xem kết quả chấm điểm" → "chỉnh trọng số thử lại"
+- [ ] Chuẩn bị trả lời câu hỏi có thể bị hỏi: vì sao chọn cách tiếp cận này, cách tool tránh "hallucination" (bịa ra lỗi không có thật) khi chấm điểm
+- [ ] *(Nếu còn thời gian)* Test thử với proposal dạng PDF để ăn điểm Bonus
+
+---
+
+## 8. Thứ tự ưu tiên nên làm (nếu thiếu thời gian)
+
+1. **Bắt buộc:** Level 1 (rubric score) + Level 2 (so sánh RFP, chỉ ra thiếu sót cụ thể) — đây là 2 tiêu chí chấm điểm chính của giám khảo.
+2. **Nên có:** Configurable criteria (thêm/bớt/đổi trọng số).
+3. **Điểm cộng:** Level 3 (citation + AI gợi ý ưu tiên khách hàng).
+4. **Bonus cuối cùng:** Đọc được PDF/PowerPoint-exported-PDF.
+
+> Ghi nhớ nguyên tắc đề bài nhấn mạnh: **"một giải pháp đơn giản làm tốt có thể ăn điểm ngang hoặc hơn một giải pháp tham vọng nhưng chạy nửa vời."** Ưu tiên làm chắc Level 1–2 trước khi mở rộng.
+
+---
+
+## 9. Liên hệ kỹ thuật
+- Technical Contact: Duc Nguyen (FPT Software Europe)
