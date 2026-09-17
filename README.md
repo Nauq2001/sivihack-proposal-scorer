@@ -69,6 +69,11 @@ Khong sua code, chi sua file `.env`.
 App goi `POST /api/review`. Khi backend chua chay, no tu dung ket qua luu san cho
 4 proposal mau va hien nhan "Stored sample result", nen demo khong bao gio chet.
 
+Quy tac mau dung chung ca app: **do = xu ly truoc tien**, vang = de y, xanh = on,
+xam = khong tinh diem. O trang Criteria, do la tieu chi nang nhat. O trang Review,
+do la yeu cau bi thieu/mau thuan, hoac tieu chi dang keo diem xuong nhieu nhat
+(diem thap tren mot tieu chi nang). Moi phan tu chi mang mot nghia mau duy nhat.
+
 App goi 2 endpoint: `POST /api/criteria` (doc RFP ra tieu chi) va `POST /api/review`.
 
 Hop dong API cho backend/AI: `docs/api/review-contract.md`

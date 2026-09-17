@@ -33,6 +33,19 @@ export function scoreTone(score) {
   return score <= 2 ? 'bad' : score < 4 ? 'warn' : 'good'
 }
 
+/** One colour rule for the whole app: red means deal with this first.
+ *  On the criteria board that is the heaviest criterion; here it is the one
+ *  dragging the score down hardest, which is the gap below 5 times the weight.
+ *  A weak score on a deal-breaker outranks the same score on a minor criterion. */
+export function attentionTone(score, priority) {
+  const weight = PRIORITY_WEIGHT[priority] ?? 0
+  if (!weight || typeof score !== 'number') return null
+  const drag = (5 - score) * weight
+  if (drag >= 6) return 'bad'
+  if (drag >= 3) return 'warn'
+  return 'good'
+}
+
 export function matchesSuggestion(criteria) {
   return criteria.every((c) => !c.suggested_priority || c.priority === c.suggested_priority)
 }

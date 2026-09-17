@@ -3,7 +3,7 @@ import { SAMPLES } from '../data/samples.js'
 import { Citations } from './Citation.jsx'
 import {
   PRIORITIES, PRIORITY_LABEL, PRIORITY_WEIGHT, STATUS_GLYPH, STATUS_LABEL,
-  overallScore, scoreTone, verdictOf, weightNote,
+  attentionTone, overallScore, scoreTone, verdictOf, weightNote,
 } from '../lib/scoring.js'
 
 function FixBox({ text }) {
@@ -58,9 +58,9 @@ function Gauge({ score }) {
   )
 }
 
-function Pips({ score }) {
+function Pips({ score, tone }) {
   return (
-    <span className="pips" data-tone={scoreTone(score)} aria-label={`${score} out of 5`}>
+    <span className="pips" data-tone={tone || scoreTone(score)} aria-label={`${score} out of 5`}>
       {[1, 2, 3, 4, 5].map((n) => (
         <i key={n} className={'pip' + (n <= score ? ' on' : '')} />
       ))}
@@ -156,7 +156,7 @@ export default function ReviewStep({ result, criteria, sampleId, source, error, 
       <section className="block">
         <div className="block-head">
           <h2>Scores by criterion</h2>
-          <p>Most important first, as set on the criteria board</p>
+          <p>Heaviest criteria first. Red is what is dragging the score down most.</p>
         </div>
         <div className="cr-grid">
           {ordered.map((c) => {
@@ -165,13 +165,12 @@ export default function ReviewStep({ result, criteria, sampleId, source, error, 
             return (
               <article className="cr-card" key={c.id} data-off={!counted || !s}>
                 <div className="cr-card-head">
-                  <span className="card-dot" data-prio={c.priority} aria-hidden="true" />
                   <h3>{c.name}</h3>
-                  <span className="score-chip" data-tone={s ? scoreTone(s.score) : undefined}>{s ? `${s.score}/5` : '–'}</span>
+                  <span className="score-chip" data-tone={s ? attentionTone(s.score, c.priority) : undefined}>{s ? `${s.score}/5` : '–'}</span>
                 </div>
                 <div className="cr-card-meta">
-                  {s && <Pips score={s.score} />}
-                  <span className="lvl" data-prio={c.priority}>{PRIORITY_LABEL[c.priority]}{counted ? '' : ' — not counted'}</span>
+                  {s && <Pips score={s.score} tone={attentionTone(s.score, c.priority)} />}
+                  <span className="lvl">{PRIORITY_LABEL[c.priority]}{counted ? '' : ' — not counted'}</span>
                 </div>
                 <p>{s ? s.comment : 'Added after this run. Run the review again to score it.'}</p>
                 {s && <Citations items={s.citations} />}

@@ -133,10 +133,10 @@ select.field{padding:7px 10px;border-radius:8px;border:1px solid var(--line);bac
 .board-foot{margin:18px 0 0;color:var(--ink-3);font-size:13px;max-width:78ch}
 .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 
+/* On Review, colour is reserved for "how much attention this needs", so the
+   weight is plain text here — otherwise one card would carry two colour
+   meanings at once. */
 .lvl{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:500;color:var(--ink-3)}
-.lvl[data-prio="dealbreaker"]{color:var(--bad)}
-.lvl[data-prio="important"]{color:var(--warn)}
-.lvl[data-prio="minor"]{color:var(--good)}
 
 /* Review */
 .review-bar{display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;margin-bottom:16px}
@@ -226,10 +226,10 @@ select.field{padding:7px 10px;border-radius:8px;border:1px solid var(--line);bac
 .board-foot{margin:18px 0 0;color:var(--ink-3);font-size:13px;max-width:78ch}
 .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 
+/* On Review, colour is reserved for "how much attention this needs", so the
+   weight is plain text here — otherwise one card would carry two colour
+   meanings at once. */
 .lvl{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:500;color:var(--ink-3)}
-.lvl[data-prio="dealbreaker"]{color:var(--bad)}
-.lvl[data-prio="important"]{color:var(--warn)}
-.lvl[data-prio="minor"]{color:var(--good)}
 
 /* Review */
 .review-bar{display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;margin-bottom:16px}
