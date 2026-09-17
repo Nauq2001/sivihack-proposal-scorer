@@ -4,3 +4,5 @@ __pycache__/
 *.pyc
 dist/
 .venv/
+.DS_Store
+.claude/settings.local.json
