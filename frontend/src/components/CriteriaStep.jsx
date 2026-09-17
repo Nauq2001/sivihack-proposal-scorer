@@ -90,8 +90,9 @@ export default function CriteriaStep({ criteria, onPriority, onMove, onRemove, o
         <div>
           <h1>Decide what matters for this client</h1>
           <p className="lede">
-            Every criterion is reviewed. Which column it sits in decides how much it pulls the overall score — the
-            darker the column, the more it counts. Open a card to see what it checks and why it landed there.
+            Every criterion is reviewed. Which column it sits in decides how much it pulls the overall score: red
+            counts most, then amber, then green, and grey is left out. Open a card to see what it checks and why it
+            landed there.
           </p>
         </div>
         <div className="actions">
