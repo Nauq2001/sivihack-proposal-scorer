@@ -58,17 +58,4 @@ Khong sua code, chi sua file `.env`.
 
 - De bai Track 1 (Proposal Scorer - FPT Software Europe): `docs/challenge/track-1-proposal-scorer.pdf`
 - RFP + 4 proposal mau + vi du output: `docs/challenge/sample_data/`
-- Tom tat de va quy uoc cho Claude: `CLAUDE.md`
 
-## 7. Bo cong cu Claude Code cho team (thiet ke / frontend)
-
-Da cau hinh san trong repo, khong can cai tay:
-
-- `.claude/settings.json` — plugin: `frontend-design`, `typescript-lsp`, `gitlab`
-- `.mcp.json` — MCP server: `chrome-devtools` (xem & chup man hinh UI), `playwright`,
-  `context7` (tra docs thu vien), `figma-talk`
-- `.claude/skills/ui-build-verify` — quy trinh Figma -> code -> kiem tra tren Chrome
-
-Lan dau mo repo bang `claude`: bam **Trust** thu muc, dong y cai marketplace/plugin va
-bat MCP server khi duoc hoi. Can Node 18+ (MCP chay qua `npx`).
-Figma chinh thuc la connector claude.ai — moi nguoi tu bat trong Settings > Connectors.
