@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import InputView from './components/InputView.jsx'
-import CriteriaView from './components/CriteriaView.jsx'
+import CriteriaView, { COLUMNS } from './components/CriteriaView.jsx'
 import RunView from './components/RunView.jsx'
 import ResultView from './components/ResultView.jsx'
 import SourcePane from './components/SourcePane.jsx'
@@ -23,6 +23,8 @@ export default function App() {
   // Bat dau rong: hai buoc sau chi mo khi da co du lieu that cua lan chay nay.
   const [analysis, setAnalysis] = useState(null)
   const [criteria, setCriteria] = useState([])
+  // Ban goc tu RFP Analyst, de nut "Reset to the RFP suggestion" quay ve duoc.
+  const [suggested, setSuggested] = useState([])
   const [run, setRun] = useState({ data: null, source: null })
   const [notice, setNotice] = useState(null)
   const [citation, setCitation] = useState(null)
@@ -106,6 +108,7 @@ export default function App() {
       const data = await withFloor(() => analyseRfp({ rfp: useRfp }))
       setAnalysis(data.rfp_analysis)
       setCriteria(data.confirmed_criteria)
+      setSuggested(data.confirmed_criteria)
       setRun({ data: null, source: 'api' })
       setStage('criteria')
     } catch (err) {
@@ -113,6 +116,7 @@ export default function App() {
         await withFloor(async () => null)
         setAnalysis(stored.result.rfp_analysis)
         setCriteria(stored.result.confirmed_criteria)
+        setSuggested(stored.result.confirmed_criteria)
         setRun({ data: stored.result, source: 'sample', error: err.message })
         setStage('criteria')
       } else {
@@ -127,8 +131,12 @@ export default function App() {
     window.scrollTo({ top: 0 })
     const stored = matchSample(rfp.text, proposal.text)
     try {
+      const weightOf = (c) => COLUMNS.find((col) => col.id === (c.recommended_priority || 'medium'))?.weight ?? 1
+      const confirmed = criteria
+        .filter((c) => (c.recommended_priority || 'medium') !== 'skip')
+        .map((c) => ({ ...c, weight: weightOf(c) }))
       const scoring = await withFloor(() => scoreProposal({
-        rfp, proposal, rfp_analysis: analysis, confirmed_criteria: criteria,
+        rfp, proposal, rfp_analysis: analysis, confirmed_criteria: confirmed,
       }))
       setRun({ data: { meta: { proposal_name: proposal.name }, rfp_analysis: analysis, confirmed_criteria: criteria, scoring }, source: 'api' })
       setStage('result')
@@ -213,7 +221,12 @@ export default function App() {
         {stage === 'scoring' && <RunView steps={scoringSteps} title={proposal.name} subtitle={`against ${rfp.name}`} />}
 
         {stage === 'criteria' && (
-          <CriteriaView analysis={analysis} criteria={criteria} onRun={startScoring} />
+          <CriteriaView
+            analysis={analysis} criteria={criteria}
+            onChange={setCriteria}
+            onReset={() => setCriteria(suggested)}
+            onRun={startScoring}
+          />
         )}
 
         {stage === 'error' && (

@@ -8,8 +8,21 @@ một màn tiến trình. Hai endpoint khớp đúng hai agent trong `AI/`:
 | `POST /api/analyze-rfp` | RFP Analyst | `rfp_analysis` + `confirmed_criteria` |
 | `POST /api/score` | Proposal Analyst | `scoring` |
 
-Người dùng **không sửa tiêu chí** — chỉ xem rồi bấm chấm. Mức ưu tiên lấy từ
-`recommended_priority` trong `AI/contracts.py`.
+Màn Criteria là **bước người dùng duyệt**: kéo thả giữa bốn cột, thêm, xoá.
+Mức ưu tiên ban đầu lấy từ `recommended_priority` trong `AI/contracts.py`.
+
+Khi bấm chấm, frontend gửi `confirmed_criteria` **đã chỉnh**, đúng như contract
+mô tả: *"the single source of truth for which criteria to score and at what
+weight, after the human checkpoint"*.
+
+| Cột | `weight` gửi đi |
+|---|---|
+| High | 3 |
+| Medium | 2 |
+| Low | 1 |
+| Don't score | Bị **loại khỏi mảng**, không gửi weight 0 vì contract bắt `weight > 0` |
+
+Tiêu chí người dùng tự thêm có `origin: "user"`.
 
 - Frontend gọi: `frontend/src/api/review.js`
 - Dữ liệu mẫu (chính là response thật): `frontend/src/mocks/response_*.json`
