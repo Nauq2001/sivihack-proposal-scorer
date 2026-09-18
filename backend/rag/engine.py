@@ -24,7 +24,7 @@ class BenchmarkStore:
         with open(path, encoding="utf-8") as fh:
             return cls([json.loads(line) for line in fh if line.strip()])
 
-    def retrieve(self, criterion_id, query, top_k_per_type=1):
+    def retrieve(self, criterion_id, query, top_k_per_type=1, min_overlap=2):
         candidates = [r for r in self.records if r.get("criterion_id") == criterion_id]
         wanted = _tokens(query)
         ranked = []
@@ -40,5 +40,8 @@ class BenchmarkStore:
                 key=lambda item: item[0],
                 reverse=True,
             )
-            result.extend(record for _, record in group[:max(0, top_k_per_type)])
+            result.extend(
+                record for overlap, record in group[:max(0, top_k_per_type)]
+                if overlap >= min_overlap
+            )
         return result

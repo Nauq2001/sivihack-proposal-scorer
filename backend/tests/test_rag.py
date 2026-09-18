@@ -22,7 +22,14 @@ class ScoringRagTests(unittest.TestCase):
 
         matches = store.retrieve("pricing_clarity", "", top_k_per_type=1)
 
-        self.assertTrue(all(m["criterion_id"] == "pricing_clarity" for m in matches))
+        self.assertEqual(matches, [])
+
+    def test_unrelated_query_returns_no_matches(self):
+        store = BenchmarkStore.from_file("backend/rag/data/records.jsonl")
+
+        matches = store.retrieve("timeline_clarity", "quantum banana asteroid", top_k_per_type=1)
+
+        self.assertEqual(matches, [])
 
     def test_api_payload_returns_reference_matches(self):
         store = BenchmarkStore.from_file("backend/rag/data/records.jsonl")
@@ -35,7 +42,8 @@ class ScoringRagTests(unittest.TestCase):
         })
 
         self.assertIn("matches", result)
-        self.assertEqual(len(result["matches"]), 4)
+        self.assertGreater(len(result["matches"]), 0)
+        self.assertLessEqual(len(result["matches"]), 4)
 
 
 if __name__ == "__main__":

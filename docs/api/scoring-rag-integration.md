@@ -19,11 +19,12 @@ Content-Type: application/json
   },
   "proposal_context": "The relevant section from the new proposal",
   "requirement_context": "The relevant requirement from the new RFP",
-  "top_k_per_type": 1
+  "top_k_per_type": 1,
+  "relevance_threshold": 2
 }
 ```
 
-The response contains up to one reference per `weak`, `medium`, `strong`, and `overpromise` type. Use `text`, `score_range`, and `reasoning` only as calibration context.
+The response contains up to one reference per `weak`, `medium`, `strong`, and `overpromise` type, but only when at least two meaningful query terms overlap by default. Use `text`, `score_range`, and `reasoning` only as calibration context. A query with no sufficiently relevant match returns `{"matches": []}`.
 
 ## Agent prompt insertion
 

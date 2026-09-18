@@ -9,7 +9,12 @@ def retrieve_payload(store, payload):
     )
     if not criterion_id or not query.strip():
         raise ValueError("criterion.id, proposal_context and requirement_context are required")
-    return {"matches": store.retrieve(criterion_id, query, int(payload.get("top_k_per_type", 1)))}
+    return {"matches": store.retrieve(
+        criterion_id,
+        query,
+        int(payload.get("top_k_per_type", 1)),
+        int(payload.get("relevance_threshold", 2)),
+    )}
 
 
 def load_store(path):
