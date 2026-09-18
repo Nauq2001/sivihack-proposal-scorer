@@ -5,7 +5,7 @@ một màn tiến trình. Hai endpoint khớp đúng hai agent trong `AI/`:
 
 | Endpoint | Agent | Trả về |
 |---|---|---|
-| `POST /api/analyse` | RFP Analyst | `rfp_analysis` + `confirmed_criteria` |
+| `POST /api/analyze-rfp` | RFP Analyst | `rfp_analysis` + `confirmed_criteria` |
 | `POST /api/score` | Proposal Analyst | `scoring` |
 
 Người dùng **không sửa tiêu chí** — chỉ xem rồi bấm chấm. Mức ưu tiên lấy từ
@@ -20,22 +20,24 @@ Người dùng **không sửa tiêu chí** — chỉ xem rồi bấm chấm. M�
 
 ## 1. Request
 
-`POST /api/analyse` — chỉ cần RFP:
+`POST /api/analyze-rfp`:
 
 ```json
-{ "rfp": { "name": "rfp_nordframe.md", "text": "# Request for Proposal ..." } }
+{ "raw_rfp_text": "# Request for Proposal ..." }
 ```
 
-`POST /api/score` — gửi lại nguyên kết quả bước trước, đúng `ScoringInput`:
+`POST /api/score` — đúng `ScoringInput` trong `AI/contracts.py`:
 
 ```json
 {
-  "rfp":      { "name": "...", "text": "..." },
-  "proposal": { "name": "...", "text": "..." },
   "rfp_analysis": { },
+  "raw_rfp_text": "...",
+  "raw_proposal_text": "...",
   "confirmed_criteria": [ ]
 }
 ```
+
+Tên endpoint và hình dạng lấy từ `CLAUDE.md` mục "Interface contract" của nhánh AI.
 
 ---
 

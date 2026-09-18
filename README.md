@@ -3,6 +3,36 @@
 Bo khung san sang: React (frontend) + FastAPI (backend) + Google AI Studio (Gemini) da noi san.
 Muc tieu: sang mai nhan de xong chi viec sua logic/UI theo bai toan that, khong mat thoi gian setup lai tu dau.
 
+## 0. Chay ban demo hoan chinh (nhanh `main`)
+
+```bash
+# Terminal 1 - backend
+cd backend && python3 -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+uvicorn main:app --reload --port 8000
+
+# Terminal 2 - frontend
+cd frontend && npm install && npm run dev
+```
+
+`curl localhost:8000/api/health` cho biet module nao da san sang.
+
+| Endpoint | Tu nhanh | Trang thai |
+|---|---|---|
+| `/api/health` | — | OK |
+| `/v1/markitdown/...` | be-init | OK, chuyen PDF/PPTX sang Markdown |
+| `/rag/retrieve` | rag/development | OK, 168 ban ghi tham chieu |
+| `/api/evidence/*` | rag-enterprise | OK, kho doanh nghiep + kiem tra loi hua |
+| `/api/analyze-rfp` | feat/ai | **Chua noi HTTP** |
+| `/api/score` | feat/ai | **Chua noi HTTP** |
+
+Hai endpoint cuoi la viec con lai: module `AI/` da co san `analyze_rfp` va
+`score_proposal`, chi can boc thanh route theo `CLAUDE.md` muc "Interface
+contract". Frontend da goi dung ten va dung shape.
+
+Khi chua co chung, frontend dung ket qua luu san cho 4 proposal mau va hien
+nhan "Stored sample result".
+
 ## 1. Backend
 
 ```bash
@@ -56,18 +86,15 @@ Khong sua code, chi sua file `.env`.
 
 ## 6. Frontend Proposal Scorer
 
-`frontend/` chay mot chieu, khong cho quay lai chinh sua:
+Luong mot chieu ba man, giua moi man la mot man tien trinh:
 
 1. **Documents** - dan hoac upload RFP + proposal, hoac chon 1 trong 4 mau
-2. **Review** - man hinh tien trinh 5 buoc cua pipeline that
-3. **Result** - khuyen nghi + diem, dai phu yeu cau RFP (danh dau rang buoc cung),
-   cac tieu chi da cham kem trong so va nguon goc, findings sap theo muc nghiem
-   trong kem cau sua de dan vao, va khung nguon tra cuu trich dan
-
-Tieu chi do RFP Analyst doc tu RFP va chot luon, nguoi dung khong chinh.
-
-App goi `POST /api/review` mot lan duy nhat. Khi backend chua chay, no dung ket
-qua luu san cho 4 proposal mau va hien nhan "Stored sample result".
+2. *(tien trinh)* RFP Analyst doc RFP
+3. **Criteria** - tieu chi do AI chot, chia ba cot High/Medium/Low theo
+   `recommended_priority`. Chi xem, khong sua; mo the de doc ly do va trich dan
+4. *(tien trinh)* Proposal Analyst cham diem
+5. **Result** - khuyen nghi + diem, dai phu yeu cau (danh dau rang buoc cung),
+   diem tung tieu chi, findings kem cau sua, khung nguon tra cuu trich dan
 
 ## 7. De bai & du lieu mau
 

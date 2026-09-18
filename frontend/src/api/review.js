@@ -29,7 +29,13 @@ async function post(path, body, what) {
 }
 
 /** RFP Analyst: doc RFP ra yeu cau va tieu chi kem trong so. */
-export const analyseRfp = ({ rfp }) => post('/api/analyse', { rfp }, 'Reading the RFP')
+export const analyseRfp = ({ rfp }) => post('/api/analyze-rfp', { raw_rfp_text: rfp.text }, 'Reading the RFP')
 
 /** Scoring Agent: cham proposal theo danh sach tieu chi da chot. */
-export const scoreProposal = (payload) => post('/api/score', payload, 'Scoring the proposal')
+export const scoreProposal = ({ rfp, proposal, rfp_analysis, confirmed_criteria }) =>
+  post('/api/score', {
+    rfp_analysis,
+    raw_rfp_text: rfp.text,
+    raw_proposal_text: proposal.text,
+    confirmed_criteria,
+  }, 'Scoring the proposal')
