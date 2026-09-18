@@ -11,6 +11,11 @@ export default defineConfig({
         target: 'http://localhost:8000',
         changeOrigin: true,
       },
+      // Chuyen PDF/DOCX/PPTX/anh sang Markdown truoc khi doc
+      '/v1': {
+        target: 'http://localhost:8000',
+        changeOrigin: true,
+      },
     },
   },
 })

@@ -1,11 +1,21 @@
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 import { SAMPLES } from '../data/samples.js'
+import { CONVERTIBLE, PLAIN_TEXT } from '../api/review.js'
 import { words } from '../lib/markdown.js'
 
-function DocPane({ id, title, doc, onChange, onUpload, children }) {
+const ACCEPT = [...PLAIN_TEXT, ...CONVERTIBLE].join(',')
+
+function DocPane({ id, title, doc, busy, onChange, onUpload, children }) {
   const file = useRef(null)
+  const [over, setOver] = useState(false)
+
+  const take = (f) => { setOver(false); onUpload(f, null) }
+
   return (
-    <section className="pane">
+    <section className={'pane' + (over ? ' over' : '')}
+             onDragOver={(e) => { e.preventDefault(); setOver(true) }}
+             onDragLeave={() => setOver(false)}
+             onDrop={(e) => { e.preventDefault(); take(e.dataTransfer.files[0]) }}>
       <header className="pane-head">
         <div>
           <h2>{title}</h2>
@@ -13,19 +23,24 @@ function DocPane({ id, title, doc, onChange, onUpload, children }) {
         </div>
         <div className="pane-actions">
           {children}
-          <button type="button" className="btn btn-ghost" onClick={() => file.current.click()}>Upload</button>
-          <input type="file" ref={file} id={id + '-file'} accept=".md,.txt,.pdf" hidden
+          <button type="button" className="btn btn-ghost" disabled={busy} onClick={() => file.current.click()}>
+            {busy ? 'Reading…' : 'Upload'}
+          </button>
+          <input type="file" ref={file} id={id + '-file'} accept={ACCEPT} hidden
                  onChange={(e) => onUpload(e.target.files[0], e.target)} />
         </div>
       </header>
       <textarea id={id} spellCheck="false" aria-label={title} value={doc.text} onChange={(e) => onChange(e.target.value)} />
-      <footer className="pane-foot">{words(doc.text).toLocaleString('en')} words</footer>
+      <footer className="pane-foot">
+        {words(doc.text).toLocaleString('en')} words
+        <span className="pane-hint">{busy ? 'Converting to text…' : 'Drop a PDF, Word, PowerPoint, image or text file'}</span>
+      </footer>
     </section>
   )
 }
 
-export default function InputView({ rfp, proposal, sampleId, notice, onRfp, onProposal, onSample, onUpload, onRun }) {
-  const ready = rfp.text.trim().length > 40 && proposal.text.trim().length > 40
+export default function InputView({ rfp, proposal, sampleId, notice, converting, onRfp, onProposal, onSample, onUpload, onRun }) {
+  const ready = rfp.text.trim().length > 40 && proposal.text.trim().length > 40 && !converting
 
   return (
     <div className="input-view">
@@ -56,8 +71,10 @@ export default function InputView({ rfp, proposal, sampleId, notice, onRfp, onPr
       </div>
 
       <div className="panes">
-        <DocPane id="rfp-text" title="Client RFP" doc={rfp} onChange={onRfp} onUpload={(f, el) => onUpload('rfp', f, el)} />
-        <DocPane id="prop-text" title="Draft proposal" doc={proposal} onChange={onProposal} onUpload={(f, el) => onUpload('proposal', f, el)} />
+        <DocPane id="rfp-text" title="Client RFP" doc={rfp} busy={converting === 'rfp'}
+                 onChange={onRfp} onUpload={(f, el) => onUpload('rfp', f, el)} />
+        <DocPane id="prop-text" title="Draft proposal" doc={proposal} busy={converting === 'proposal'}
+                 onChange={onProposal} onUpload={(f, el) => onUpload('proposal', f, el)} />
       </div>
 
       {notice && <p className="notice">{notice}</p>}

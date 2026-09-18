@@ -33,8 +33,12 @@ def _format_packets(rfp_analysis: RFPAnalysis, confirmed_criteria: list[Criterio
         guidance = packet.evaluation_guidance if packet else []
         req_ids = packet.requirement_ids if packet else []
         notes = packet.notes if packet else []
+        # Priority word, not the raw weight: the weight is applied once in
+        # compute_overall_score(). Showing the number invites the model to
+        # discount a low-weight criterion's 1-5 score as well, which would
+        # apply the user's ranking twice.
         blocks.append(
-            f"### {c.name} (weight={c.weight})\n"
+            f"### {c.name} (user ranked this {c.recommended_priority} priority)\n"
             f"Description: {c.description}\n"
             f"Evaluation guidance: {guidance or '(none provided)'}\n"
             f"Relevant requirement IDs: {req_ids or '(none — score from description/proposal directly)'}\n"
@@ -141,6 +145,10 @@ def build_proposal_analyst_prompt(
 {raw_proposal_text}
 
 # Criteria to score (confirmed by the user — score EXACTLY this list, nothing more/less)
+The user may have re-ranked, removed or added criteria after seeing the RFP analysis.
+Their list is final. Score each criterion on its own merits, 1-5: the priority shown is
+weighted into the overall score afterwards in code, so never soften or harden a
+criterion's own score because of where the user ranked it.
 {_format_packets(rfp_analysis, confirmed_criteria)}
 
 # Benchmark examples for writing-quality calibration (never evidence about the current documents)

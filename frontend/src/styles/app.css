@@ -88,7 +88,10 @@ body.dock .wrap{max-width:none;margin:0;padding-right:calc(440px + 48px)}
 .pane-file{font-size:12.5px;color:var(--ink-3)}
 .pane-actions{display:flex;gap:6px}
 .pane textarea{flex:1;min-height:420px;resize:vertical;border:0;padding:16px;background:transparent;font-size:13.5px;line-height:1.6}
-.pane-foot{padding:10px 16px;border-top:1px solid var(--line);font-size:12.5px;color:var(--ink-3)}
+.pane-foot{display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 12px;padding:10px 16px;border-top:1px solid var(--line);font-size:12.5px;color:var(--ink-3)}
+.pane-hint{color:var(--ink-3)}
+.pane.over{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.pane.over .pane-hint{color:var(--accent)}
 
 /* ---------- Màn chạy ---------- */
 .run-view{display:grid;place-items:center;min-height:min(70vh,560px)}
@@ -130,6 +133,8 @@ body.dock .wrap{max-width:none;margin:0;padding-right:calc(440px + 48px)}
 .grip{flex:none;color:var(--ink-3);font-size:12px;letter-spacing:-2px}
 .tag{flex:none;margin-left:auto;padding:1px 7px;border-radius:5px;background:var(--accent-soft);color:var(--accent);font-size:11px;font-weight:600;white-space:nowrap}
 .tag[data-origin="user"]{background:var(--surface-2);color:var(--ink-2)}
+.tag.moved{background:var(--surface-2);color:var(--ink-2);font-weight:500}
+.board-notice{margin:20px 0 0}
 .crit-desc{margin:0;font-size:13px;color:var(--ink-2)}
 .crit-reqs{display:grid;gap:5px;margin:0}
 .reqs-head{display:flex;align-items:center;gap:6px;margin:0;font-size:11.5px;color:var(--ink-3)}

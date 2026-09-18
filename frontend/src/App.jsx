@@ -7,7 +7,7 @@ import SourcePane from './components/SourcePane.jsx'
 import { CitationContext } from './components/Citation.jsx'
 import { RFP, SAMPLES, matchSample, sampleById } from './data/samples.js'
 import { norm } from './lib/markdown.js'
-import { analyseRfp, scoreProposal } from './api/review.js'
+import { CONVERTIBLE, PLAIN_TEXT, analyseRfp, convertFile, extensionOf, scoreProposal } from './api/review.js'
 
 const firstSample = SAMPLES[0]
 
@@ -28,6 +28,7 @@ export default function App() {
   const [suggested, setSuggested] = useState([])
   const [run, setRun] = useState({ data: null, source: null })
   const [notice, setNotice] = useState(null)
+  const [converting, setConverting] = useState(null) // 'rfp' | 'proposal' khi dang doc file
   const [warnings, setWarnings] = useState([])
   const [citation, setCitation] = useState(null)
   const [tab, setTab] = useState('prop')
@@ -72,21 +73,36 @@ export default function App() {
     return s
   }
 
-  const upload = (which, file, input) => {
+  const readAsText = (file) => new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => resolve(String(reader.result))
+    reader.onerror = () => reject(new Error(`${file.name} could not be read.`))
+    reader.readAsText(file)
+  })
+
+  /** PDF/DOCX/PPTX/anh di qua /v1/markitdown/convert; .md/.txt doc thang.
+   *  Chuyen doi mat vai giay va co the hong, nen o nhap hien trang thai rieng. */
+  const upload = async (which, file, input) => {
+    if (input) input.value = ''
     if (!file) return
-    if (/\.pdf$/i.test(file.name)) {
-      setNotice(`PDF import is not wired up yet, so ${file.name} was not loaded. Paste the text instead.`)
-      input.value = ''
+    const ext = extensionOf(file.name)
+    const convertible = CONVERTIBLE.includes(ext)
+    if (!convertible && !PLAIN_TEXT.includes(ext)) {
+      setNotice(`${file.name} is not a format the reader can open. Use PDF, Word, PowerPoint, an image, or plain text.`)
       return
     }
-    const reader = new FileReader()
-    reader.onload = () => {
-      const doc = { name: file.name, text: String(reader.result) }
+    setNotice(null)
+    setConverting(which)
+    try {
+      const text = convertible ? await convertFile(file) : await readAsText(file)
+      if (!text.trim()) throw new Error(`Nothing could be read out of ${file.name}.`)
+      const doc = { name: file.name, text }
       if (which === 'rfp') setRfp(doc); else setProposal(doc)
-      setNotice(null)
+    } catch (err) {
+      setNotice(err.message)
+    } finally {
+      setConverting(null)
     }
-    reader.readAsText(file)
-    input.value = ''
   }
 
   /** Giu man tien trinh du lau de doc duoc, ke ca khi backend tra loi ngay. */
@@ -213,7 +229,7 @@ export default function App() {
       <main className="wrap">
         {stage === 'input' && (
           <InputView
-            rfp={rfp} proposal={proposal} sampleId={sampleId} notice={notice}
+            rfp={rfp} proposal={proposal} sampleId={sampleId} notice={notice} converting={converting}
             onRfp={(text) => setRfp(() => ({ name: norm(text) === norm(RFP.text) ? RFP.name : 'Pasted RFP', text }))}
             onProposal={(text) => setProposal(() => {
               const match = SAMPLES.find((x) => norm(x.text) === norm(text))
@@ -230,7 +246,7 @@ export default function App() {
 
         {stage === 'criteria' && (
           <CriteriaView
-            analysis={analysis} criteria={criteria}
+            analysis={analysis} criteria={criteria} suggested={suggested}
             onChange={setCriteria}
             onReset={() => setCriteria(suggested)}
             onRun={startScoring}

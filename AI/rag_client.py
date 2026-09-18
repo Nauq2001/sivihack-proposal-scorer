@@ -15,6 +15,7 @@ already pre-trimmed to exactly {text, sample_type, reasoning}.
 
 from __future__ import annotations
 
+import logging
 import re
 import unicodedata
 
@@ -23,6 +24,8 @@ from backend.rag.api import format_benchmark_references, load_store, retrieve_pa
 from AI.contracts import BASE_CRITERIA, CriterionWeight
 
 __all__ = ["retrieve_examples", "format_benchmark_references"]
+
+logger = logging.getLogger(__name__)
 
 # Backend's benchmark index keys criteria by snake_case canonical id, not our
 # display-name strings — map ours to theirs. Character-for-character with
@@ -50,12 +53,32 @@ _RAG_ENABLED_BASE_CRITERIA = {
 _EXCLUDED_BASE_CRITERIA = set(BASE_CRITERIA) - _RAG_ENABLED_BASE_CRITERIA
 
 _store = None
+_store_failed = False
 
 
 def _get_store():
-    global _store
-    if _store is None:
-        _store = load_store()
+    """The benchmark store, or None if it cannot be loaded.
+
+    v3: retrieval is hybrid — keyword overlap plus a local MiniLM vector index
+    (backend/rag/index.py), so `load_store()` now needs sentence-transformers
+    and the prebuilt embeddings.npz. Both are optional at runtime on purpose:
+    these examples only calibrate writing quality, and losing them must never
+    take the whole review down with them. Falls back to keyword-only, then to
+    no examples at all.
+    """
+    global _store, _store_failed
+    if _store is None and not _store_failed:
+        try:
+            _store = load_store()
+        except Exception as exc:  # thieu sentence-transformers / index cu
+            logger.warning("RAG hybrid store unavailable (%s); trying keyword only", exc)
+            try:
+                from backend.rag.engine import BenchmarkStore
+
+                _store = BenchmarkStore.from_file()
+            except Exception as fallback_exc:
+                logger.warning("RAG store unavailable (%s); scoring without examples", fallback_exc)
+                _store_failed = True
     return _store
 
 
@@ -70,7 +93,7 @@ def retrieve_examples(
     proposal_context: str = "",
     requirement_context: str = "",
     top_k: int = 1,
-    relevance_threshold: int = 2,
+    min_hybrid_score: float = 0.45,
 ) -> list[dict]:
     """Benchmark examples for this criterion, or [] if excluded/no match.
 
@@ -78,6 +101,10 @@ def retrieve_examples(
     backend/rag/README.md "JSON filtering contract".
     """
     if criterion.name in _EXCLUDED_BASE_CRITERIA:
+        return []
+
+    store = _get_store()
+    if store is None:
         return []
 
     criterion_id = _CANONICAL_ID_BY_NAME.get(criterion.name) or _slugify(criterion.name)
@@ -90,7 +117,11 @@ def retrieve_examples(
         "proposal_context": proposal_context,
         "requirement_context": requirement_context,
         "top_k": top_k,
-        "relevance_threshold": relevance_threshold,
+        "min_hybrid_score": min_hybrid_score,
     }
-    result = retrieve_payload(_get_store(), payload)
+    try:
+        result = retrieve_payload(store, payload)
+    except Exception as exc:  # loi truy xuat khong duoc lam hong ca ban danh gia
+        logger.warning("RAG retrieval failed for %s (%s); scoring without examples", criterion.name, exc)
+        return []
     return result["matches"]
