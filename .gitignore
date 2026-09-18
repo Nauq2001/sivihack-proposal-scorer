@@ -6,3 +6,5 @@ dist/
 .venv/
 .DS_Store
 .tmp_benchmark_read/
+backend/knowledge/data/
+tmp/
