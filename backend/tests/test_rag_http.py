@@ -18,6 +18,14 @@ class RagHttpTests(unittest.TestCase):
             payload['relevance_threshold'] = 0
             self.assertEqual(client.post('/rag/retrieve', json=payload).status_code, 400)
 
+    def test_disallowed_requirement_criterion_is_rejected(self):
+        with TestClient(app) as client:
+            response = client.post('/rag/retrieve', json={
+                'criterion': {'id': 'completeness_vs_rfp'},
+                'top_k': 1,
+            })
+            self.assertEqual(response.status_code, 400)
+
 
 if __name__ == '__main__':
     unittest.main()

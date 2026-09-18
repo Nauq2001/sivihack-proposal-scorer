@@ -10,6 +10,10 @@ BASE_CRITERIA = frozenset((
     'timeline_clarity', 'completeness_vs_rfp', 'tone_persuasiveness',
     'risk_assumptions_transparency',
 ))
+RAG_CRITERIA = frozenset((
+    'pricing_clarity', 'timeline_clarity', 'tone_persuasiveness',
+    'risk_assumptions_transparency',
+))
 ALIASES = dict(zip(('pu', 'scope', 'price', 'time', 'comp', 'tone', 'risk'), (
     'problem_understanding', 'scope_deliverables_clarity', 'pricing_clarity',
     'timeline_clarity', 'completeness_vs_rfp', 'tone_persuasiveness',
@@ -29,6 +33,16 @@ _STOP = {"the", "and", "for", "with", "from", "that", "this", "are", "will", "pr
 def _tokens(text):
     text = unicodedata.normalize("NFKC", text or "").lower()
     return {w for w in _WORD_RE.findall(text) if len(w) > 2 and w not in _STOP}
+
+
+def _reasoning(record):
+    reasoning = record.get('reasoning', '')
+    if reasoning and not reasoning.startswith('Reference case from the benchmark;'):
+        return reasoning
+    example = ' '.join(record.get('text', '').split())
+    excerpt = example[:180].rstrip() + ('...' if len(example) > 180 else '')
+    return (f"This {record.get('sample_type', 'benchmark')} example for "
+            f"{record.get('criterion_id', 'the criterion')} illustrates evidence in: {excerpt}")
 
 
 class BenchmarkStore:
@@ -75,6 +89,7 @@ class BenchmarkStore:
                     continue
                 seen.add(source)
                 result.append({**record, 'score_range': None if custom else record.get('score_range'),
+                               'reasoning': _reasoning(record),
                                'overlap': overlap, 'matched_terms': sorted(wanted & _tokens(record['text'])),
                                'annotation_provenance': 'synthetic_benchmark',
                                'usage': 'calibration_only'})
