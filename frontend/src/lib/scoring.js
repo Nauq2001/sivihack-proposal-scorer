@@ -9,12 +9,12 @@ export const RECOMMENDATION = {
   do_not_accept_as_written: { tone: 'bad', label: 'Do not send as written', note: 'A stated constraint is broken' },
 }
 
+/** Bon trang thai cua AI/contracts.py: met | missing | vague | contradicted */
 export const STATUS = {
   met: { glyph: '✓', label: 'Addressed', tone: 'good' },
-  partial: { glyph: '~', label: 'Vague or partial', tone: 'warn' },
+  vague: { glyph: '~', label: 'Vague', tone: 'warn' },
   missing: { glyph: '✕', label: 'Missing', tone: 'bad' },
   contradicted: { glyph: '≠', label: 'Contradicts the RFP', tone: 'conflict' },
-  unsubstantiated: { glyph: '!', label: 'Promised without backing', tone: 'conflict' },
 }
 
 export const KIND = {
@@ -26,11 +26,11 @@ export const KIND = {
   risk_disclosure: 'Risk disclosure',
 }
 
+/** Ba muc cua AI/contracts.py: high | medium | low */
 export const SEVERITY = {
-  critical: { rank: 0, label: 'Critical', tone: 'bad' },
-  major: { rank: 1, label: 'Major', tone: 'bad' },
-  minor: { rank: 2, label: 'Minor', tone: 'warn' },
-  info: { rank: 3, label: 'Note', tone: 'good' },
+  high: { rank: 0, label: 'High', tone: 'bad' },
+  medium: { rank: 1, label: 'Medium', tone: 'warn' },
+  low: { rank: 2, label: 'Low', tone: 'good' },
 }
 
 export const ORIGIN = {

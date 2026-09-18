@@ -1,8 +1,15 @@
-# Hợp đồng API — `POST /api/review`
+# Hợp đồng API — `/api/analyse` và `/api/score`
 
-Frontend chạy **một chiều**: nhập tài liệu → chạy → đọc kết quả. Không còn bước
-người dùng chỉnh tiêu chí, nên **một lần gọi duy nhất** trả về tất cả: phân tích
-RFP, danh sách tiêu chí đã chốt kèm trọng số, và kết quả chấm.
+Frontend chạy **một chiều ba màn**: tài liệu → tiêu chí → kết quả, giữa mỗi màn là
+một màn tiến trình. Hai endpoint khớp đúng hai agent trong `AI/`:
+
+| Endpoint | Agent | Trả về |
+|---|---|---|
+| `POST /api/analyse` | RFP Analyst | `rfp_analysis` + `confirmed_criteria` |
+| `POST /api/score` | Proposal Analyst | `scoring` |
+
+Người dùng **không sửa tiêu chí** — chỉ xem rồi bấm chấm. Mức ưu tiên lấy từ
+`recommended_priority` trong `AI/contracts.py`.
 
 - Frontend gọi: `frontend/src/api/review.js`
 - Dữ liệu mẫu (chính là response thật): `frontend/src/mocks/response_*.json`
@@ -13,15 +20,22 @@ RFP, danh sách tiêu chí đã chốt kèm trọng số, và kết quả chấm
 
 ## 1. Request
 
+`POST /api/analyse` — chỉ cần RFP:
+
 ```json
-{
-  "rfp":      { "name": "rfp_nordframe.md", "text": "# Request for Proposal ..." },
-  "proposal": { "name": "response_1_weak.md", "text": "# Proposal: ..." }
-}
+{ "rfp": { "name": "rfp_nordframe.md", "text": "# Request for Proposal ..." } }
 ```
 
-Chỉ hai tài liệu. Tiêu chí không gửi lên nữa: RFP Analyst tự đọc RFP ra tiêu chí
-và trọng số, rồi chuyển thẳng sang Scoring Agent.
+`POST /api/score` — gửi lại nguyên kết quả bước trước, đúng `ScoringInput`:
+
+```json
+{
+  "rfp":      { "name": "...", "text": "..." },
+  "proposal": { "name": "...", "text": "..." },
+  "rfp_analysis": { },
+  "confirmed_criteria": [ ]
+}
+```
 
 ---
 
@@ -43,42 +57,39 @@ dải phủ. Tối đa khoảng 14 ký tự.
 `is_hard_constraint: true` được đánh dấu ◆ trên giao diện: đây là ràng buộc mà vi
 phạm thì không thể khuyến nghị gửi đi.
 
-### 2.2 `confirmed_criteria[]`
+### 2.2 `confirmed_criteria[]` (`CriterionWeight`)
 
 ```json
-{ "name": "Completeness vs RFP Requirements", "key": "completeness_vs_rfp",
-  "description": "...", "weight": 3, "origin": "base",
-  "why": "...", "source_refs": [{ "section": "Requirements", "quote": "..." }] }
+{ "name": "Completeness vs RFP Requirements", "description": "...", "weight": 3,
+  "recommended_priority": "high", "priority_reason": "...",
+  "origin": "base", "source_refs": [{ "source_section": "Requirements", "quote": "..." }] }
 ```
 
 | Trường | Ghi chú |
 |---|---|
-| `key` | Khoá dùng trong `evaluation.scores`; 7 khoá gốc theo Appendix A |
-| `weight` | **Số**, do analyst đề xuất. Frontend chỉ hiển thị, không tính lại |
-| `origin` | `base` · `rfp_explicit` · `ai_inferred` · `user` |
-| `why` | Vì sao tiêu chí này có mặt và nặng như vậy |
+| `name` | **Khoá nối** sang `scoring.criteria[].name`, phải trùng từng ký tự |
+| `weight` | Số, do analyst đề xuất. Frontend chỉ hiển thị |
+| `recommended_priority` | `high` · `medium` · `low` → ba cột trên màn Criteria |
+| `priority_reason` | Câu giải thích hiện trong thẻ khi mở ra |
+| `origin` | `base` · `rfp_explicit` · `ai_inferred` · `user`, lấy từ `criterion_packets` |
 
-### 2.3 `evaluation`
+### 2.3 `scoring` (`ScoringResult`)
 
 | Trường | Ghi chú |
 |---|---|
-| `overall_score` | 1–5, backend tự tính theo trọng số |
-| `recommendation` | `ready` · `revise` · `do_not_accept_as_written` |
-| `summary` | 1–2 câu, không mở đầu bằng nhãn khuyến nghị vì UI đã hiện |
-| `scores` | map `key → điểm nguyên 1–5` |
-| `rationales` | map `key → câu nhận xét` |
-| `criterion_citations` | map `key → danh sách trích dẫn` |
-| `requirements[]` | `id`, `status`, `status_label`, `rfp_quote`, `response_quote`, `searched_terms`, `rationale` |
-| `findings[]` | `id`, `requirement_ids[]`, `kind`, `severity`, `rfp_quote`, `response_quote`, `searched_terms`, `rationale`, `suggested_fix` |
+| `overall_score` | 1–5, backend tính theo trọng số (`compute_overall_score`) |
+| `verdict` | Câu kết luận, hiện ở khối điểm |
+| `recommendation` | `ready` · `revise` · `do_not_accept_as_written` — trường frontend cần thêm ngoài `ScoringResult` |
+| `criteria[]` | `name`, `score` (1–5), `comment`, `citations[]` là **mảng chuỗi** |
+| `findings[]` | `requirement_id` (một mã), `status`, `severity`, `reason`, `citation`, `suggested_patch` |
 
-**`status`**: `met` · `partial` · `missing` · `contradicted` · `unsubstantiated`.
-Hai giá trị cuối đều hiển thị bằng nền kẻ sọc màu tím.
+**`status`**: `met` · `missing` · `vague` · `contradicted` (bốn giá trị trong
+`AI/contracts.py`).
 
-**`kind`**: `strength` · `missing` · `vague` · `contradiction` ·
-`unsupported_promise` · `risk_disclosure`.
+**`severity`**: `high` · `medium` · `low`. Frontend sắp xếp findings theo thứ tự này.
 
-**`severity`**: `critical` · `major` · `minor` · `info`. Frontend sắp xếp
-findings theo thứ tự này.
+Mỗi requirement nên có đúng một finding, kể cả khi `met` — frontend vẽ dải phủ
+từ danh sách này.
 
 **Quy tắc khuyến nghị** (theo `rubric.json` của benchmark): vi phạm một ràng buộc
 cứng thì không được `ready`, kể cả khi điểm trung bình cao.

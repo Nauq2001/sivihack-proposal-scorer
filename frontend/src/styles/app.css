@@ -113,6 +113,35 @@ body.dock .wrap{max-width:none;margin:0;padding-right:calc(440px + 48px)}
 .run-body strong{font-weight:600;font-size:14px}
 .run-body small{color:var(--ink-3)}
 
+
+/* ---------- Màn tiêu chí (chỉ xem, không sửa) ---------- */
+.priority-note{margin:0 0 24px;padding:16px 20px;border-radius:13px;background:var(--accent-soft);color:var(--ink);max-width:78ch;animation-delay:40ms}
+.priority-note strong{display:block;font-size:13px;color:var(--accent);margin-bottom:4px}
+.priority-note p{margin:0;font-size:14px;color:var(--ink-2)}
+.levels{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;align-items:start}
+.level{background:var(--surface-2);border-radius:14px;padding:16px}
+.level[data-level="low"]{background:none;border:1px dashed var(--line)}
+.level header{display:grid;grid-template-columns:auto auto;gap:2px 10px;margin-bottom:12px}
+.level h2{margin:0;font-size:15px;font-weight:600}
+.level-count{justify-self:end;min-width:22px;height:22px;padding:0 7px;border-radius:999px;background:var(--surface);color:var(--ink-2);font-size:12px;font-weight:600;display:grid;place-items:center;font-variant-numeric:tabular-nums}
+.level header p{grid-column:1/-1;margin:0;font-size:12.5px;color:var(--ink-3);line-height:1.4}
+.level-body{display:grid;gap:8px}
+.level-empty{margin:0;font-size:13px;color:var(--ink-3)}
+.crit-card{background:var(--surface);border:1px solid var(--line);border-radius:11px;overflow:hidden}
+.crit-toggle{display:flex;align-items:center;gap:8px;width:100%;padding:11px 12px;border:0;background:none;text-align:left;cursor:pointer}
+.crit-name{font-size:13.5px;font-weight:600;line-height:1.3;min-width:0}
+.crit-toggle .chev{margin-left:auto;flex:none;color:var(--ink-3);transition:transform .15s}
+.crit-card[data-open="true"] .chev{transform:rotate(180deg)}
+.tag{flex:none;padding:1px 6px;border-radius:5px;background:var(--accent-soft);color:var(--accent);font-size:11px;font-weight:600}
+.crit-card-body{padding:0 12px 12px;display:grid;gap:8px}
+.crit-desc{margin:0;font-size:13px;color:var(--ink-2)}
+.crit-why{margin:0;padding-left:10px;border-left:2px solid var(--line);font-size:12.5px;color:var(--ink-2)}
+.crit-refs{margin:0;padding:0;list-style:none;display:grid;gap:6px}
+.crit-refs li{font-family:var(--serif);font-size:14px;color:var(--ink-2)}
+.ref-sec{display:block;font-family:var(--sans);font-size:11.5px;color:var(--ink-3);margin-bottom:2px}
+.crit-foot{margin:0;padding-top:8px;border-top:1px solid var(--line);font-size:12px;color:var(--ink-3)}
+@media (max-width:900px){.levels{grid-template-columns:1fr}}
+
 /* ---------- Kết quả ---------- */
 .verdict{display:grid;grid-template-columns:auto minmax(0,1fr);gap:24px 32px;align-items:center;padding:28px;background:var(--surface);border:1px solid var(--line);border-radius:16px}
 .verdict-score{display:grid;justify-items:start;gap:10px;padding-right:32px;border-right:1px solid var(--line)}

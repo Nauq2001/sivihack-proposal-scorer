@@ -1,20 +1,24 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import InputView from './components/InputView.jsx'
+import CriteriaView from './components/CriteriaView.jsx'
 import RunView from './components/RunView.jsx'
 import ResultView from './components/ResultView.jsx'
 import SourcePane from './components/SourcePane.jsx'
 import { CitationContext } from './components/Citation.jsx'
 import { RFP, SAMPLES, matchSample, sampleById } from './data/samples.js'
-import { reviewProposal } from './api/review.js'
+import { analyseRfp, scoreProposal } from './api/review.js'
 
 const firstSample = SAMPLES[0]
 
-/** Luồng thẳng một chiều: nhập tài liệu -> chạy -> đọc kết quả.
- *  Không có bước chỉnh tiêu chí: RFP Analyst chốt tiêu chí và trọng số. */
+/** Luong mot chieu, ba man co noi dung: tai lieu -> tieu chi -> ket qua.
+ *  Giua moi buoc la mot man tien trinh, vi ca hai agent deu mat thoi gian.
+ *  Nguoi dung khong sua tieu chi: RFP Analyst chot mua ky. */
 export default function App() {
-  const [stage, setStage] = useState('result') // input | running | result | error
+  const [stage, setStage] = useState('result') // input | analysing | criteria | scoring | result | error
   const [rfp, setRfp] = useState({ ...RFP })
   const [proposal, setProposal] = useState({ name: firstSample.name, text: firstSample.text })
+  const [analysis, setAnalysis] = useState(firstSample.result.rfp_analysis)
+  const [criteria, setCriteria] = useState(firstSample.result.confirmed_criteria)
   const [run, setRun] = useState({ data: firstSample.result, source: 'sample' })
   const [notice, setNotice] = useState(null)
   const [citation, setCitation] = useState(null)
@@ -25,6 +29,7 @@ export default function App() {
   const sample = matchSample(rfp.text, proposal.text)
   const sampleId = sample ? sample.id : null
   const docked = wide && stage === 'result'
+  const RUN_FLOOR = 3400
 
   useEffect(() => {
     const mq = window.matchMedia('(min-width: 1180px)')
@@ -76,52 +81,82 @@ export default function App() {
     input.value = ''
   }
 
-  // Cac buoc chay phai kip hien ra, ke ca khi backend tra loi ngay lap tuc.
-  const RUN_FLOOR_MS = 3600
+  /** Giu man tien trinh du lau de doc duoc, ke ca khi backend tra loi ngay. */
+  const withFloor = async (work) => {
+    const started = Date.now()
+    const out = await work()
+    const floor = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : RUN_FLOOR
+    const left = floor - (Date.now() - started)
+    if (left > 0) await new Promise((r) => setTimeout(r, left))
+    return out
+  }
 
-  const runReview = async (docs) => {
+  const startAnalysis = async (docs) => {
     const useRfp = docs?.rfp || rfp
     const useProposal = docs?.proposal || proposal
-    const started = Date.now()
-    setStage('running')
+    setStage('analysing')
     setCitation(null)
     window.scrollTo({ top: 0 })
-
-    const settle = async (next) => {
-      const floor = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : RUN_FLOOR_MS
-      const left = floor - (Date.now() - started)
-      if (left > 0) await new Promise((r) => setTimeout(r, left))
-      next()
-    }
-
+    const stored = matchSample(useRfp.text, useProposal.text)
     try {
-      const data = await reviewProposal({ rfp: useRfp, proposal: useProposal })
-      await settle(() => { setRun({ data, source: 'api' }); setStage('result') })
+      const data = await withFloor(() => analyseRfp({ rfp: useRfp }))
+      setAnalysis(data.rfp_analysis)
+      setCriteria(data.confirmed_criteria)
+      setRun({ data: null, source: 'api' })
+      setStage('criteria')
     } catch (err) {
-      const stored = matchSample(useRfp.text, useProposal.text)
       if (stored) {
-        await settle(() => { setRun({ data: stored.result, source: 'sample', error: err.message }); setStage('result') })
+        await withFloor(async () => null)
+        setAnalysis(stored.result.rfp_analysis)
+        setCriteria(stored.result.confirmed_criteria)
+        setRun({ data: stored.result, source: 'sample', error: err.message })
+        setStage('criteria')
       } else {
-        await settle(() => { setRun({ data: null, source: null, error: err.message }); setStage('error') })
+        setRun({ data: null, source: null, error: err.message })
+        setStage('error')
       }
     }
   }
 
-  const steps = useMemo(() => {
+  const startScoring = async () => {
+    setStage('scoring')
+    window.scrollTo({ top: 0 })
+    const stored = matchSample(rfp.text, proposal.text)
+    try {
+      const scoring = await withFloor(() => scoreProposal({
+        rfp, proposal, rfp_analysis: analysis, confirmed_criteria: criteria,
+      }))
+      setRun({ data: { meta: { proposal_name: proposal.name }, rfp_analysis: analysis, confirmed_criteria: criteria, scoring }, source: 'api' })
+      setStage('result')
+    } catch (err) {
+      if (stored) {
+        await withFloor(async () => null)
+        setRun({ data: stored.result, source: 'sample', error: err.message })
+        setStage('result')
+      } else {
+        setRun({ data: null, source: null, error: err.message })
+        setStage('error')
+      }
+    }
+  }
+
+  const analysisSteps = useMemo(() => ([
+    { title: 'Reading the RFP', detail: 'Every requirement and constraint, in order', result: 'Requirements extracted' },
+    { title: 'Marking hard constraints', detail: 'Things that cannot be traded away', result: 'Constraints marked' },
+    { title: 'Setting the criteria', detail: 'Base rubric plus anything this RFP adds', result: 'Criteria weighted' },
+  ]), [])
+
+  const scoringSteps = useMemo(() => {
     const sections = (proposal.text.match(/^##\s/gm) || []).length
-    const data = run.data
     return [
-      { title: 'Reading the RFP', detail: 'Pulling out every requirement and constraint',
-        result: data ? `${data.rfp_analysis.requirements.length} requirements, ${data.rfp_analysis.requirements.filter((r) => r.is_hard_constraint).length} hard constraints` : 'Requirements extracted' },
-      { title: 'Setting the criteria', detail: 'Base rubric plus anything this RFP adds',
-        result: data ? `${data.confirmed_criteria.length} criteria weighted` : 'Criteria weighted' },
       { title: 'Reading the proposal', detail: `${sections} sections`, result: `${sections} sections mapped` },
-      { title: 'Scoring against each requirement', detail: 'Match, vague, missing or contradicted',
-        result: data ? `${data.evaluation.requirements.filter((r) => r.status !== 'met').length} gaps found` : 'Gaps found' },
-      { title: 'Checking every quote', detail: 'A finding without a real quote is dropped',
-        result: data ? `${data.evaluation.findings.length} findings kept` : 'Findings verified' },
+      { title: 'Checking each requirement', detail: 'Addressed, vague, missing or contradicted', result: 'Requirements checked' },
+      { title: 'Scoring each criterion', detail: `${criteria.length} criteria with their weights`, result: `${criteria.length} criteria scored` },
+      { title: 'Verifying every quote', detail: 'A finding without a real quote is dropped', result: 'Quotes verified' },
     ]
-  }, [proposal.text, run.data])
+  }, [proposal.text, criteria.length])
+
+  const flowIndex = { input: 0, analysing: 0, criteria: 1, scoring: 1, result: 2, error: 0 }[stage]
 
   return (
     <CitationContext.Provider value={openCitation}>
@@ -135,10 +170,9 @@ export default function App() {
           Proposal Scorer
         </button>
         <div className="flow" aria-label="Progress">
-          {['Documents', 'Review', 'Result'].map((label, i) => {
-            const index = stage === 'input' ? 0 : stage === 'running' ? 1 : 2
-            return <span key={label} className="flow-step" data-state={i < index ? 'done' : i === index ? 'now' : 'next'}>{label}</span>
-          })}
+          {['Documents', 'Criteria', 'Result'].map((label, i) => (
+            <span key={label} className="flow-step" data-state={i < flowIndex ? 'done' : i === flowIndex ? 'now' : 'next'}>{label}</span>
+          ))}
         </div>
         <div className="meta">{sampleId ? 'Fictional sample data' : 'Your documents'}</div>
       </header>
@@ -151,11 +185,16 @@ export default function App() {
             onProposal={(text) => setProposal((d) => ({ ...d, text }))}
             onSample={(id) => loadSample(id)}
             onUpload={upload}
-            onRun={() => runReview()}
+            onRun={() => startAnalysis()}
           />
         )}
 
-        {stage === 'running' && <RunView steps={steps} rfpName={rfp.name} proposalName={proposal.name} />}
+        {stage === 'analysing' && <RunView steps={analysisSteps} title="Reading the RFP" subtitle={rfp.name} />}
+        {stage === 'scoring' && <RunView steps={scoringSteps} title={proposal.name} subtitle={`against ${rfp.name}`} />}
+
+        {stage === 'criteria' && (
+          <CriteriaView analysis={analysis} criteria={criteria} onRun={startScoring} />
+        )}
 
         {stage === 'error' && (
           <div className="run-view">
@@ -163,10 +202,10 @@ export default function App() {
               <h1>No review yet</h1>
               <p className="lede">{run.error}</p>
               <div className="hero-actions">
-                <button type="button" className="btn btn-primary" onClick={() => runReview()}>Try again</button>
+                <button type="button" className="btn btn-primary" onClick={() => startAnalysis()}>Try again</button>
                 <button type="button" className="btn" onClick={() => {
                   const s = loadSample(firstSample.id)
-                  runReview({ rfp: { ...RFP }, proposal: { name: s.name, text: s.text } })
+                  startAnalysis({ rfp: { ...RFP }, proposal: { name: s.name, text: s.text } })
                 }}>Load a sample instead</button>
               </div>
             </div>
@@ -178,7 +217,7 @@ export default function App() {
             result={run.data} source={run.source} error={run.error} sampleId={sampleId}
             onSample={(id) => {
               const s = loadSample(id)
-              runReview({ rfp: { ...RFP }, proposal: { name: s.name, text: s.text } })
+              startAnalysis({ rfp: { ...RFP }, proposal: { name: s.name, text: s.text } })
             }}
             onRestart={() => { setStage('input'); window.scrollTo({ top: 0 }) }}
           />

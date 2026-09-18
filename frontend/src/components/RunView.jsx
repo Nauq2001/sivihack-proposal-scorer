@@ -3,7 +3,7 @@ import { reducedMotion } from '../lib/scoring.js'
 
 /** Các bước của pipeline thật: RFP Analyst -> Scoring Agent -> kiểm chứng trích dẫn.
  *  Nhịp do giao diện đặt, không phải tiến độ thật của backend. */
-export default function RunView({ steps, rfpName, proposalName }) {
+export default function RunView({ steps, title, subtitle }) {
   const [done, setDone] = useState(0)
 
   useEffect(() => {
@@ -17,9 +17,9 @@ export default function RunView({ steps, rfpName, proposalName }) {
   return (
     <div className="run-view">
       <div className="run-card">
-        <p className="eyebrow">Reviewing</p>
-        <h1>{proposalName}</h1>
-        <p className="lede">against {rfpName}</p>
+        <p className="eyebrow">Working</p>
+        <h1>{title}</h1>
+        <p className="lede">{subtitle}</p>
 
         <div className="run-track" role="progressbar" aria-valuenow={Math.round(pct)} aria-valuemin={0} aria-valuemax={100}>
           <span className="run-fill" style={{ width: `${pct}%` }} />

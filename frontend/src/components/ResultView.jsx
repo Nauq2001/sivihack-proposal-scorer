@@ -75,13 +75,13 @@ function FixBox({ text }) {
 
 export default function ResultView({ result, source, error, sampleId, onSample, onRestart }) {
   const [flash, setFlash] = useState(null)
-  const { rfp_analysis: analysis, confirmed_criteria: criteria, evaluation: ev } = result
+  const { rfp_analysis: analysis, confirmed_criteria: criteria, scoring } = result
 
-  const statuses = countBy(ev.requirements, 'status')
-  const byId = Object.fromEntries(ev.requirements.map((r) => [r.id, r]))
+  const statuses = countBy(scoring.findings, 'status')
   const reqMeta = Object.fromEntries(analysis.requirements.map((r) => [r.id, r]))
-  const findings = sortedFindings(ev.findings)
-  const rec = RECOMMENDATION[ev.recommendation] || RECOMMENDATION.revise
+  const critMeta = Object.fromEntries(criteria.map((c) => [c.name, c]))
+  const findings = sortedFindings(scoring.findings)
+  const rec = RECOMMENDATION[scoring.recommendation] || RECOMMENDATION.revise
 
   const jump = (id) => {
     const el = document.getElementById('req-' + id)
@@ -103,13 +103,13 @@ export default function ResultView({ result, source, error, sampleId, onSample, 
       <section className="verdict reveal">
         <div className="verdict-score">
           <span className="pill" data-tone={rec.tone}>{rec.label}</span>
-          <div className="score-big"><CountUp value={ev.overall_score} /><small>/5</small></div>
+          <div className="score-big"><CountUp value={scoring.overall_score} /><small>/5</small></div>
           <p className="score-note">{rec.note}</p>
         </div>
         <div className="verdict-body">
           <p className="client">{analysis.client_name} · {analysis.project_name}</p>
-          <p className="summary">{ev.summary}</p>
-          <Gauge score={ev.overall_score} />
+          <p className="summary">{scoring.verdict}</p>
+          <Gauge score={scoring.overall_score} />
         </div>
       </section>
 
@@ -123,17 +123,17 @@ export default function ResultView({ result, source, error, sampleId, onSample, 
           </p>
         </div>
         <div className="coverage">
-          {ev.requirements.map((r, i) => {
-            const meta = reqMeta[r.id] || {}
+          {findings.slice().sort((a, b) => a.requirement_id.localeCompare(b.requirement_id)).map((f, i) => {
+            const meta = reqMeta[f.requirement_id] || {}
             return (
               <button
-                type="button" key={r.id} className="seg" data-st={r.status}
-                style={{ '--i': i }} onClick={() => jump(r.id)}
-                aria-label={`${meta.short_label || r.id}: ${STATUS[r.status]?.label}`}
-                title={`${meta.short_label || r.id} — ${STATUS[r.status]?.label}`}
+                type="button" key={f.requirement_id} className="seg" data-st={f.status}
+                style={{ '--i': i }} onClick={() => jump(f.requirement_id)}
+                aria-label={`${meta.short_label || f.requirement_id}: ${STATUS[f.status]?.label}`}
+                title={`${meta.short_label || f.requirement_id} — ${STATUS[f.status]?.label}`}
               >
-                <span className="seg-glyph">{STATUS[r.status]?.glyph}</span>
-                <span className="seg-label">{meta.short_label || r.id}</span>
+                <span className="seg-glyph">{STATUS[f.status]?.glyph}</span>
+                <span className="seg-label">{meta.short_label || f.requirement_id}</span>
                 {meta.is_hard_constraint && <span className="seg-hard" title="Hard constraint">◆</span>}
               </button>
             )
@@ -144,16 +144,17 @@ export default function ResultView({ result, source, error, sampleId, onSample, 
       <section className="block reveal" style={{ '--delay': '120ms' }}>
         <div className="block-head">
           <h2>What was scored</h2>
-          <p>{criteria.length} criteria, weighted by what this RFP asks for</p>
+          <p>{scoring.criteria.length} criteria, weighted by what this RFP asks for</p>
         </div>
         <div className="crit-grid">
-          {criteria.map((c) => {
-            const score = ev.scores[c.key]
+          {scoring.criteria.map((sc) => {
+            const c = critMeta[sc.name] || { weight: 1, origin: 'base' }
+            const score = sc.score
             const tone = attentionTone(score, c.weight)
             return (
-              <article className="crit" key={c.name}>
+              <article className="crit" key={sc.name}>
                 <header>
-                  <h3>{c.name}</h3>
+                  <h3>{sc.name}</h3>
                   <span className="score-chip" data-tone={tone}>{score}/5</span>
                 </header>
                 <div className="crit-meta">
@@ -161,8 +162,14 @@ export default function ResultView({ result, source, error, sampleId, onSample, 
                   <span className="weight" title="Weight in the overall score">×{c.weight}</span>
                   <span className="origin" data-origin={c.origin}>{ORIGIN[c.origin]}</span>
                 </div>
-                <p>{ev.rationales[c.key]}</p>
-                <Citations items={ev.criterion_citations?.[c.key]} />
+                <p>{sc.comment}</p>
+                {sc.citations?.length > 0 && (
+                  <div className="cites">
+                    {sc.citations.map((q, i) => (
+                      <Citation key={i} citation={{ source: 'proposal', found: true, label: 'In the proposal', quote: q }} />
+                    ))}
+                  </div>
+                )}
               </article>
             )
           })}
@@ -172,40 +179,40 @@ export default function ResultView({ result, source, error, sampleId, onSample, 
       <section className="block reveal" style={{ '--delay': '180ms' }}>
         <div className="block-head">
           <h2>Findings and fixes</h2>
-          <p>{findings.length} items, most serious first</p>
+          <p>{findings.length} requirements checked, most serious first</p>
         </div>
         <div className="findings">
           {findings.map((f) => {
-            const req = f.requirement_ids?.[0]
-            const meta = req ? reqMeta[req] : null
-            const sev = SEVERITY[f.severity] || SEVERITY.minor
+            const meta = reqMeta[f.requirement_id] || {}
+            const sev = SEVERITY[f.severity] || SEVERITY.medium
+            const st = STATUS[f.status] || STATUS.vague
             return (
-              <article className="finding" key={f.id} id={req ? 'req-' + req : f.id}
-                       data-flash={flash && req === flash ? 'on' : undefined}>
+              <article className="finding" key={f.requirement_id} id={'req-' + f.requirement_id}
+                       data-flash={flash === f.requirement_id ? 'on' : undefined}>
                 <div className="finding-head">
                   <span className="sev" data-tone={sev.tone}>{sev.label}</span>
-                  <span className="kind">{KIND[f.kind] || f.kind}</span>
-                  {meta && <span className="req-tag">{meta.short_label}{meta.is_hard_constraint ? ' ◆' : ''}</span>}
+                  <span className="kind">{st.label}</span>
+                  {meta.short_label && <span className="req-tag">{meta.short_label}{meta.is_hard_constraint ? ' ◆' : ''}</span>}
                 </div>
-                <p className="rationale">{f.rationale}</p>
-                {f.rfp_quote && (
+                {meta.source_quote && (
                   <p className="quote" data-src="rfp">
-                    <Citation citation={{ source: 'rfp', found: true, label: meta ? `RFP, ${meta.source_section}` : 'RFP', quote: f.rfp_quote }} />
-                    <span>{f.rfp_quote}</span>
+                    <Citation citation={{ source: 'rfp', found: true, label: `RFP, ${meta.source_section}`, quote: meta.source_quote }} />
+                    <span>{meta.text}</span>
                   </p>
                 )}
-                {f.response_quote ? (
+                <p className="rationale">{f.reason}</p>
+                {f.citation ? (
                   <p className="quote" data-src="prop">
-                    <Citation citation={{ source: 'proposal', found: true, label: 'In the proposal', quote: f.response_quote }} />
-                    <span>{f.response_quote}</span>
+                    <Citation citation={{ source: 'proposal', found: true, label: 'In the proposal', quote: f.citation }} />
+                    <span>{f.citation}</span>
                   </p>
-                ) : (
+                ) : f.status !== 'met' && (
                   <p className="quote" data-src="none">
-                    <Citation citation={{ source: 'proposal', found: false, label: 'Not in the proposal', searched_terms: f.searched_terms || ['—'] }} />
+                    <Citation citation={{ source: 'proposal', found: false, label: 'Not in the proposal', searched_terms: [meta.short_label || f.requirement_id] }} />
                     <span>Nothing in the proposal matches this.</span>
                   </p>
                 )}
-                <FixBox text={f.suggested_fix} />
+                <FixBox text={f.suggested_patch} />
               </article>
             )
           })}
