@@ -3,6 +3,38 @@
 Bo khung san sang: React (frontend) + FastAPI (backend) + Google AI Studio (Gemini) da noi san.
 Muc tieu: sang mai nhan de xong chi viec sua logic/UI theo bai toan that, khong mat thoi gian setup lai tu dau.
 
+## 0. Chay ban demo hoan chinh (nhanh `main`)
+
+```bash
+# Terminal 1 - backend
+cd backend && python3 -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+uvicorn main:app --reload --port 8000
+
+# Terminal 2 - frontend
+cd frontend && npm install && npm run dev
+```
+
+`curl localhost:8000/api/health` cho biet module nao da san sang.
+
+| Endpoint | Tu nhanh | Trang thai |
+|---|---|---|
+| `/api/health` | — | OK |
+| `/v1/markitdown/...` | be-init | OK, chuyen PDF/PPTX sang Markdown |
+| `/rag/retrieve` | rag/development | OK, 168 ban ghi tham chieu |
+| `/api/evidence/*` | rag-enterprise | OK, kho doanh nghiep + kiem tra loi hua |
+| `/api/analyze-rfp` | feat/ai | OK, RFP Analyst (~11-13s) |
+| `/api/score` | feat/ai | OK, Proposal Analyst (~13-16s) |
+
+Hai route nam o `backend/review_routes.py`, chi la lop noi: nap `AI/` va
+`agent/src`, goi ham co san, doi loi thanh HTTP. Logic cham diem van o nhanh AI.
+
+Can `GEMINI_API_KEY` trong `backend/.env`. **`gemini-2.0-flash` da bi Google go
+khoi API**; ca app dung `gemini-3.8-flash` (xem `.env.example`).
+
+Khi backend chua chay, frontend dung ket qua luu san cho 4 proposal mau va hien
+nhan "Stored sample result".
+
 ## 1. Backend
 
 ```bash
@@ -44,7 +76,7 @@ Khong sua code, chi sua file `.env`.
 ## 4. Luu y bao mat
 
 - File `.env` da nam trong `.gitignore` — KHONG commit len Git, KHONG paste key vao Slack/Discord/Zalo cong khai.
-- Key Gemini co limit $100 cho ca doi — dung `gemini-2.0-flash` (nhe, re) khi dev/test, chi doi model manh hon (`gemini-1.5-pro` neu can) luc lam tinh nang quan trong nhat.
+- Key Gemini co limit $100 cho ca doi. `gemini-2.0-flash` da bi go khoi API; hien dung `gemini-3.8-flash` cho ca hai agent.
 - Voucher n8n Cloud Pro (neu can workflow automation): kich hoat theo huong dan BTC gui, ma la `2026-COMMUNITY-HACKATHON-FRANKFURT-9AA2EB02`.
 
 ## 5. Khi nhan de bai ngay mai
@@ -56,29 +88,17 @@ Khong sua code, chi sua file `.env`.
 
 ## 6. Frontend Proposal Scorer
 
-`frontend/` khong con la demo goi AI nua, no la app that voi 3 buoc:
+Luong mot chieu ba man, giua moi man la mot man tien trinh:
 
-1. **Documents** - dan hoac upload RFP + proposal (.md/.txt)
-2. **Criteria** - bang 4 cot kieu MoSCoW: Deal-breaker, Important, Minor, Don't score.
-   Cot cang dam mau thi cang anh huong nhieu toi diem. 7 tieu chi goc theo Appendix A,
-   cong them tieu chi AI doc duoc tu RFP. The chi hien ten, bam vao moi mo mo ta +
-   ly do + trich dan. Keo tha hoac bam mui ten de doi cot, them/xoa tieu chi
-3. **Review** - diem tong, dai trang thai 9 yeu cau RFP, de xuat sua cho tung loi,
-   va khung nguon ben phai: bam vao trich dan la doan goc duoc to vang
-
-App goi `POST /api/review`. Khi backend chua chay, no tu dung ket qua luu san cho
-4 proposal mau va hien nhan "Stored sample result", nen demo khong bao gio chet.
-
-Quy tac mau dung chung ca app: **do = xu ly truoc tien**, vang = de y, xanh = on,
-xam = khong tinh diem. O trang Criteria, do la tieu chi nang nhat. O trang Review,
-do la yeu cau bi thieu/mau thuan, hoac tieu chi dang keo diem xuong nhieu nhat
-(diem thap tren mot tieu chi nang). Moi phan tu chi mang mot nghia mau duy nhat.
-
-App goi 2 endpoint: `POST /api/criteria` (doc RFP ra tieu chi) va `POST /api/review`.
-
-Hop dong API cho backend/AI: `docs/api/review-contract.md`
-Du lieu mau (response that): `frontend/src/mocks/*.json`
-Request mau: `docs/api/samples/request.example.json`
+1. **Documents** - dan hoac upload RFP + proposal, hoac chon 1 trong 4 mau
+2. *(tien trinh)* RFP Analyst doc RFP
+3. **Criteria** - bang 3 cot High/Medium/Low, vi tri ban dau do AI de xuat sau
+   khi doc RFP. Moi the hien san mo ta, ly do duoc xep muc do, va danh sach ma
+   yeu cau no kiem tra. Keo tha hoac bam mui ten de doi cot, them hoac xoa tieu
+   chi, bam "Reset to the RFP suggestion" de quay ve ban goc
+4. *(tien trinh)* Proposal Analyst cham diem
+5. **Result** - khuyen nghi + diem, dai phu yeu cau (danh dau rang buoc cung),
+   diem tung tieu chi, findings kem cau sua, khung nguon tra cuu trich dan
 
 ## 7. De bai & du lieu mau
 

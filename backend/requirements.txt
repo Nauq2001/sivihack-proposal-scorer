@@ -7,4 +7,6 @@ google-generativeai==0.8.3
 requests==2.32.3
 numpy>=1.26,<3
 sentence-transformers>=3,<6
+markitdown==0.0.24
 python-multipart==0.0.12
+langchain-google-genai==4.4.0

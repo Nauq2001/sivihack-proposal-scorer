@@ -11,9 +11,21 @@ export function esc(s) {
   return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]))
 }
 
-/** Whitespace, dash and quote differences must not break a citation match. */
+/** Khac biet ve khoang trang, gach ngang, dau nhay va dau nhan Markdown khong
+ *  duoc lam hong phep so khop trich dan.
+ *
+ *  Dau nhan Markdown quan trong o day: agent trich nguyen van tu file .md nen
+ *  cau trich thuong keo theo `**`, trong khi khung nguon da render bo chung di.
+ *  Khong bo o ca hai phia thi trich dan dung van khong to sang duoc. */
 export function norm(s) {
-  return String(s).toLowerCase().replace(/[–—]/g, '-').replace(/[’‘]/g, "'").replace(/\s+/g, ' ').trim()
+  return String(s)
+    .toLowerCase()
+    .replace(/[*_`#>]/g, '')
+    .replace(/[–—]/g, '-')
+    .replace(/[’‘]/g, "'")
+    .replace(/[“”]/g, '"')
+    .replace(/\s+/g, ' ')
+    .trim()
 }
 
 export function words(s) {

@@ -2,7 +2,7 @@
   "schema_version": "1.0",
   "meta": {
     "rfp_name": "rfp_nordframe.md",
-    "model": "gemini-2.0-flash",
+    "model": "gemini-3.8-flash",
     "generated_at": "2026-09-17T08:58:00Z",
     "duration_ms": 4200
   },
@@ -12,7 +12,7 @@
       "name": "Completeness vs. RFP",
       "description": "Every explicit RFP requirement is addressed.",
       "source": "base",
-      "suggested_priority": "dealbreaker",
+      "suggested_priority": "high",
       "why": "The RFP lists seven numbered requirements and puts each one in bold. A buyer who writes a checklist reads the answer as a checklist.",
       "citations": [
         {
@@ -28,7 +28,7 @@
       "name": "Risks & assumptions",
       "description": "Dependencies and risks are flagged, not hidden.",
       "source": "base",
-      "suggested_priority": "dealbreaker",
+      "suggested_priority": "high",
       "why": "Requirement 7 explains why it is asked for, which is rare. The client is telling you that hidden risk is the thing they fear.",
       "citations": [
         {
@@ -44,7 +44,7 @@
       "name": "Pricing clarity",
       "description": "Price stated, broken down, easy to follow.",
       "source": "base",
-      "suggested_priority": "important",
+      "suggested_priority": "medium",
       "why": "The budget is published as a range and states that it includes the first year of support, so a vague price is easy to spot.",
       "citations": [
         {
@@ -60,7 +60,7 @@
       "name": "Timeline clarity",
       "description": "Concrete milestones and dates.",
       "source": "base",
-      "suggested_priority": "important",
+      "suggested_priority": "medium",
       "why": "Two hard dates are given: a pilot at one site within 3 months and all 6 sites within 6 months.",
       "citations": [
         {
@@ -76,7 +76,7 @@
       "name": "Data accuracy & validation",
       "description": "Says how inventory figures are checked against reality before anyone relies on them.",
       "source": "ai",
-      "suggested_priority": "important",
+      "suggested_priority": "medium",
       "why": "The RFP does not list this as a requirement, but it gives the reason behind Requirement 7: stock decisions will be made from this dashboard. A proposal that never says how the numbers are verified leaves that risk with the client.",
       "citations": [
         {
@@ -92,7 +92,7 @@
       "name": "Problem understanding",
       "description": "Reflects the client’s actual stated problem and goals, not a generic pitch.",
       "source": "base",
-      "suggested_priority": "minor",
+      "suggested_priority": "low",
       "why": "Worth checking, but Completeness already tests it against each requirement. Scoring both at a high weight counts the same gap twice.",
       "citations": [
         {
@@ -108,7 +108,7 @@
       "name": "Scope & deliverables",
       "description": "Deliverables are specific; clear what is and isn’t included.",
       "source": "base",
-      "suggested_priority": "minor",
+      "suggested_priority": "low",
       "why": "Same overlap as Problem understanding: the scope constraints sit inside the numbered requirements.",
       "citations": [
         {
@@ -124,7 +124,7 @@
       "name": "Tone & persuasiveness",
       "description": "Reads as confident, client-focused and professional, not boilerplate.",
       "source": "base",
-      "suggested_priority": "minor",
+      "suggested_priority": "low",
       "why": "The RFP says nothing about presentation, and this buyer is working through a checklist. Worth fixing, but it rarely decides a deal on its own.",
       "citations": []
     },
@@ -133,7 +133,7 @@
       "name": "Legacy system & spreadsheets",
       "description": "Says what happens to the old legacy system and the spreadsheets after go-live.",
       "source": "ai",
-      "suggested_priority": "minor",
+      "suggested_priority": "low",
       "why": "The legacy system appears only in the Background, never in the numbered requirements, so the checklist will not catch a proposal that ignores it. Someone still has to switch it off.",
       "citations": [
         {

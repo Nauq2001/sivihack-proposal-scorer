@@ -25,7 +25,7 @@ load_dotenv(Path(__file__).resolve().parent.parent / "backend" / ".env")
 AI_PROVIDER = os.getenv("AI_PROVIDER", "gemini")
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
-GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.0-flash")
+GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.8-flash")
 
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
 ANTHROPIC_MODEL = os.getenv("AI_MODEL", "claude-sonnet-4-6")
