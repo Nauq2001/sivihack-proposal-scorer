@@ -1,0 +1,244 @@
+{
+  "$defs": {
+    "CriterionPacket": {
+      "additionalProperties": false,
+      "properties": {
+        "criterion_name": {
+          "minLength": 1,
+          "title": "Criterion Name",
+          "type": "string"
+        },
+        "origin": {
+          "enum": [
+            "base",
+            "rfp_explicit",
+            "ai_inferred",
+            "user"
+          ],
+          "title": "Origin",
+          "type": "string"
+        },
+        "evaluation_guidance": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Evaluation Guidance",
+          "type": "array"
+        },
+        "requirement_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Requirement Ids",
+          "type": "array"
+        },
+        "source_refs": {
+          "items": {
+            "$ref": "#/$defs/SourceRef"
+          },
+          "title": "Source Refs",
+          "type": "array"
+        },
+        "notes": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Notes",
+          "type": "array"
+        }
+      },
+      "required": [
+        "criterion_name",
+        "origin"
+      ],
+      "title": "CriterionPacket",
+      "type": "object"
+    },
+    "CriterionWeight": {
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "description": {
+          "minLength": 1,
+          "title": "Description",
+          "type": "string"
+        },
+        "weight": {
+          "default": 1.0,
+          "title": "Weight",
+          "type": "number"
+        }
+      },
+      "required": [
+        "name",
+        "description"
+      ],
+      "title": "CriterionWeight",
+      "type": "object"
+    },
+    "RFPAnalysis": {
+      "additionalProperties": false,
+      "properties": {
+        "client_name": {
+          "title": "Client Name",
+          "type": "string"
+        },
+        "project_name": {
+          "title": "Project Name",
+          "type": "string"
+        },
+        "detected_priority_note": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Detected Priority Note"
+        },
+        "requirements": {
+          "items": {
+            "$ref": "#/$defs/Requirement"
+          },
+          "title": "Requirements",
+          "type": "array"
+        },
+        "suggested_criteria_weights": {
+          "items": {
+            "$ref": "#/$defs/CriterionWeight"
+          },
+          "title": "Suggested Criteria Weights",
+          "type": "array"
+        },
+        "criterion_packets": {
+          "items": {
+            "$ref": "#/$defs/CriterionPacket"
+          },
+          "title": "Criterion Packets",
+          "type": "array"
+        }
+      },
+      "required": [
+        "client_name",
+        "project_name",
+        "detected_priority_note",
+        "requirements",
+        "suggested_criteria_weights",
+        "criterion_packets"
+      ],
+      "title": "RFPAnalysis",
+      "type": "object"
+    },
+    "Requirement": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "pattern": "^REQ-[0-9]{3,}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "text": {
+          "minLength": 1,
+          "title": "Text",
+          "type": "string"
+        },
+        "related_criterion": {
+          "enum": [
+            "Problem Understanding",
+            "Scope & Deliverables Clarity",
+            "Pricing Clarity",
+            "Timeline Clarity",
+            "Completeness vs RFP Requirements",
+            "Tone & Persuasiveness",
+            "Risk/Assumptions Transparency"
+          ],
+          "title": "Related Criterion",
+          "type": "string"
+        },
+        "is_hard_constraint": {
+          "title": "Is Hard Constraint",
+          "type": "boolean"
+        },
+        "source_section": {
+          "minLength": 1,
+          "title": "Source Section",
+          "type": "string"
+        },
+        "source_quote": {
+          "minLength": 1,
+          "title": "Source Quote",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "text",
+        "related_criterion",
+        "is_hard_constraint",
+        "source_section",
+        "source_quote"
+      ],
+      "title": "Requirement",
+      "type": "object"
+    },
+    "SourceRef": {
+      "additionalProperties": false,
+      "properties": {
+        "source_section": {
+          "minLength": 1,
+          "title": "Source Section",
+          "type": "string"
+        },
+        "quote": {
+          "minLength": 1,
+          "title": "Quote",
+          "type": "string"
+        }
+      },
+      "required": [
+        "source_section",
+        "quote"
+      ],
+      "title": "SourceRef",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "rfp_analysis": {
+      "$ref": "#/$defs/RFPAnalysis"
+    },
+    "raw_rfp_text": {
+      "minLength": 1,
+      "title": "Raw Rfp Text",
+      "type": "string"
+    },
+    "raw_proposal_text": {
+      "minLength": 1,
+      "title": "Raw Proposal Text",
+      "type": "string"
+    },
+    "confirmed_criteria": {
+      "items": {
+        "$ref": "#/$defs/CriterionWeight"
+      },
+      "minItems": 1,
+      "title": "Confirmed Criteria",
+      "type": "array"
+    }
+  },
+  "required": [
+    "rfp_analysis",
+    "raw_rfp_text",
+    "raw_proposal_text",
+    "confirmed_criteria"
+  ],
+  "title": "ScoringInput",
+  "type": "object"
+}
