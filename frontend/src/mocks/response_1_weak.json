@@ -76,7 +76,7 @@
       "score": 2,
       "comment": "Requirements 3, 5, 6 and 7 are not mentioned; 1, 2 and 4 are only touched on in a phrase each.",
       "citations": [],
-      "priority": "dealbreaker"
+      "priority": "high"
     },
     {
       "id": "risk",
@@ -102,7 +102,7 @@
           ]
         }
       ],
-      "priority": "dealbreaker"
+      "priority": "high"
     },
     {
       "id": "price",
@@ -124,7 +124,7 @@
           "quote": "€80,000–€120,000 total, including first year of support"
         }
       ],
-      "priority": "important"
+      "priority": "medium"
     },
     {
       "id": "time",
@@ -146,7 +146,7 @@
           "quote": "Working pilot at one warehouse within 3 months"
         }
       ],
-      "priority": "important"
+      "priority": "medium"
     },
     {
       "id": "accuracy",
@@ -166,7 +166,7 @@
           ]
         }
       ],
-      "priority": "important"
+      "priority": "medium"
     },
     {
       "id": "pu",
@@ -188,7 +188,7 @@
           "quote": "6 regional warehouses across Germany and Austria"
         }
       ],
-      "priority": "minor"
+      "priority": "low"
     },
     {
       "id": "scope",
@@ -204,13 +204,13 @@
           "quote": "Real-time inventory dashboard"
         }
       ],
-      "priority": "minor"
+      "priority": "low"
     },
     {
       "id": "tone",
       "name": "Tone & persuasiveness",
       "description": "Reads as confident, client-focused and professional, not boilerplate.",
-      "priority": "minor",
+      "priority": "low",
       "score": 2,
       "comment": "Generic claims (“modern, scalable cloud architecture”, “talented team”) with no NordFrame-specific evidence or references.",
       "citations": [
@@ -245,7 +245,7 @@
           ]
         }
       ],
-      "priority": "minor"
+      "priority": "low"
     }
   ],
   "requirements": [

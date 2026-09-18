@@ -59,8 +59,8 @@ Khong sua code, chi sua file `.env`.
 `frontend/` khong con la demo goi AI nua, no la app that voi 3 buoc:
 
 1. **Documents** - dan hoac upload RFP + proposal (.md/.txt)
-2. **Criteria** - bang 4 cot kieu MoSCoW: Deal-breaker, Important, Minor, Don't score.
-   Cot cang dam mau thi cang anh huong nhieu toi diem. 7 tieu chi goc theo Appendix A,
+2. **Criteria** - bang 4 cot: High, Medium, Low, Don't score. Moi cot co mot cau
+   chu thich giai thich muc do anh huong toi diem. 7 tieu chi goc theo Appendix A,
    cong them tieu chi AI doc duoc tu RFP. The chi hien ten, bam vao moi mo mo ta +
    ly do + trich dan. Keo tha hoac bam mui ten de doi cot, them/xoa tieu chi
 3. **Review** - diem tong, dai trang thai 9 yeu cau RFP, de xuat sua cho tung loi,
@@ -69,10 +69,10 @@ Khong sua code, chi sua file `.env`.
 App goi `POST /api/review`. Khi backend chua chay, no tu dung ket qua luu san cho
 4 proposal mau va hien nhan "Stored sample result", nen demo khong bao gio chet.
 
-Quy tac mau dung chung ca app: **do = xu ly truoc tien**, vang = de y, xanh = on,
-xam = khong tinh diem. O trang Criteria, do la tieu chi nang nhat. O trang Review,
-do la yeu cau bi thieu/mau thuan, hoac tieu chi dang keo diem xuong nhieu nhat
-(diem thap tren mot tieu chi nang). Moi phan tu chi mang mot nghia mau duy nhat.
+Quy tac mau: trang **Criteria khong dung mau** (muc do noi bang chu High/Medium/Low
+kem chu thich). Mau chi dung o trang **Review**, voi mot nghia duy nhat la
+**do = xu ly truoc tien**: yeu cau bi thieu/mau thuan, hoac tieu chi dang keo diem
+xuong nhieu nhat.
 
 App goi 2 endpoint: `POST /api/criteria` (doc RFP ra tieu chi) va `POST /api/review`.
 

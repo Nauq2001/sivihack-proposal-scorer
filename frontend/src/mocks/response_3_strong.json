@@ -76,7 +76,7 @@
       "score": 5,
       "comment": "All 7 requirements, budget and timeline addressed.",
       "citations": [],
-      "priority": "dealbreaker"
+      "priority": "high"
     },
     {
       "id": "risk",
@@ -92,7 +92,7 @@
           "quote": "delays here would shift"
         }
       ],
-      "priority": "dealbreaker"
+      "priority": "high"
     },
     {
       "id": "price",
@@ -108,7 +108,7 @@
           "quote": "Year 1 support & maintenance"
         }
       ],
-      "priority": "important"
+      "priority": "medium"
     },
     {
       "id": "time",
@@ -130,7 +130,7 @@
           "quote": "Remaining 5 warehouses added in 2 batches"
         }
       ],
-      "priority": "important"
+      "priority": "medium"
     },
     {
       "id": "accuracy",
@@ -146,7 +146,7 @@
           "quote": "running in parallel with existing spreadsheet process"
         }
       ],
-      "priority": "important"
+      "priority": "medium"
     },
     {
       "id": "pu",
@@ -168,7 +168,7 @@
           "quote": "without disrupting existing data infrastructure"
         }
       ],
-      "priority": "minor"
+      "priority": "low"
     },
     {
       "id": "scope",
@@ -184,13 +184,13 @@
           "quote": "enforced at the database query level"
         }
       ],
-      "priority": "minor"
+      "priority": "low"
     },
     {
       "id": "tone",
       "name": "Tone & persuasiveness",
       "description": "Reads as confident, client-focused and professional, not boilerplate.",
-      "priority": "minor",
+      "priority": "low",
       "score": 4,
       "comment": "Confident and specific throughout. The references are credible but unnamed.",
       "citations": [
@@ -216,7 +216,7 @@
           "quote": "running in parallel with existing spreadsheet process"
         }
       ],
-      "priority": "minor"
+      "priority": "low"
     }
   ],
   "requirements": [

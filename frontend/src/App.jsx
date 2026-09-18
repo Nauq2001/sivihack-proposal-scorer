@@ -16,7 +16,7 @@ const STEPS = [
 ]
 
 const firstSample = SAMPLES[0]
-const withPriority = (list) => list.map((c) => ({ ...c, priority: c.suggested_priority || 'important' }))
+const withPriority = (list) => list.map((c) => ({ ...c, priority: c.suggested_priority || 'medium' }))
 
 export default function App() {
   const [step, setStep] = useState('review')
@@ -182,7 +182,7 @@ export default function App() {
               onPriority={(id, priority) => setCriteria((list) => list.map((c) => (c.id === id ? { ...c, priority } : c)))}
               onMove={(id, dir) => setCriteria((list) => list.map((c) => {
                 if (c.id !== id) return c
-                const order = ['dealbreaker', 'important', 'minor', 'skip']
+                const order = ['high', 'medium', 'low', 'skip']
                 const next = order[Math.min(order.length - 1, Math.max(0, order.indexOf(c.priority) + dir))]
                 return { ...c, priority: next }
               }))}

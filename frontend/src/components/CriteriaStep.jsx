@@ -13,7 +13,6 @@ function Card({ criterion, onMove, onRemove, onDragStart }) {
   return (
     <article className="card" draggable onDragStart={(e) => onDragStart(e, id)} data-source={source} data-open={open}>
       <button type="button" className="card-toggle" aria-expanded={open} onClick={() => setOpen((v) => !v)}>
-        <span className="card-dot" data-prio={priority} aria-hidden="true" />
         <span className="card-name">{name}</span>
         {source === 'ai' && <span className="tag" title="Read from this RFP">RFP</span>}
         {source === 'custom' && <span className="tag" data-kind="custom" title="Added by you">You</span>}
@@ -90,9 +89,8 @@ export default function CriteriaStep({ criteria, onPriority, onMove, onRemove, o
         <div>
           <h1>Decide what matters for this client</h1>
           <p className="lede">
-            Every criterion is reviewed. Which column it sits in decides how much it pulls the overall score: red
-            counts most, then amber, then green, and grey is left out. Open a card to see what it checks and why it
-            landed there.
+            Every criterion is reviewed. The column decides how much it pulls the overall score. Open a card to see
+            what it checks and why the reviewer put it there.
           </p>
         </div>
         <div className="actions">
@@ -126,11 +124,10 @@ export default function CriteriaStep({ criteria, onPriority, onMove, onRemove, o
             >
               <header className="col-head">
                 <div className="col-title">
-                  <span className="col-dot" />
                   <h2>{col.label}</h2>
                   <span className="col-count">{cards.length}</span>
                 </div>
-                <p>{col.hint}</p>
+                <p className="col-note">{col.hint}</p>
               </header>
 
               <div className="col-body">

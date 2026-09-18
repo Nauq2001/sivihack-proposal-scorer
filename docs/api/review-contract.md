@@ -38,7 +38,7 @@ Response:
       "name": "Completeness vs. RFP",
       "description": "Every explicit RFP requirement is addressed.",
       "source": "base",
-      "suggested_priority": "dealbreaker",
+      "suggested_priority": "high",
       "why": "The RFP lists seven numbered requirements and puts each one in bold...",
       "citations": [ { "source": "rfp", "found": true, "label": "RFP, Requirements", "quote": "Requirements" } ]
     },
@@ -47,7 +47,7 @@ Response:
       "name": "Data accuracy & validation",
       "description": "Says how inventory figures are checked against reality before anyone relies on them.",
       "source": "ai",
-      "suggested_priority": "important",
+      "suggested_priority": "medium",
       "why": "The RFP does not list this as a requirement, but it gives the reason behind Requirement 7...",
       "citations": [ { "source": "rfp", "found": true, "label": "RFP, Req. 7", "quote": "inventory decisions will be made based on this system" } ]
     }
@@ -58,12 +58,12 @@ Response:
 | Trường | Ghi chú |
 |---|---|
 | `source` | `base` = 7 tiêu chí gốc theo Appendix A (`pu`, `scope`, `price`, `time`, `comp`, `tone`, `risk`) · `ai` = tiêu chí AI đọc thêm từ RFP này |
-| `suggested_priority` | `dealbreaker` · `important` · `minor` · `skip`. Hệ số tương ứng 3 · 2 · 1 · 0, nhưng **giao diện không hiện số** — người dùng chỉ thấy tên cột, màu đậm nhạt và một câu giải thích |
+| `suggested_priority` | `high` · `medium` · `low` · `skip`. Hệ số tương ứng 3 · 2 · 1 · 0, nhưng **giao diện không hiện số** — người dùng chỉ thấy tên mức kèm một câu chú thích |
 | `why` | 1–2 câu **giải thích vì sao đặt ở mức đó**. Người dùng đọc câu này ngay trên thẻ, nên phải nói được điều gì trong RFP dẫn tới mức ưu tiên |
 | `citations` | Trích dẫn RFP chứng minh cho `why`, cùng quy tắc ở mục 3.4 |
 
 **Luôn trả đủ 7 tiêu chí `base`**, kể cả khi RFP không nói gì nhiều về chúng (khi đó
-đặt `minor` và để `citations` rỗng — xem `tone` trong file mẫu: RFP không nhắc gì tới
+đặt `low` và để `citations` rỗng — xem `tone` trong file mẫu: RFP không nhắc gì tới
 văn phong nên không có trích dẫn nào, đừng bịa ra một câu cho có). Tiêu chí `ai` là phần thêm: chỉ đề xuất khi **thật sự có căn cứ trong
 RFP** và **chưa được 7 tiêu chí gốc phủ**. Hai ví dụ trong file mẫu:
 
@@ -86,9 +86,9 @@ Người dùng có thể kéo thẻ sang cột khác, xoá thẻ, hoặc tự th
   "rfp":      { "name": "rfp_nordframe.md", "text": "# Request for Proposal ..." },
   "proposal": { "name": "response_1_weak.md", "text": "# Proposal: ..." },
   "criteria": [
-    { "id": "comp",     "name": "Completeness vs. RFP",      "description": "...", "priority": "dealbreaker", "source": "base" },
-    { "id": "accuracy", "name": "Data accuracy & validation","description": "...", "priority": "important",   "source": "ai" },
-    { "id": "gdpr",     "name": "GDPR & data residency",     "description": "...", "priority": "minor",       "source": "custom" }
+    { "id": "comp",     "name": "Completeness vs. RFP",      "description": "...", "priority": "high", "source": "base" },
+    { "id": "accuracy", "name": "Data accuracy & validation","description": "...", "priority": "medium",   "source": "ai" },
+    { "id": "gdpr",     "name": "GDPR & data residency",     "description": "...", "priority": "low",       "source": "custom" }
   ]
 }
 ```
@@ -97,7 +97,7 @@ Người dùng có thể kéo thẻ sang cột khác, xoá thẻ, hoặc tự th
 |---|---|---|
 | `rfp.text`, `proposal.text` | string | Markdown hoặc plain text. Hiện chưa gửi PDF |
 | `criteria[].id` | string | 7 id gốc, cộng với id của tiêu chí `ai` và `custom` người dùng giữ lại |
-| `criteria[].priority` | `dealbreaker` \| `important` \| `minor` \| `skip` | Cột người dùng đang để thẻ đó |
+| `criteria[].priority` | `high` \| `medium` \| `low` \| `skip` | Cột người dùng đang để thẻ đó |
 | `criteria[].source` | `base` \| `ai` \| `custom` | |
 
 **Chấm đủ mọi tiêu chí trong mảng, kể cả `skip`.** `skip` nghĩa là người dùng không
@@ -127,7 +127,7 @@ tính lại từ `criteria[].score`, nên kéo thẻ là điểm đổi ngay, kh
     "summary": "Pricing and timeline are both deferred, four of the seven RFP requirements are never mentioned..."
   },
   "client_priorities": [ { "id": "priority-1", "title": "...", "text": "...", "suggestion": "...", "citations": [] } ],
-  "criteria":    [ { "id": "pu", "name": "...", "description": "...", "priority": "minor", "score": 3, "comment": "...", "citations": [] } ],
+  "criteria":    [ { "id": "pu", "name": "...", "description": "...", "priority": "low", "score": 3, "comment": "...", "citations": [] } ],
   "requirements":[ { "id": "r3", "short_label": "PostgreSQL", "name": "...", "ask": "...", "rfp_citation": {}, "status": "missing", "status_label": "Missing", "finding": "...", "suggested_fix": "...", "citations": [] } ],
   "other_issues":[ { "id": "other-1", "status": "partial", "label": "Generic", "title": "...", "finding": "...", "suggested_fix": "...", "citations": [] } ]
 }
@@ -137,7 +137,7 @@ tính lại từ `criteria[].score`, nên kéo thẻ là điểm đổi ngay, kh
 
 | Trường | Kiểu | Ghi chú |
 |---|---|---|
-| `score` | number 1–5 | Trung bình có trọng số: dealbreaker ×3, important ×2, minor ×1, skip ×0 |
+| `score` | number 1–5 | Trung bình có trọng số: high ×3, medium ×2, low ×1, skip ×0 |
 | `verdict` | `not_ready` (<2.5) \| `revise` (<4) \| `ready` (≥4) | |
 | `summary` | string | 1–2 câu, nêu lý do chính. Không mở đầu bằng "Not ready to send" vì UI đã hiện nhãn đó |
 

@@ -76,7 +76,7 @@
       "score": 3,
       "comment": "Requirements 1–4 are covered, 5 only partly, 6 and 7 not at all.",
       "citations": [],
-      "priority": "dealbreaker"
+      "priority": "high"
     },
     {
       "id": "risk",
@@ -101,7 +101,7 @@
           ]
         }
       ],
-      "priority": "dealbreaker"
+      "priority": "high"
     },
     {
       "id": "price",
@@ -123,7 +123,7 @@
           "quote": "including first year of support"
         }
       ],
-      "priority": "important"
+      "priority": "medium"
     },
     {
       "id": "time",
@@ -139,7 +139,7 @@
           "quote": "Exact scheduling will be confirmed once we begin discovery"
         }
       ],
-      "priority": "important"
+      "priority": "medium"
     },
     {
       "id": "accuracy",
@@ -155,7 +155,7 @@
           "quote": "onboard warehouses in phases"
         }
       ],
-      "priority": "important"
+      "priority": "medium"
     },
     {
       "id": "pu",
@@ -171,7 +171,7 @@
           "quote": "six warehouses currently rely on spreadsheets and a legacy system"
         }
       ],
-      "priority": "minor"
+      "priority": "low"
     },
     {
       "id": "scope",
@@ -187,13 +187,13 @@
           "quote": "no database migration"
         }
       ],
-      "priority": "minor"
+      "priority": "low"
     },
     {
       "id": "tone",
       "name": "Tone & persuasiveness",
       "description": "Reads as confident, client-focused and professional, not boilerplate.",
-      "priority": "minor",
+      "priority": "low",
       "score": 3,
       "comment": "Clear and client-specific in the solution; the closing claim has no names, numbers or outcomes.",
       "citations": [
@@ -219,7 +219,7 @@
           "quote": "spreadsheets and a legacy"
         }
       ],
-      "priority": "minor"
+      "priority": "low"
     }
   ],
   "requirements": [

@@ -76,7 +76,7 @@
       "score": 1,
       "comment": "Contradicts requirement 3, leaves 4, 5 and 7 unaddressed, and covers 2 and 6 only partly.",
       "citations": [],
-      "priority": "dealbreaker"
+      "priority": "high"
     },
     {
       "id": "risk",
@@ -95,7 +95,7 @@
           ]
         }
       ],
-      "priority": "dealbreaker"
+      "priority": "high"
     },
     {
       "id": "price",
@@ -111,7 +111,7 @@
           "quote": "covering the full suite described above"
         }
       ],
-      "priority": "important"
+      "priority": "medium"
     },
     {
       "id": "time",
@@ -133,7 +133,7 @@
           "quote": "Working pilot at one warehouse within 3 months"
         }
       ],
-      "priority": "important"
+      "priority": "medium"
     },
     {
       "id": "accuracy",
@@ -149,7 +149,7 @@
           "quote": "migrating away from your current PostgreSQL database"
         }
       ],
-      "priority": "important"
+      "priority": "medium"
     },
     {
       "id": "pu",
@@ -171,7 +171,7 @@
           "quote": "no migration to a new database"
         }
       ],
-      "priority": "minor"
+      "priority": "low"
     },
     {
       "id": "scope",
@@ -193,13 +193,13 @@
           "quote": "Supplier performance scoring"
         }
       ],
-      "priority": "minor"
+      "priority": "low"
     },
     {
       "id": "tone",
       "name": "Tone & persuasiveness",
       "description": "Reads as confident, client-focused and professional, not boilerplate.",
-      "priority": "minor",
+      "priority": "low",
       "score": 2,
       "comment": "Hype-driven, and it implies the client’s own brief is too small.",
       "citations": [
@@ -228,7 +228,7 @@
           ]
         }
       ],
-      "priority": "minor"
+      "priority": "low"
     }
   ],
   "requirements": [

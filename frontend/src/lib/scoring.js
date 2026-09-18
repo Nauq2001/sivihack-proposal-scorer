@@ -1,12 +1,13 @@
 /** Criteria priorities and the overall score.
  *  Shared with the backend contract: see docs/api/review-contract.md */
 
-/** MoSCoW-style columns. The weight is the multiplier in the overall score. */
+/** How much a criterion pulls on the overall score. `weight` is the multiplier;
+ *  the interface shows the note, never the number. */
 export const PRIORITIES = [
-  { id: 'dealbreaker', label: 'Deal-breaker', weight: 3, hint: 'Counts most. Get this wrong and the client drops the proposal.' },
-  { id: 'important', label: 'Important', weight: 2, hint: 'Counts a lot in the decision.' },
-  { id: 'minor', label: 'Minor', weight: 1, hint: 'Counts a little. Worth fixing, rarely decisive.' },
-  { id: 'skip', label: 'Don’t score', weight: 0, hint: 'Still reviewed, but left out of the score.' },
+  { id: 'high', label: 'High', weight: 3, hint: 'Pulls the score hardest. A gap here can lose the deal.' },
+  { id: 'medium', label: 'Medium', weight: 2, hint: 'Weighs on the decision, but rarely decides it alone.' },
+  { id: 'low', label: 'Low', weight: 1, hint: 'Worth getting right, moves the score a little.' },
+  { id: 'skip', label: 'Don’t score', weight: 0, hint: 'Still reviewed and reported, left out of the number.' },
 ]
 
 export const PRIORITY_IDS = PRIORITIES.map((p) => p.id)
