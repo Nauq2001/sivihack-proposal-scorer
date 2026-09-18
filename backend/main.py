@@ -16,14 +16,18 @@ Test:
 """
 
 import os
+from pathlib import Path
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from dotenv import load_dotenv
+from rag.api import load_store, retrieve_payload
 
 load_dotenv()
 
 app = FastAPI(title="SiviHack Backend")
+
+RAG_STORE = load_store(Path(__file__).parent / "rag" / "data" / "records.jsonl")
 
 # Cho phep frontend (Vite dev server) goi sang trong luc dev
 app.add_middleware(
@@ -48,6 +52,13 @@ class AskRequest(BaseModel):
 
 class AskResponse(BaseModel):
     answer: str
+
+
+class RagRequest(BaseModel):
+    criterion: dict
+    proposal_context: str
+    requirement_context: str
+    top_k_per_type: int = 1
 
 
 def call_gemini(prompt: str) -> str:
@@ -96,3 +107,11 @@ def health():
 def ask(req: AskRequest):
     answer = call_ai(req.prompt)
     return AskResponse(answer=answer)
+
+
+@app.post("/rag/retrieve")
+def retrieve_rag(req: RagRequest):
+    try:
+        return retrieve_payload(RAG_STORE, req.model_dump())
+    except (TypeError, ValueError) as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc

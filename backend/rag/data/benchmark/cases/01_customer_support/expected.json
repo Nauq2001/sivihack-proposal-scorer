@@ -1,0 +1,514 @@
+{
+  "case_id": "01_customer_support",
+  "title": "Internal Customer Support Portal",
+  "industry": "Business services",
+  "rfp_file": "rfp.md",
+  "requirements": [
+    {
+      "id": "R1",
+      "section": "Requirements",
+      "quote": "Provide ticket creation, assignment, status history, and office-filtered queues for all four offices and 120 named staff, with a searchable ticket reference and creation timestamp."
+    },
+    {
+      "id": "R2",
+      "section": "Requirements",
+      "quote": "Read one existing shared mailbox through IMAP, deduplicate by message identifier, and retain original messages without moving or deleting them; no other integration is required."
+    },
+    {
+      "id": "R3",
+      "section": "Requirements",
+      "quote": "Use existing Entra ID sign-in through OIDC; staff may access only their own office's tickets, while HQ managers may access all offices, with authorization enforced by the service."
+    },
+    {
+      "id": "R4",
+      "section": "Requirements",
+      "quote": "Send email acknowledgements within five minutes for at least 95% of 20 test submissions, and remind the assignee after eight business hours without an update; SMS is excluded."
+    },
+    {
+      "id": "R5",
+      "section": "Requirements",
+      "quote": "Import up to 10,000 ticket rows from one CSV format covering the last 12 months, with field mapping, rejected-row reporting, and preservation of source row identifiers."
+    },
+    {
+      "id": "R6",
+      "section": "Requirements",
+      "quote": "Run a two-week Berlin pilot in parallel with the existing process before other offices launch; provide a documented rollback that restores the prior process within four hours using a ticket export."
+    },
+    {
+      "id": "R7",
+      "section": "Requirements",
+      "quote": "Include 12 months of support after full go-live, Monday–Friday 08:00–18:00 Europe/Berlin excluding German public holidays, with critical-incident acknowledgement within two coverage hours and minor-issue acknowledgement within two business days."
+    },
+    {
+      "id": "R8",
+      "section": "Requirements",
+      "quote": "Obtain acceptance through scripted workflow and authorization tests with zero unauthorized ticket accesses, plus a two-hour test at 30 concurrent users with page-load p95 at most two seconds; deliver user/admin guides and two remote training sessions."
+    },
+    {
+      "id": "B1",
+      "section": "Budget",
+      "quote": "The total must be €60,000–€85,000 excluding VAT, including implementation, rollout, and all hosting, licenses, and support for the first 12 months after full go-live; itemize costs and price assumptions explicitly."
+    },
+    {
+      "id": "T1",
+      "section": "Timeline",
+      "quote": "Start the working Berlin pilot by the end of week 8 and complete all four offices by the end of week 14 from project kickoff, preserving the two-week pilot before wider rollout."
+    }
+  ],
+  "responses": [
+    {
+      "file": "response_a.md",
+      "variant": "weak",
+      "score_ranges": {
+        "problem_understanding": [
+          3,
+          4
+        ],
+        "scope_deliverables_clarity": [
+          2,
+          3
+        ],
+        "pricing_clarity": [
+          2,
+          3
+        ],
+        "timeline_clarity": [
+          2,
+          3
+        ],
+        "completeness_vs_rfp": [
+          2,
+          3
+        ],
+        "tone_persuasiveness": [
+          3,
+          4
+        ],
+        "risk_assumptions_transparency": [
+          2,
+          3
+        ]
+      },
+      "coverage": {
+        "R1": "met",
+        "R2": "partial",
+        "R3": "partial",
+        "R4": "partial",
+        "R5": "partial",
+        "R6": "missing",
+        "R7": "partial",
+        "R8": "partial",
+        "B1": "partial",
+        "T1": "partial"
+      },
+      "findings": [
+        {
+          "id": "F01",
+          "requirement_ids": [
+            "R3"
+          ],
+          "kind": "vague",
+          "severity": "major",
+          "rfp_quote": "Use existing Entra ID sign-in through OIDC; staff may access only their own office's tickets, while HQ managers may access all offices, with authorization enforced by the service.",
+          "response_quote": "Sign-in details and permission rules will be finalized with IT during discovery.",
+          "rationale": "Office views do not establish OIDC sign-in or service-enforced isolation.",
+          "suggested_fix": "Commit to OIDC and service-side office authorization with negative access tests."
+        },
+        {
+          "id": "F02",
+          "requirement_ids": [
+            "R6"
+          ],
+          "kind": "missing",
+          "severity": "major",
+          "rfp_quote": "Run a two-week Berlin pilot in parallel with the existing process before other offices launch; provide a documented rollback that restores the prior process within four hours using a ticket export.",
+          "response_quote": null,
+          "rationale": "No Berlin parallel-run duration or four-hour rollback procedure is offered.",
+          "suggested_fix": "Specify the two-week Berlin parallel pilot and an export-based four-hour rollback rehearsal."
+        },
+        {
+          "id": "F03",
+          "requirement_ids": [
+            "B1"
+          ],
+          "kind": "missing",
+          "severity": "major",
+          "rfp_quote": "The total must be €60,000–€85,000 excluding VAT, including implementation, rollout, and all hosting, licenses, and support for the first 12 months after full go-live; itemize costs and price assumptions explicitly.",
+          "response_quote": "Hosting, licensing, and ongoing support options will be selected during discovery; their fees are not yet quoted.",
+          "rationale": "The €73,000 subtotal is clear, but the complete first-year cost cannot be checked against the budget.",
+          "suggested_fix": "Add all 12-month operating costs and a complete total within the budget."
+        },
+        {
+          "id": "F04",
+          "requirement_ids": [
+            "T1"
+          ],
+          "kind": "vague",
+          "severity": "major",
+          "rfp_quote": "Start the working Berlin pilot by the end of week 8 and complete all four offices by the end of week 14 from project kickoff, preserving the two-week pilot before wider rollout.",
+          "response_quote": "We will then agree pilot entry, pilot duration, and the remaining offices' release dates with the project owner.",
+          "rationale": "A week-7 preview is not a committed working pilot or full deployment milestone.",
+          "suggested_fix": "Commit to a working pilot by week 8 and all offices by week 14."
+        },
+        {
+          "id": "F05",
+          "requirement_ids": [
+            "R7",
+            "R8"
+          ],
+          "kind": "vague",
+          "severity": "major",
+          "rfp_quote": "Include 12 months of support after full go-live, Monday–Friday 08:00–18:00 Europe/Berlin excluding German public holidays, with critical-incident acknowledgement within two coverage hours and minor-issue acknowledgement within two business days.",
+          "response_quote": "We will prioritize incidents affecting several staff and arrange a suitable service package with Lindenvale.",
+          "rationale": "Support coverage and acknowledgement targets are undefined; manager feedback also lacks the required objective acceptance checks.",
+          "suggested_fix": "State the support term, coverage hours, response clocks, and full acceptance test plan."
+        }
+      ],
+      "critical_findings": [],
+      "notes": [
+        "The ticket workflow is adequately described; do not rate every dimension at the minimum.",
+        "The implementation subtotal is arithmetically correct. Missing recurring fees are an incompleteness issue, not proven budget overrun."
+      ]
+    },
+    {
+      "file": "response_b.md",
+      "variant": "strong",
+      "score_ranges": {
+        "problem_understanding": [
+          4,
+          5
+        ],
+        "scope_deliverables_clarity": [
+          4,
+          5
+        ],
+        "pricing_clarity": [
+          4,
+          5
+        ],
+        "timeline_clarity": [
+          4,
+          5
+        ],
+        "completeness_vs_rfp": [
+          4,
+          5
+        ],
+        "tone_persuasiveness": [
+          4,
+          5
+        ],
+        "risk_assumptions_transparency": [
+          4,
+          5
+        ]
+      },
+      "coverage": {
+        "R1": "met",
+        "R2": "met",
+        "R3": "met",
+        "R4": "met",
+        "R5": "met",
+        "R6": "met",
+        "R7": "met",
+        "R8": "met",
+        "B1": "met",
+        "T1": "met"
+      },
+      "findings": [
+        {
+          "id": "F01",
+          "requirement_ids": [
+            "R2",
+            "R3"
+          ],
+          "kind": "strength",
+          "severity": "info",
+          "rfp_quote": "Use existing Entra ID sign-in through OIDC; staff may access only their own office's tickets, while HQ managers may access all offices, with authorization enforced by the service.",
+          "response_quote": "The service checks authorization on every ticket query and update, including direct-reference requests.",
+          "rationale": "Office isolation is enforced in the service, with OIDC explicitly specified.",
+          "suggested_fix": null
+        },
+        {
+          "id": "F02",
+          "requirement_ids": [
+            "R6",
+            "T1"
+          ],
+          "kind": "strength",
+          "severity": "info",
+          "rfp_quote": "Run a two-week Berlin pilot in parallel with the existing process before other offices launch; provide a documented rollback that restores the prior process within four hours using a ticket export.",
+          "response_quote": "The Berlin pilot starts at the beginning of week 8 and runs through the end of week 9 alongside the existing process.",
+          "rationale": "The two-week pilot precedes the remaining offices and fits the required deadline.",
+          "suggested_fix": null
+        },
+        {
+          "id": "F03",
+          "requirement_ids": [
+            "B1",
+            "R7"
+          ],
+          "kind": "strength",
+          "severity": "info",
+          "rfp_quote": "The total must be €60,000–€85,000 excluding VAT, including implementation, rollout, and all hosting, licenses, and support for the first 12 months after full go-live; itemize costs and price assumptions explicitly.",
+          "response_quote": "| **Total** | **€79,000** |",
+          "rationale": "Six itemized lines sum to €79,000 and cover the full 12-month operating period.",
+          "suggested_fix": null
+        },
+        {
+          "id": "F04",
+          "requirement_ids": [
+            "B1",
+            "T1"
+          ],
+          "kind": "risk_disclosure",
+          "severity": "info",
+          "rfp_quote": "The total must be €60,000–€85,000 excluding VAT, including implementation, rollout, and all hosting, licenses, and support for the first 12 months after full go-live; itemize costs and price assumptions explicitly.",
+          "response_quote": "No production schema or data has been inspected. Additional CSV formats cost €1,500 each only after written approval.",
+          "rationale": "The proposal separates unverified assumptions from commitments and prices a specific optional scope change.",
+          "suggested_fix": null
+        }
+      ],
+      "critical_findings": [],
+      "notes": [
+        "Support acknowledgement is measurable and distinct from resolution.",
+        "Assumed client access is a disclosed dependency, not evidence of existing access."
+      ]
+    },
+    {
+      "file": "response_c.md",
+      "variant": "overpromised",
+      "score_ranges": {
+        "problem_understanding": [
+          3,
+          4
+        ],
+        "scope_deliverables_clarity": [
+          4,
+          5
+        ],
+        "pricing_clarity": [
+          4,
+          5
+        ],
+        "timeline_clarity": [
+          4,
+          5
+        ],
+        "completeness_vs_rfp": [
+          2,
+          3
+        ],
+        "tone_persuasiveness": [
+          2,
+          3
+        ],
+        "risk_assumptions_transparency": [
+          1,
+          2
+        ]
+      },
+      "coverage": {
+        "R1": "met",
+        "R2": "met",
+        "R3": "met",
+        "R4": "unsubstantiated",
+        "R5": "unsubstantiated",
+        "R6": "contradicted",
+        "R7": "met",
+        "R8": "unsubstantiated",
+        "B1": "contradicted",
+        "T1": "contradicted"
+      },
+      "findings": [
+        {
+          "id": "F01",
+          "requirement_ids": [
+            "R6",
+            "T1"
+          ],
+          "kind": "contradiction",
+          "severity": "critical",
+          "rfp_quote": "Run a two-week Berlin pilot in parallel with the existing process before other offices launch; provide a documented rollback that restores the prior process within four hours using a ticket export.",
+          "response_quote": "All four offices switch to the new system at the start of week 4; there will be no separate Berlin pilot or parallel operation.",
+          "rationale": "An explicit simultaneous cutover removes the mandatory two-week pilot gate.",
+          "suggested_fix": "Restore the Berlin parallel pilot before any other office launches."
+        },
+        {
+          "id": "F02",
+          "requirement_ids": [
+            "B1"
+          ],
+          "kind": "contradiction",
+          "severity": "major",
+          "rfp_quote": "The total must be €60,000–€85,000 excluding VAT, including implementation, rollout, and all hosting, licenses, and support for the first 12 months after full go-live; itemize costs and price assumptions explicitly.",
+          "response_quote": "| **Total** | **€96,000** |",
+          "rationale": "The mandatory package exceeds the €85,000 cap by €11,000.",
+          "suggested_fix": "Remove or separately offer additions and bring the mandatory first-year total within the budget."
+        },
+        {
+          "id": "F03",
+          "requirement_ids": [
+            "R2",
+            "R4"
+          ],
+          "kind": "unsupported_promise",
+          "severity": "major",
+          "rfp_quote": "Read one existing shared mailbox through IMAP, deduplicate by message identifier, and retain original messages without moving or deleting them; no other integration is required.",
+          "response_quote": "Our automation guarantees that no duplicate or lost ticket will ever occur, regardless of the condition of the mailbox or connectivity.",
+          "rationale": "A valid message-identifier design does not establish a universal no-loss guarantee through connectivity failures.",
+          "suggested_fix": "Describe retry, reconciliation, and recovery limits instead of an absolute guarantee."
+        },
+        {
+          "id": "F04",
+          "requirement_ids": [
+            "R5"
+          ],
+          "kind": "unsupported_promise",
+          "severity": "major",
+          "rfp_quote": "Import up to 10,000 ticket rows from one CSV format covering the last 12 months, with field mapping, rejected-row reporting, and preservation of source row identifiers.",
+          "response_quote": "Our data engine guarantees complete repair of every malformed row without staff review.",
+          "rationale": "Automatic semantic repair of all unseen malformed records is unsupported.",
+          "suggested_fix": "Require rejected-row review, client corrections, and reconciliation before import acceptance."
+        },
+        {
+          "id": "F05",
+          "requirement_ids": [
+            "R8",
+            "T1"
+          ],
+          "kind": "unsupported_promise",
+          "severity": "major",
+          "rfp_quote": "Obtain acceptance through scripted workflow and authorization tests with zero unauthorized ticket accesses, plus a two-hour test at 30 concurrent users with page-load p95 at most two seconds; deliver user/admin guides and two remote training sessions.",
+          "response_quote": "We guarantee that all acceptance tests will pass on their first run and that no production defects will occur during the first year.",
+          "rationale": "The proposal names the right tests but substitutes absolute outcome promises for evidence and contingency.",
+          "suggested_fix": "Include defect remediation and retesting time, and disclose access and source-data dependencies."
+        }
+      ],
+      "critical_findings": [
+        "F01",
+        "F02"
+      ],
+      "notes": [
+        "The cost and schedule are explicit; their clarity can score highly while compliance scores poorly.",
+        "The R2 connector behavior is met; the additional absolute reliability promise is a separate risk finding.",
+        "No overall ranking relative to the weak response is prescribed."
+      ]
+    },
+    {
+      "file": "response_d.md",
+      "variant": "medium",
+      "score_ranges": {
+        "problem_understanding": [
+          4,
+          5
+        ],
+        "scope_deliverables_clarity": [
+          3,
+          4
+        ],
+        "pricing_clarity": [
+          2,
+          3
+        ],
+        "timeline_clarity": [
+          2,
+          3
+        ],
+        "completeness_vs_rfp": [
+          3,
+          4
+        ],
+        "tone_persuasiveness": [
+          3,
+          4
+        ],
+        "risk_assumptions_transparency": [
+          2,
+          3
+        ]
+      },
+      "coverage": {
+        "R1": "met",
+        "R2": "met",
+        "R3": "met",
+        "R4": "met",
+        "R5": "met",
+        "R6": "partial",
+        "R7": "partial",
+        "R8": "partial",
+        "B1": "partial",
+        "T1": "partial"
+      },
+      "findings": [
+        {
+          "id": "F01",
+          "requirement_ids": [
+            "R2",
+            "R3"
+          ],
+          "kind": "strength",
+          "severity": "info",
+          "rfp_quote": "Use existing Entra ID sign-in through OIDC; staff may access only their own office's tickets, while HQ managers may access all offices, with authorization enforced by the service.",
+          "response_quote": "Entra ID sign-in will use OIDC, with authorization enforced in the service for ticket reads and updates.",
+          "rationale": "The core identity and office-isolation approach is explicit and appropriate.",
+          "suggested_fix": null
+        },
+        {
+          "id": "F02",
+          "requirement_ids": [
+            "R6",
+            "T1"
+          ],
+          "kind": "vague",
+          "severity": "major",
+          "rfp_quote": "Start the working Berlin pilot by the end of week 8 and complete all four offices by the end of week 14 from project kickoff, preserving the two-week pilot before wider rollout.",
+          "response_quote": "We will agree the calendar and milestone dates during the initial phase.",
+          "rationale": "The pilot sequence and duration are correct, but there are no committed week-8 or week-14 milestones or timed rollback.",
+          "suggested_fix": "Add dated milestones and a rehearsed four-hour rollback plan."
+        },
+        {
+          "id": "F03",
+          "requirement_ids": [
+            "B1"
+          ],
+          "kind": "vague",
+          "severity": "major",
+          "rfp_quote": "The total must be €60,000–€85,000 excluding VAT, including implementation, rollout, and all hosting, licenses, and support for the first 12 months after full go-live; itemize costs and price assumptions explicitly.",
+          "response_quote": "A final itemized quote and confirmation of hosting, licensing, and first-year support inclusions will follow discovery.",
+          "rationale": "The indicative range is within budget, but it does not establish full first-year coverage or a fixed total.",
+          "suggested_fix": "Itemize implementation and all 12-month operating costs in a fixed quote."
+        },
+        {
+          "id": "F04",
+          "requirement_ids": [
+            "R7"
+          ],
+          "kind": "vague",
+          "severity": "major",
+          "rfp_quote": "Include 12 months of support after full go-live, Monday–Friday 08:00–18:00 Europe/Berlin excluding German public holidays, with critical-incident acknowledgement within two coverage hours and minor-issue acknowledgement within two business days.",
+          "response_quote": "We can provide support after launch; the coverage calendar and acknowledgement targets will be set in the final service agreement.",
+          "rationale": "Support availability is mentioned without the requested term, coverage, or acknowledgement commitments.",
+          "suggested_fix": "Specify 12 months of support, the requested calendar, and both acknowledgement targets."
+        },
+        {
+          "id": "F05",
+          "requirement_ids": [
+            "R8"
+          ],
+          "kind": "missing",
+          "severity": "major",
+          "rfp_quote": "Obtain acceptance through scripted workflow and authorization tests with zero unauthorized ticket accesses, plus a two-hour test at 30 concurrent users with page-load p95 at most two seconds; deliver user/admin guides and two remote training sessions.",
+          "response_quote": "Acceptance will include ticket workflow and office-permission demonstrations.",
+          "rationale": "Demonstrations omit the zero-unauthorized-access criterion and quantified load test.",
+          "suggested_fix": "Commit to the scripted checks and two-hour, 30-user p95 performance test."
+        }
+      ],
+      "critical_findings": [],
+      "notes": [
+        "The functional detail exceeds the weak variant, but commercial, schedule, support, and acceptance commitments remain incomplete.",
+        "A nonbinding in-budget range is not evidence of exceeding the budget."
+      ]
+    }
+  ]
+}
