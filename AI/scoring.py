@@ -81,6 +81,21 @@ def _hard_constraint_cap(
     return None
 
 
+def _priority_adjusted_score(score: int, priority: str) -> int:
+    """User-chosen priority is a strictness dial, not just an aggregation
+    weight: "low" means the user has decided this criterion matters less for
+    this review, so gaps here are graded more leniently; "high" means graded
+    more strictly. Applied as a flat +-1 nudge on top of the LLM's objective,
+    rubric-based score — the rubric itself never changes per criterion (still
+    consistent/comparable), only the final number shifts a bit either way.
+    """
+    if priority == "low":
+        return min(5, score + 1)
+    if priority == "high":
+        return max(1, score - 1)
+    return score
+
+
 def _enforce_criterion_score_rules(
     output: ProposalAnalystOutput, scoring_input: ScoringInput
 ) -> None:
@@ -91,11 +106,22 @@ def _enforce_criterion_score_rules(
     hard_constraint_ids = {
         r.id for r in scoring_input.rfp_analysis.requirements if r.is_hard_constraint
     }
+    priority_by_name = {c.name: c.recommended_priority for c in scoring_input.confirmed_criteria}
     for criterion in output.criteria:
         packet = packets_by_name.get(criterion.name)
         requirement_ids = packet.requirement_ids if packet else []
         if criterion.name == "Completeness vs RFP Requirements" and requirement_ids:
             criterion.score = _compute_requirement_based_score(requirement_ids, findings_by_id)
+
+        criterion.score = _priority_adjusted_score(
+            criterion.score, priority_by_name.get(criterion.name, "medium")
+        )
+
+        # Hard-constraint cap is a safety floor, not subject to the priority
+        # nudge above — a proposal cannot buy its way out of a contradicted
+        # hard constraint (e.g. the PostgreSQL migration case) just because
+        # the user dragged that criterion to "Low". Applied last so it always
+        # wins over whatever the nudge produced.
         cap = _hard_constraint_cap(requirement_ids, findings_by_id, hard_constraint_ids)
         if cap is not None:
             criterion.score = min(criterion.score, cap)

@@ -23,6 +23,7 @@ from AI.rag_client import retrieve_examples
 from AI.scoring import (
     _enforce_criterion_score_rules,
     _enforce_hard_constraint_severity,
+    _priority_adjusted_score,
     compute_overall_score,
 )
 from AI.contracts import ProposalAnalystOutput, ScoringInput
@@ -159,6 +160,64 @@ def main() -> None:
     check(
         "criteria not linked to the contradicted hard constraint are left uncapped",
         unrelated.score == 5,
+    )
+
+    # Priority as a strictness dial: "low" is more lenient (+1), "high" is
+    # stricter (-1), "medium" is unchanged — but never outside 1-5.
+    check("priority nudge: low +1", _priority_adjusted_score(3, "low") == 4)
+    check("priority nudge: low clamps at 5", _priority_adjusted_score(5, "low") == 5)
+    check("priority nudge: high -1", _priority_adjusted_score(3, "high") == 2)
+    check("priority nudge: high clamps at 1", _priority_adjusted_score(1, "high") == 1)
+    check("priority nudge: medium unchanged", _priority_adjusted_score(3, "medium") == 3)
+
+    low_priority_input = scoring_input.model_copy(
+        update={
+            "confirmed_criteria": [
+                CriterionWeight(
+                    name=c.name, description="x", weight=1,
+                    recommended_priority="low" if c.name == "Scope & Deliverables Clarity" else "medium",
+                )
+                for c in rfp_analysis.suggested_criteria_weights
+            ]
+        }
+    )
+    lenient_findings = [
+        RequirementFinding(requirement_id=rid, status="met", severity="low", reason="x")
+        for rid in all_ids
+    ]
+    output3 = ProposalAnalystOutput(
+        findings=lenient_findings,
+        criteria=[
+            CriterionScore(name=c.name, score=3, comment="x")
+            for c in rfp_analysis.suggested_criteria_weights
+        ],
+        verdict="x",
+    )
+    _enforce_criterion_score_rules(output3, low_priority_input)
+    scope3 = next(c for c in output3.criteria if c.name == "Scope & Deliverables Clarity")
+    check(
+        "criterion set to 'low' priority gets its score nudged up by 1 (3 -> 4)",
+        scope3.score == 4,
+    )
+
+    # But the hard-constraint cap still wins even when the user set that same
+    # criterion to "low" — a contradicted hard constraint cannot be graded
+    # away just by lowering the criterion's priority.
+    hard_cap_low_findings_by_id = {f.requirement_id: f for f in lenient_findings}
+    hard_cap_low_findings_by_id["REQ-007"].status = "contradicted"
+    output4 = ProposalAnalystOutput(
+        findings=list(hard_cap_low_findings_by_id.values()),
+        criteria=[
+            CriterionScore(name=c.name, score=3, comment="x")
+            for c in rfp_analysis.suggested_criteria_weights
+        ],
+        verdict="x",
+    )
+    _enforce_criterion_score_rules(output4, low_priority_input)
+    scope4 = next(c for c in output4.criteria if c.name == "Scope & Deliverables Clarity")
+    check(
+        "hard-constraint cap overrides the 'low' priority nudge (still capped at 2)",
+        scope4.score == 2,
     )
 
     criteria = [
