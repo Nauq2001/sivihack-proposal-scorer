@@ -5,8 +5,12 @@ pydantic==2.9.2
 anthropic==0.34.2
 google-generativeai==0.8.3
 requests==2.32.3
-numpy>=1.26,<3
-sentence-transformers>=3,<6
-markitdown==0.0.24
+# Extras la bat buoc: markitdown tran khong keo theo thu vien doc PDF/DOCX/
+# PPTX/XLSX, va /v1/markitdown/convert se bao "Cannot extract this file".
+markitdown[pdf,docx,pptx,xlsx,xls]==0.1.7
 python-multipart==0.0.12
 langchain-google-genai==4.4.0
+numpy>=1.26,<3
+sentence-transformers>=3,<6
+openai==3.15.0
+Pillow==12.3.0

@@ -73,19 +73,24 @@ function Requirements({ linked }) {
   )
 }
 
-function Card({ criterion, requirementById, onMove, onRemove, onDragStart }) {
+function Card({ criterion, requirementById, suggestedPriority, onMove, onRemove, onDragStart }) {
   const priority = criterion.recommended_priority || 'medium'
   const at = COLUMN_IDS.indexOf(priority)
   const badge = ORIGIN[criterion.origin]
   const linked = (criterion.requirement_ids || []).map((id) => requirementById[id]).filter(Boolean)
   const why = reasonFor(criterion, linked)
+  // Ly do ben duoi van la su that ve yeu cau, khong doi theo cot. Nhung neu
+  // khong noi ro nguoi dung da doi cot, the bai doc nhu dang tu mau thuan.
+  const moved = suggestedPriority && suggestedPriority !== priority
 
   return (
     <article className="crit-card" draggable onDragStart={(e) => onDragStart(e, criterion.name)}>
       <header className="crit-head">
         <span className="grip" aria-hidden="true">⠿</span>
         <h3>{criterion.name}</h3>
-        {badge && <span className="tag" data-origin={criterion.origin}>{badge}</span>}
+        {moved
+          ? <span className="tag moved">Moved from {COLUMNS.find((c) => c.id === suggestedPriority)?.label}</span>
+          : badge && <span className="tag" data-origin={criterion.origin}>{badge}</span>}
       </header>
 
       {criterion.description && <p className="crit-desc">{criterion.description}</p>}
@@ -131,13 +136,28 @@ function AddForm({ onAdd, onCancel }) {
   )
 }
 
-export default function CriteriaView({ analysis, criteria, onChange, onReset, onRun, warnings = [] }) {
+export default function CriteriaView({ analysis, criteria, suggested = [], onChange, onReset, onRun, warnings = [] }) {
   const [adding, setAdding] = useState(null)
   const [over, setOver] = useState(null)
+  const [merged, setMerged] = useState(null)
   const requirementById = useMemo(
     () => Object.fromEntries((analysis.requirements || []).map((r) => [r.id, r])),
     [analysis.requirements],
   )
+  const suggestedPriority = useMemo(
+    () => Object.fromEntries(suggested.map((c) => [c.name, c.recommended_priority])),
+    [suggested],
+  )
+
+  /** Yeu cau khong con tieu chi nao soi toi.
+   *
+   *  Xoa mot tieu chi khong xoa yeu cau: agent van cham tung yeu cau va van
+   *  bao thieu, nhung khong con o nao gom chung lai thanh diem. Im lang o day
+   *  la cach de mot ban thieu nua so yeu cau van ra diem dep. */
+  const uncovered = useMemo(() => {
+    const covered = new Set(criteria.flatMap((c) => c.requirement_ids || []))
+    return (analysis.requirements || []).filter((r) => !covered.has(r.id))
+  }, [criteria, analysis.requirements])
 
   const priorityOf = (c) => (COLUMN_IDS.includes(c.recommended_priority) ? c.recommended_priority : 'medium')
   const setPriority = (name, priority) =>
@@ -161,14 +181,26 @@ export default function CriteriaView({ analysis, criteria, onChange, onReset, on
     if (name) setPriority(name, priority)
   }
 
+  /** Gom trung ten thay vi them ban thu hai — giong `add_or_merge` cua agent
+   *  (agent/src/rfp_analyst/criteria.py): ban trung giu criterion chuan, chi
+   *  nhan muc do moi. So khop bo dau cach thua va phan biet hoa thuong, y het
+   *  `_normalize` ben do, de "pricing  clarity" cung bat duoc. */
   const add = (priority, name, description) => {
-    if (criteria.some((c) => c.name.toLowerCase() === name.toLowerCase())) return
+    const key = (s) => String(s).toLowerCase().split(/\s+/).filter(Boolean).join(' ')
+    const existing = criteria.find((c) => key(c.name) === key(name))
+    if (existing) {
+      setPriority(existing.name, priority)
+      setAdding(null)
+      setMerged(existing.name)
+      return
+    }
     onChange([...criteria, {
       name, description, weight: COLUMNS.find((c) => c.id === priority)?.weight || 1,
       recommended_priority: priority, priority_reason: 'Added by you for this review.',
       origin: 'user', source_refs: [], requirement_ids: [],
     }])
     setAdding(null)
+    setMerged(null)
   }
 
   const fromRfp = criteria.filter((c) => c.origin === 'ai_inferred' || c.origin === 'rfp_explicit').length
@@ -193,6 +225,13 @@ export default function CriteriaView({ analysis, criteria, onChange, onReset, on
           <button type="button" className="btn btn-ghost" onClick={onReset}>Reset to the RFP suggestion</button>
         </div>
       </div>
+
+      {merged && (
+        <p className="notice reveal">
+          <strong>Already on the board.</strong> “{merged}” was moved to the column you picked instead of being
+          added twice.
+        </p>
+      )}
 
       {warnings.length > 0 && (
         <p className="notice reveal">
@@ -225,7 +264,8 @@ export default function CriteriaView({ analysis, criteria, onChange, onReset, on
               </header>
               <div className="level-body">
                 {cards.map((c) => (
-                  <Card key={c.name} criterion={c} requirementById={requirementById} onMove={move}
+                  <Card key={c.name} criterion={c} requirementById={requirementById}
+                        suggestedPriority={suggestedPriority[c.name]} onMove={move}
                         onRemove={(name) => onChange(criteria.filter((x) => x.name !== name))}
                         onDragStart={onDragStart} />
                 ))}
@@ -237,6 +277,16 @@ export default function CriteriaView({ analysis, criteria, onChange, onReset, on
           )
         })}
       </div>
+
+      {uncovered.length > 0 && (
+        <p className="notice board-notice">
+          <strong>{uncovered.length} requirement{uncovered.length > 1 ? 's' : ''} no longer count toward the score.</strong>{' '}
+          {/* Hai yeu cau tach tu mot dong RFP mang cung nhan, chi ke mot lan. */}
+          {[...new Set(uncovered.map((r) => r.short_label || r.id))].join(', ')} —{' '}
+          {uncovered.length > 1 ? 'they are' : 'it is'} still checked and reported, but no remaining criterion
+          scores {uncovered.length > 1 ? 'them' : 'it'}. Keep “Completeness vs RFP Requirements” to cover everything.
+        </p>
+      )}
 
       <p className="board-foot">
         The column decides how much a criterion counts when the proposal is scored. Nothing is scored yet.

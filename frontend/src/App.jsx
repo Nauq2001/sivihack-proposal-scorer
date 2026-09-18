@@ -7,28 +7,80 @@ import SourcePane from './components/SourcePane.jsx'
 import { CitationContext } from './components/Citation.jsx'
 import { RFP, SAMPLES, matchSample, sampleById } from './data/samples.js'
 import { norm } from './lib/markdown.js'
-import { analyseRfp, scoreProposal } from './api/review.js'
+import { CONVERTIBLE, PLAIN_TEXT, analyseRfp, confirmCriteria, convertFile, extensionOf, scoreProposal } from './api/review.js'
 
 const firstSample = SAMPLES[0]
 
+/** Tieu chi nguoi dung tu them phai co packet rieng truoc khi gui di cham.
+ *
+ *  Khong co packet thi prompt cua Scoring Agent chi thay "(none)" o phan huong
+ *  dan va ghi chu, mat luon rao chan `USER_DEFINED_NOT_RFP`: tieu chi tu them
+ *  khong phai yeu cau cua RFP, khong duoc bao cao nhu mot muc bi thieu.
+ *
+ *  Day dung la nhanh du phong cua `resolve_user_criterion` khi khong co
+ *  resolver (agent/src/rfp_analyst/criteria.py) — lien ket de rong, ghi chu
+ *  canh bao khong bia them nghia vu. */
+function withUserPackets(analysis, confirmed) {
+  const known = new Set((analysis.criterion_packets || []).map((p) => p.criterion_name))
+  const added = confirmed
+    .filter((c) => !known.has(c.name))
+    .map((c) => ({
+      criterion_name: c.name,
+      origin: 'user',
+      evaluation_guidance: [`Evaluate only this user-defined expectation: ${c.description}`],
+      requirement_ids: [],
+      source_refs: [],
+      notes: [
+        'USER_DEFINED_NOT_RFP: Score against the user’s description; do not report it as a missing RFP requirement.',
+        'ENRICHMENT_FAILED: No verified RFP links were added; do not invent thresholds or obligations.',
+      ],
+    }))
+  if (!added.length) return analysis
+  return { ...analysis, criterion_packets: [...(analysis.criterion_packets || []), ...added] }
+}
+
 // Ba man co noi dung; hai man tien trinh nam giua nen khong co trong thanh nay.
 const FLOW = [['input', 'Documents'], ['criteria', 'Criteria'], ['result', 'Result']]
+
+const SESSION_KEY = 'proposal-scorer/run'
+
+/** Mot lan chay ton khoang 30 giay va hai luot goi Gemini. Lo bam F5 giua buoi
+ *  demo ma phai chay lai tu dau la mat trang. Chi luu trong tab dang mo: doi
+ *  tai lieu khac thi khong keo theo ket qua cu. */
+function loadSession() {
+  try {
+    const raw = sessionStorage.getItem(SESSION_KEY)
+    return raw ? JSON.parse(raw) : null
+  } catch {
+    return null
+  }
+}
+
+function saveSession(state) {
+  try {
+    sessionStorage.setItem(SESSION_KEY, JSON.stringify(state))
+  } catch {
+    // Het cho hoac tab rieng tu — mat phien luu khong lam hong phien dang chay.
+  }
+}
 
 /** Luong mot chieu, ba man co noi dung: tai lieu -> tieu chi -> ket qua.
  *  Giua moi buoc la mot man tien trinh, vi ca hai agent deu mat thoi gian.
  *  Nguoi dung khong sua tieu chi: RFP Analyst chot mua ky. */
 export default function App() {
-  const [stage, setStage] = useState('input') // input | analysing | criteria | scoring | result | error
-  const [rfp, setRfp] = useState({ ...RFP })
-  const [proposal, setProposal] = useState({ name: firstSample.name, text: firstSample.text })
+  const saved = loadSession()
+  const [stage, setStage] = useState(saved?.stage || 'input') // input | analysing | criteria | scoring | result | error
+  const [rfp, setRfp] = useState(saved?.rfp || { ...RFP })
+  const [proposal, setProposal] = useState(saved?.proposal || { name: firstSample.name, text: firstSample.text })
   // Bat dau rong: hai buoc sau chi mo khi da co du lieu that cua lan chay nay.
-  const [analysis, setAnalysis] = useState(null)
-  const [criteria, setCriteria] = useState([])
+  const [analysis, setAnalysis] = useState(saved?.analysis || null)
+  const [criteria, setCriteria] = useState(saved?.criteria || [])
   // Ban goc tu RFP Analyst, de nut "Reset to the RFP suggestion" quay ve duoc.
-  const [suggested, setSuggested] = useState([])
-  const [run, setRun] = useState({ data: null, source: null })
+  const [suggested, setSuggested] = useState(saved?.suggested || [])
+  const [run, setRun] = useState(saved?.run || { data: null, source: null })
   const [notice, setNotice] = useState(null)
-  const [warnings, setWarnings] = useState([])
+  const [converting, setConverting] = useState(null) // 'rfp' | 'proposal' khi dang doc file
+  const [warnings, setWarnings] = useState(saved?.warnings || [])
   const [citation, setCitation] = useState(null)
   const [tab, setTab] = useState('prop')
   const [drawer, setDrawer] = useState(false)
@@ -38,6 +90,13 @@ export default function App() {
   const sampleId = sample ? sample.id : null
   const docked = wide && stage === 'result'
   const RUN_FLOOR = 3400
+
+  // Hai man tien trinh khong luu: tai lai giua chung thi khong co gi de tiep
+  // tuc, quay ve man truoc do la dung hon.
+  useEffect(() => {
+    const resume = { analysing: 'input', scoring: 'criteria' }[stage] || stage
+    saveSession({ stage: resume, rfp, proposal, analysis, criteria, suggested, run, warnings })
+  }, [stage, rfp, proposal, analysis, criteria, suggested, run, warnings])
 
   useEffect(() => {
     const mq = window.matchMedia('(min-width: 1180px)')
@@ -72,21 +131,36 @@ export default function App() {
     return s
   }
 
-  const upload = (which, file, input) => {
+  const readAsText = (file) => new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => resolve(String(reader.result))
+    reader.onerror = () => reject(new Error(`${file.name} could not be read.`))
+    reader.readAsText(file)
+  })
+
+  /** PDF/DOCX/PPTX/anh di qua /v1/markitdown/convert; .md/.txt doc thang.
+   *  Chuyen doi mat vai giay va co the hong, nen o nhap hien trang thai rieng. */
+  const upload = async (which, file, input) => {
+    if (input) input.value = ''
     if (!file) return
-    if (/\.pdf$/i.test(file.name)) {
-      setNotice(`PDF import is not wired up yet, so ${file.name} was not loaded. Paste the text instead.`)
-      input.value = ''
+    const ext = extensionOf(file.name)
+    const convertible = CONVERTIBLE.includes(ext)
+    if (!convertible && !PLAIN_TEXT.includes(ext)) {
+      setNotice(`${file.name} is not a format the reader can open. Use PDF, Word, PowerPoint, an image, or plain text.`)
       return
     }
-    const reader = new FileReader()
-    reader.onload = () => {
-      const doc = { name: file.name, text: String(reader.result) }
+    setNotice(null)
+    setConverting(which)
+    try {
+      const text = convertible ? await convertFile(file) : await readAsText(file)
+      if (!text.trim()) throw new Error(`Nothing could be read out of ${file.name}.`)
+      const doc = { name: file.name, text }
       if (which === 'rfp') setRfp(doc); else setProposal(doc)
-      setNotice(null)
+    } catch (err) {
+      setNotice(err.message)
+    } finally {
+      setConverting(null)
     }
-    reader.readAsText(file)
-    input.value = ''
   }
 
   /** Giu man tien trinh du lau de doc duoc, ke ca khi backend tra loi ngay. */
@@ -130,17 +204,42 @@ export default function App() {
     }
   }
 
+  /** Chot tieu chi. Buoc nay hong thi van cham duoc: dung danh sach nguoi dung
+   *  da chon, kem packet du phong — giong het nhanh offline cua agent. */
+  const confirmStep = async (edited) => {
+    try {
+      const out = await confirmCriteria({ rfp, rfp_analysis: analysis, criteria: edited })
+      const notes = [...(out.warnings || [])]
+      for (const m of out.merges || []) {
+        notes.push(`“${m.added}” already existed as “${m.merged_into}”, so the two were scored as one.`)
+      }
+      setCriteria(out.confirmed_criteria)
+      setAnalysis(out.rfp_analysis)
+      return { confirmed: out.confirmed_criteria, sourceAnalysis: out.rfp_analysis, notes }
+    } catch (err) {
+      return {
+        confirmed: edited,
+        sourceAnalysis: withUserPackets(analysis, edited),
+        notes: [`The criteria were used exactly as you set them (${err.message})`],
+      }
+    }
+  }
+
   const startScoring = async () => {
     setStage('scoring')
     window.scrollTo({ top: 0 })
     const stored = matchSample(rfp.text, proposal.text)
     try {
       const weightOf = (c) => COLUMNS.find((col) => col.id === c.recommended_priority)?.weight ?? 2
-      const confirmed = criteria.map((c) => ({ ...c, weight: weightOf(c) }))
+      const edited = criteria.map((c) => ({ ...c, weight: weightOf(c) }))
+
+      // Chot truoc, cham sau. Resolver chay o buoc chot nay, dung mot lan cho
+      // ca danh sach — them tieu chi o man 2 khong ton lan goi model nao.
+      const { confirmed, sourceAnalysis, notes } = await confirmStep(edited)
       const scoring = await withFloor(() => scoreProposal({
-        rfp, proposal, rfp_analysis: analysis, confirmed_criteria: confirmed,
+        rfp, proposal, rfp_analysis: sourceAnalysis, confirmed_criteria: confirmed,
       }))
-      setWarnings((w) => [...w, ...(scoring.warnings || [])])
+      setWarnings((w) => [...w, ...notes, ...(scoring.warnings || [])])
       // `confirmed`, khong phai `criteria`: trang ket qua phai hien dung trong so
       // da dung de cham, tuc trong so cua cot nguoi dung chot.
       setRun({ data: { meta: { proposal_name: proposal.name }, rfp_analysis: analysis, confirmed_criteria: confirmed, scoring }, source: 'api' })
@@ -166,6 +265,7 @@ export default function App() {
   const scoringSteps = useMemo(() => {
     const sections = (proposal.text.match(/^##\s/gm) || []).length
     return [
+      { title: 'Locking the criteria', detail: 'Merging anything that overlaps, linking yours to the RFP', result: 'Criteria locked' },
       { title: 'Reading the proposal', detail: `${sections} sections`, result: `${sections} sections mapped` },
       { title: 'Checking each requirement', detail: 'Addressed, vague, missing or contradicted', result: 'Requirements checked' },
       { title: 'Scoring each criterion', detail: `${criteria.length} criteria with their weights`, result: `${criteria.length} criteria scored` },
@@ -213,7 +313,7 @@ export default function App() {
       <main className="wrap">
         {stage === 'input' && (
           <InputView
-            rfp={rfp} proposal={proposal} sampleId={sampleId} notice={notice}
+            rfp={rfp} proposal={proposal} sampleId={sampleId} notice={notice} converting={converting}
             onRfp={(text) => setRfp(() => ({ name: norm(text) === norm(RFP.text) ? RFP.name : 'Pasted RFP', text }))}
             onProposal={(text) => setProposal(() => {
               const match = SAMPLES.find((x) => norm(x.text) === norm(text))
@@ -230,7 +330,7 @@ export default function App() {
 
         {stage === 'criteria' && (
           <CriteriaView
-            analysis={analysis} criteria={criteria}
+            analysis={analysis} criteria={criteria} suggested={suggested}
             onChange={setCriteria}
             onReset={() => setCriteria(suggested)}
             onRun={startScoring}

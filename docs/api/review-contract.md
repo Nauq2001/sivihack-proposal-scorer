@@ -139,6 +139,37 @@ Khi kết luận là proposal không nhắc gì, để `response_quote: null` v�
 
 ---
 
+## 2.4 `POST /api/confirm-criteria` — chốt tiêu chí
+
+Gọi **một lần**, ngay trước `/api/score`, không phải mỗi lần người dùng thêm tiêu
+chí. Người dùng thêm/xoá/kéo thả thoải mái ở màn 2 mà không tốn lượt gọi model
+nào; bấm "Score the proposal" mới là lúc chốt.
+
+```json
+{ "rfp_analysis": {...}, "raw_rfp_text": "...", "criteria": [ ... ] }
+→ { "confirmed_criteria": [...], "rfp_analysis": {...}, "merges": [...], "warnings": [...] }
+```
+
+Route dựng lại `CriteriaState` của agent rồi chạy resolver
+(`agent/src/rfp_analyst/criteria.py`) cho **riêng** các tiêu chí `origin: "user"`:
+
+- **gộp trùng nghĩa** — `merges: [{added, merged_into}]`, frontend báo cho người dùng;
+- **enrichment** — nối tiêu chí tự thêm vào `requirement_ids`/`source_refs` có thật
+  trong RFP, để nó không bị chấm mù. Không có gì trong RFP đỡ thì để rỗng kèm ghi
+  chú `USER_DEFINED_NOT_RFP`.
+
+Chi phí: **0 giây khi không ai thêm tiêu chí** (không gọi model), khoảng 9 giây cho
+mỗi tiêu chí tự thêm.
+
+`add_or_merge` gọi lại `apply_priority_recommendations`, tức đề xuất của AI ghi đè
+cột người dùng vừa chọn. Route đặt lại lựa chọn của người dùng **sau cùng**: cột họ
+chốt là cuối cùng.
+
+Route hỏng ở bất kỳ đâu cũng không chặn được bước chấm: frontend dùng đúng danh
+sách người dùng đã chọn kèm packet dự phòng, và hiện một câu cảnh báo.
+
+---
+
 ## 3. Lỗi
 
 ```json

@@ -93,12 +93,37 @@ def convert_with_markitdown(path: Path) -> str:
     return extracted
 
 
+MIN_POLISH_RATIO = 0.8
+
+
+def polish_markdown(client: OpenAI, extracted: str) -> str:
+    """Gemini dinh dang lai ban trich xuat, nhung chi khi khong mat chu nao.
+
+    Model co xu huong chep mot doan roi tom tat phan con lai. Ngan hon han ban
+    goc thi tra lai ban goc: dinh dang xau van hon la mat noi dung ma khong ai
+    biet.
+    """
+    cleaned = generate_markdown(client, "Extracted source content:\n\n" + extracted)
+    if len(cleaned) < MIN_POLISH_RATIO * len(extracted):
+        logger.warning(
+            "polish dropped content (%s -> %s chars); keeping the extracted text",
+            len(extracted), len(cleaned),
+        )
+        return extracted
+    return cleaned
+
+
 @router.post("/convert")
 def convert_file(
     file: UploadFile = File(...),
     download: bool = Query(False, description="Return a downloadable .md file instead of JSON."),
+    polish: bool = Query(False, description="Let Gemini reformat the extracted text (documents only)."),
 ):
-    """Convert one uploaded document or image to Markdown using Gemini."""
+    """Convert one uploaded document or image to Markdown.
+
+    Documents are read locally by MarkItDown. Images go through Gemini OCR,
+    which is the only way to get text out of them.
+    """
     try:
         filename = (file.filename or "").replace("\\", "/").rsplit("/", 1)[-1]
         suffix = Path(filename).suffix.lower()
@@ -117,12 +142,21 @@ def convert_file(
             if not size:
                 raise HTTPException(400, "The uploaded file is empty.")
 
-            with make_client() as client:
-                if suffix in IMAGE_EXTENSIONS:
+            if suffix in IMAGE_EXTENSIONS:
+                # Anh khong co lop text, chi co Gemini doc duoc.
+                with make_client() as client:
                     markdown = image_ocr_with_gemini(input_path, client)
-                else:
-                    extracted = convert_with_markitdown(input_path)
-                    markdown = generate_markdown(client, "Extracted source content:\n\n" + extracted)
+            else:
+                # PDF/DOCX/PPTX/XLSX da co san lop text: MarkItDown tra ve
+                # Markdown dung nguyen van. Day tiep qua Gemini de "lam sach"
+                # khong them duoc gi ma mat nguyen van, mat thoi gian, va voi
+                # tai lieu dai thi mat ca noi dung — model tom tat phan con lai
+                # ("Sections 11 through 75 continue with identical content")
+                # va van bao finish_reason="stop", nen loi di qua am tham.
+                markdown = convert_with_markitdown(input_path)
+                if polish:
+                    with make_client() as client:
+                        markdown = polish_markdown(client, markdown)
 
         output_name = f"{Path(filename).stem}.md"
         if download:

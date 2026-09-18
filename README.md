@@ -20,8 +20,8 @@ cd frontend && npm install && npm run dev
 | Endpoint | Tu nhanh | Trang thai |
 |---|---|---|
 | `/api/health` | — | OK |
-| `/v1/markitdown/...` | be-init | OK, chuyen PDF/PPTX sang Markdown |
-| `/rag/retrieve` | rag/development | OK, 168 ban ghi tham chieu |
+| `/v1/markitdown/convert` | be-init | OK, PDF/DOCX/PPTX/XLSX/anh -> Markdown |
+| `/rag/retrieve` | rag/development | OK, tim kiem lai (tu khoa + vector) |
 | `/api/evidence/*` | rag-enterprise | OK, kho doanh nghiep + kiem tra loi hua |
 | `/api/analyze-rfp` | feat/ai | OK, RFP Analyst (~11-13s) |
 | `/api/score` | feat/ai | OK, Proposal Analyst (~13-16s) |
@@ -31,6 +31,15 @@ Hai route nam o `backend/review_routes.py`, chi la lop noi: nap `AI/` va
 
 Can `GEMINI_API_KEY` trong `backend/.env`. **`gemini-2.0-flash` da bi Google go
 khoi API**; ca app dung `gemini-3.8-flash` (xem `.env.example`).
+
+Hai luu y khi cai lan dau:
+
+- `markitdown` phai cai **kem extras** (`requirements.txt` da ghi dung). Ban tran
+  khong keo theo thu vien doc PDF/DOCX, va `/v1/markitdown/convert` se tra
+  "Cannot extract this file" voi moi file.
+- Lan chay dau, RAG tai model nhung `all-MiniLM-L6-v2` (~90 MB) tu Hugging Face
+  nen backend mat khoang mot phut moi len. Khong co mang thi no tu lui ve tim
+  kiem tu khoa, khong lam hong ban danh gia.
 
 Khi backend chua chay, frontend dung ket qua luu san cho 4 proposal mau va hien
 nhan "Stored sample result".
@@ -90,12 +99,21 @@ Khong sua code, chi sua file `.env`.
 
 Luong mot chieu ba man, giua moi man la mot man tien trinh:
 
-1. **Documents** - dan hoac upload RFP + proposal, hoac chon 1 trong 4 mau
+1. **Documents** - dan, keo tha hoac chon file RFP + proposal, hoac chon 1 trong
+   4 mau. PDF/Word/PowerPoint/Excel/anh di qua `/v1/markitdown/convert` (anh thi
+   OCR bang Gemini), `.md`/`.txt` doc thang tai trinh duyet
 2. *(tien trinh)* RFP Analyst doc RFP
 3. **Criteria** - bang 3 cot High/Medium/Low, vi tri ban dau do AI de xuat sau
-   khi doc RFP. Moi the hien san mo ta, ly do duoc xep muc do, va danh sach ma
-   yeu cau no kiem tra. Keo tha hoac bam mui ten de doi cot, them hoac xoa tieu
-   chi, bam "Reset to the RFP suggestion" de quay ve ban goc
+   khi doc RFP. Moi the hien mo ta, ly do duoc xep muc do, va **tung yeu cau no
+   kiem tra** — bam vao mot yeu cau se mo dung doan do trong RFP. Keo tha hoac
+   bam mui ten de doi cot, them hoac xoa tieu chi, bam "Reset to the RFP
+   suggestion" de quay ve ban goc
+
+   Sua cua nguoi dung luon thang: `confirmed_criteria` la nguon su that duy nhat
+   cua buoc cham diem, de xuat cua AI chi la diem khoi dau. Doi cot thi the hien
+   nhan "Moved from High" de khong doc nhu tu mau thuan voi ly do ben duoi. Xoa
+   tieu chi ma lam mot so yeu cau khong con o nao cham thi bang bao ro so luong:
+   nhung yeu cau do van duoc kiem tra va bao cao, nhung khong vao diem nua
 4. *(tien trinh)* Proposal Analyst cham diem
 5. **Result** - khuyen nghi + diem, dai phu yeu cau (danh dau rang buoc cung),
    diem tung tieu chi, findings kem cau sua, khung nguon tra cuu trich dan

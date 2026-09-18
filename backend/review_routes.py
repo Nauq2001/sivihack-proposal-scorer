@@ -171,23 +171,63 @@ def _origin_by_criterion(packets: list[Any]) -> dict[str, str]:
     return {p.criterion_name: p.origin for p in packets}
 
 
-def _recommendation(result: Any, requirements: list[Any]) -> str:
+REVISE_FLOOR = 2.0
+
+
+def _recommendation(result: Any, requirements: list[Any]) -> tuple[str, str]:
     """Khuyen nghi cuoi cung — tinh bang code, khong hoi LLM.
 
     Theo `rubric.json` cua benchmark: vi pham mot rang buoc cung thi khong the
     khuyen nghi gui di, du diem trung binh co cao.
+
+    Duoi REVISE_FLOOR cung khong the goi la "sua duoc": ban 1.4/5 ma AI ta la
+    "non-responsive" van hien "Revise — the gaps are fixable" thi badge dang
+    noi nguoc lai chinh nhan xet ngay ben canh no.
     """
     hard = {r.id for r in requirements if getattr(r, "is_hard_constraint", False)}
     for finding in result.findings:
         if finding.status == "contradicted" and finding.requirement_id in hard:
-            return "do_not_accept_as_written"
+            return "do_not_accept_as_written", "A hard constraint in the RFP is contradicted."
     if any(f.status == "contradicted" for f in result.findings):
-        return "do_not_accept_as_written"
-    return "ready" if result.overall_score >= 4 else "revise"
+        return "do_not_accept_as_written", "The draft contradicts something the RFP states."
+    if result.overall_score < REVISE_FLOOR:
+        return "do_not_accept_as_written", "Too little of the RFP is answered to edit this into shape."
+    if result.overall_score >= 4:
+        return "ready", "Minor edits at most."
+    return "revise", "The gaps are fixable."
 
 
 def _dump(model: Any) -> dict[str, Any]:
     return model.model_dump() if hasattr(model, "model_dump") else dict(model)
+
+
+def _company_checks(raw_proposal_text: str) -> dict[str, Any]:
+    """Loi hua trong ban thao ma cong ty chua chac giu duoc.
+
+    Doi chieu voi rate card va chuan SLA noi bo (backend/enterprise/): khong goi
+    model, khong truy xuat — chi so chuoi, nen lan nao chay cung ra ket qua nhu
+    nhau va moi phat hien deu keo theo mot cau nguyen van. Day la phan RFP
+    khong the bat duoc: RFP khong biet gia san hay gio truc cua ben minh.
+
+    Khong co kho thi bo qua; mot ban danh gia thieu phan nay van dung.
+    """
+    try:
+        from enterprise.evidence import check_commitments
+        from enterprise.router import corpus
+
+        result = check_commitments(corpus(), raw_proposal_text)
+    except Exception as exc:  # pragma: no cover
+        logger.warning("enterprise commitment check unavailable: %s", exc)
+        return {"findings": [], "available": False}
+
+    # Trich dan phai co that trong ban thao, y nhu moi trich dan khac.
+    findings = [f for f in result.get("findings", []) if _find_verbatim(f.get("quote", ""), raw_proposal_text)]
+    return {
+        "findings": findings,
+        "available": True,
+        "standards_checked": result.get("standards_checked", []),
+        "stale_standards": result.get("stale_standards", []),
+    }
 
 
 @router.post("/api/analyze-rfp")
@@ -291,6 +331,143 @@ def analyze_rfp_route(req: AnalyzeRequest) -> dict[str, Any]:
     }
 
 
+# Model cua agent dat extra="forbid". Frontend nhan lai ban phan tich da co
+# them truong hien thi (`short_label`, `origin`, `requirement_ids`...), nen phai
+# go ra truoc khi dung lai state.
+_ANALYSIS_FIELDS = {"client_name", "project_name", "detected_priority_note",
+                    "requirements", "suggested_criteria_weights", "criterion_packets"}
+_REQUIREMENT_FIELDS = {"id", "text", "source_section", "source_quote",
+                       "related_criterion", "is_hard_constraint"}
+_CRITERION_FIELDS = {"name", "description", "weight", "recommended_priority", "priority_reason"}
+_PACKET_FIELDS = {"criterion_name", "origin", "evaluation_guidance", "requirement_ids",
+                  "source_refs", "notes"}
+
+
+def _only(data: dict[str, Any], fields: set[str]) -> dict[str, Any]:
+    return {k: v for k, v in data.items() if k in fields}
+
+
+def _strip_extra_analysis(analysis: dict[str, Any]) -> dict[str, Any]:
+    out = _only(analysis, _ANALYSIS_FIELDS)
+    out["requirements"] = [_only(r, _REQUIREMENT_FIELDS) for r in analysis.get("requirements", [])]
+    out["suggested_criteria_weights"] = [
+        _only(c, _CRITERION_FIELDS) for c in analysis.get("suggested_criteria_weights", [])
+    ]
+    out["criterion_packets"] = [_only(p, _PACKET_FIELDS) for p in analysis.get("criterion_packets", [])]
+    out.setdefault("detected_priority_note", None)
+    return out
+
+
+class ConfirmRequest(BaseModel):
+    rfp_analysis: dict[str, Any]
+    raw_rfp_text: str
+    criteria: list[dict[str, Any]]
+
+
+@router.post("/api/confirm-criteria")
+def confirm_criteria_route(req: ConfirmRequest) -> dict[str, Any]:
+    """Chot danh sach tieu chi — chay resolver dung mot lan, o day.
+
+    Nguoi dung them/xoa/keo tha thoai mai o man 2 ma khong ton mot lan goi model
+    nao. Bam "Score the proposal" moi la luc chot, va chi luc do resolver cua
+    agent (agent/src/rfp_analyst/criteria.py) moi lam hai viec no sinh ra de lam:
+
+      - bat trung y nghia: "Price transparency" khi da co "Pricing Clarity" thi
+        gop lai, thay vi cham hai lan cung mot thu;
+      - noi tieu chi tu them vao requirement/quote co that trong RFP, de no
+        khong bi cham mu.
+
+    Hong o dau cung khong chan duoc buoc cham diem: tra lai dung danh sach
+    nguoi dung gui len kem mot cau canh bao.
+    """
+    try:
+        from rfp_analyst.criteria import create_gemini_resolution_model
+        from rfp_analyst.models import RFPAnalysis, UserCriterionInput
+        from rfp_analyst.service import CriteriaState
+    except ImportError as exc:  # pragma: no cover
+        raise HTTPException(status_code=503, detail=f"RFP Analyst is not installed: {exc}") from exc
+
+    import os
+
+    warnings: list[str] = []
+    try:
+        analysis = RFPAnalysis.model_validate(_strip_extra_analysis(req.rfp_analysis))
+        state = CriteriaState.from_analysis(analysis, req.raw_rfp_text)
+    except Exception as exc:
+        logger.warning("confirm-criteria could not rebuild the state: %s", exc)
+        return {"confirmed_criteria": req.criteria, "rfp_analysis": req.rfp_analysis,
+                "warnings": [f"Criteria were used exactly as you set them ({exc})."], "merges": []}
+
+    wanted = {c["name"] for c in req.criteria}
+    for existing in [c.name for c in state.criteria]:
+        if existing not in wanted:
+            state.remove(existing)
+
+    resolver = None
+    added = [c for c in req.criteria if c.get("origin") == "user"]
+    if added:
+        try:
+            model_name = os.getenv("RFP_ANALYST_MODEL") or os.getenv("GEMINI_MODEL", "gemini-3.8-flash")
+            resolver = create_gemini_resolution_model(model_name)
+        except Exception as exc:
+            logger.warning("resolver unavailable, using the offline fallback: %s", exc)
+            warnings.append("Your own criteria were kept as written; they could not be checked against the RFP.")
+
+    merges: list[dict[str, str]] = []
+    for item in added:
+        try:
+            resolved = state.add_or_merge(
+                UserCriterionInput(
+                    name=item["name"],
+                    description=item.get("description", ""),
+                    weight=item.get("weight") or 1.0,
+                ),
+                resolver,
+            )
+        except Exception as exc:
+            logger.warning("could not resolve %r: %s", item.get("name"), exc)
+            warnings.append(f"“{item.get('name')}” was kept as you wrote it ({exc}).")
+            continue
+        if resolved.is_duplicate and resolved.criterion.name != item["name"]:
+            merges.append({"added": item["name"], "merged_into": resolved.criterion.name})
+
+    # add_or_merge goi lai apply_priority_recommendations, de xuat cua AI ghi de
+    # len cot nguoi dung vua chon. Lua chon cua nguoi dung la cuoi cung, nen dat
+    # lai sau cung.
+    chosen = {c["name"]: c for c in req.criteria}
+    for merge in merges:
+        chosen[merge["merged_into"]] = chosen.pop(merge["added"])
+    for criterion in state.criteria:
+        pick = chosen.get(criterion.name)
+        if pick:
+            criterion.recommended_priority = pick.get("recommended_priority", criterion.recommended_priority)
+            criterion.weight = pick.get("weight") or criterion.weight
+
+    packet_by_name = {p.criterion_name: p for p in state.packets}
+    confirmed = []
+    for criterion in state.criteria:
+        packet = packet_by_name.get(criterion.name)
+        item = _dump(criterion)
+        item["origin"] = packet.origin if packet else "base"
+        item["requirement_ids"] = list(packet.requirement_ids) if packet else []
+        item["source_refs"] = [_dump(r) for r in packet.source_refs] if packet else []
+        confirmed.append(item)
+
+    analysis_payload = _dump(state.analysis)
+    analysis_payload["criterion_packets"] = [_dump(p) for p in state.packets]
+    labels = _short_labels(state.analysis.requirements, req.raw_rfp_text)
+    analysis_payload["requirements"] = [
+        dict(_dump(r), short_label=label) for r, label in zip(state.analysis.requirements, labels)
+    ]
+
+    return {
+        "confirmed_criteria": confirmed,
+        "rfp_analysis": analysis_payload,
+        "merges": merges,
+        "warnings": warnings,
+    }
+
+
 @router.post("/api/score")
 def score_route(payload: dict[str, Any]) -> dict[str, Any]:
     try:
@@ -352,7 +529,8 @@ def score_route(payload: dict[str, Any]) -> dict[str, Any]:
     result.verdict = relabel(result.verdict)
 
     scoring = _dump(result)
-    scoring["recommendation"] = _recommendation(result, requirements)
+    scoring["recommendation"], scoring["recommendation_reason"] = _recommendation(result, requirements)
+    scoring["company_checks"] = _company_checks(proposal_text)
     scoring["warnings"] = (
         [f"{len(unverified)} citation(s) were dropped because the quote is not in the proposal "
          f"word for word: {', '.join(unverified)}."]
