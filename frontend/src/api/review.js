@@ -67,6 +67,11 @@ export async function convertFile(file) {
 /** RFP Analyst: doc RFP ra yeu cau va tieu chi kem trong so. */
 export const analyseRfp = ({ rfp }) => post('/api/analyze-rfp', { raw_rfp_text: rfp.text }, 'Reading the RFP')
 
+/** Chot tieu chi. Chay mot lan, ngay truoc khi cham — khong phai moi lan nguoi
+ *  dung them mot tieu chi. Backend goi resolver cua agent o day. */
+export const confirmCriteria = ({ rfp, rfp_analysis, criteria }) =>
+  post('/api/confirm-criteria', { rfp_analysis, raw_rfp_text: rfp.text, criteria }, 'Confirming the criteria')
+
 /** Scoring Agent: cham proposal theo danh sach tieu chi da chot. */
 export const scoreProposal = ({ rfp, proposal, rfp_analysis, confirmed_criteria }) =>
   post('/api/score', {

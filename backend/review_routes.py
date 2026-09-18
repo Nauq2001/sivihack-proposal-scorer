@@ -330,6 +330,143 @@ def analyze_rfp_route(req: AnalyzeRequest) -> dict[str, Any]:
     }
 
 
+# Model cua agent dat extra="forbid". Frontend nhan lai ban phan tich da co
+# them truong hien thi (`short_label`, `origin`, `requirement_ids`...), nen phai
+# go ra truoc khi dung lai state.
+_ANALYSIS_FIELDS = {"client_name", "project_name", "detected_priority_note",
+                    "requirements", "suggested_criteria_weights", "criterion_packets"}
+_REQUIREMENT_FIELDS = {"id", "text", "source_section", "source_quote",
+                       "related_criterion", "is_hard_constraint"}
+_CRITERION_FIELDS = {"name", "description", "weight", "recommended_priority", "priority_reason"}
+_PACKET_FIELDS = {"criterion_name", "origin", "evaluation_guidance", "requirement_ids",
+                  "source_refs", "notes"}
+
+
+def _only(data: dict[str, Any], fields: set[str]) -> dict[str, Any]:
+    return {k: v for k, v in data.items() if k in fields}
+
+
+def _strip_extra_analysis(analysis: dict[str, Any]) -> dict[str, Any]:
+    out = _only(analysis, _ANALYSIS_FIELDS)
+    out["requirements"] = [_only(r, _REQUIREMENT_FIELDS) for r in analysis.get("requirements", [])]
+    out["suggested_criteria_weights"] = [
+        _only(c, _CRITERION_FIELDS) for c in analysis.get("suggested_criteria_weights", [])
+    ]
+    out["criterion_packets"] = [_only(p, _PACKET_FIELDS) for p in analysis.get("criterion_packets", [])]
+    out.setdefault("detected_priority_note", None)
+    return out
+
+
+class ConfirmRequest(BaseModel):
+    rfp_analysis: dict[str, Any]
+    raw_rfp_text: str
+    criteria: list[dict[str, Any]]
+
+
+@router.post("/api/confirm-criteria")
+def confirm_criteria_route(req: ConfirmRequest) -> dict[str, Any]:
+    """Chot danh sach tieu chi — chay resolver dung mot lan, o day.
+
+    Nguoi dung them/xoa/keo tha thoai mai o man 2 ma khong ton mot lan goi model
+    nao. Bam "Score the proposal" moi la luc chot, va chi luc do resolver cua
+    agent (agent/src/rfp_analyst/criteria.py) moi lam hai viec no sinh ra de lam:
+
+      - bat trung y nghia: "Price transparency" khi da co "Pricing Clarity" thi
+        gop lai, thay vi cham hai lan cung mot thu;
+      - noi tieu chi tu them vao requirement/quote co that trong RFP, de no
+        khong bi cham mu.
+
+    Hong o dau cung khong chan duoc buoc cham diem: tra lai dung danh sach
+    nguoi dung gui len kem mot cau canh bao.
+    """
+    try:
+        from rfp_analyst.criteria import create_gemini_resolution_model
+        from rfp_analyst.models import RFPAnalysis, UserCriterionInput
+        from rfp_analyst.service import CriteriaState
+    except ImportError as exc:  # pragma: no cover
+        raise HTTPException(status_code=503, detail=f"RFP Analyst is not installed: {exc}") from exc
+
+    import os
+
+    warnings: list[str] = []
+    try:
+        analysis = RFPAnalysis.model_validate(_strip_extra_analysis(req.rfp_analysis))
+        state = CriteriaState.from_analysis(analysis, req.raw_rfp_text)
+    except Exception as exc:
+        logger.warning("confirm-criteria could not rebuild the state: %s", exc)
+        return {"confirmed_criteria": req.criteria, "rfp_analysis": req.rfp_analysis,
+                "warnings": [f"Criteria were used exactly as you set them ({exc})."], "merges": []}
+
+    wanted = {c["name"] for c in req.criteria}
+    for existing in [c.name for c in state.criteria]:
+        if existing not in wanted:
+            state.remove(existing)
+
+    resolver = None
+    added = [c for c in req.criteria if c.get("origin") == "user"]
+    if added:
+        try:
+            model_name = os.getenv("RFP_ANALYST_MODEL") or os.getenv("GEMINI_MODEL", "gemini-3.8-flash")
+            resolver = create_gemini_resolution_model(model_name)
+        except Exception as exc:
+            logger.warning("resolver unavailable, using the offline fallback: %s", exc)
+            warnings.append("Your own criteria were kept as written; they could not be checked against the RFP.")
+
+    merges: list[dict[str, str]] = []
+    for item in added:
+        try:
+            resolved = state.add_or_merge(
+                UserCriterionInput(
+                    name=item["name"],
+                    description=item.get("description", ""),
+                    weight=item.get("weight") or 1.0,
+                ),
+                resolver,
+            )
+        except Exception as exc:
+            logger.warning("could not resolve %r: %s", item.get("name"), exc)
+            warnings.append(f"“{item.get('name')}” was kept as you wrote it ({exc}).")
+            continue
+        if resolved.is_duplicate and resolved.criterion.name != item["name"]:
+            merges.append({"added": item["name"], "merged_into": resolved.criterion.name})
+
+    # add_or_merge goi lai apply_priority_recommendations, de xuat cua AI ghi de
+    # len cot nguoi dung vua chon. Lua chon cua nguoi dung la cuoi cung, nen dat
+    # lai sau cung.
+    chosen = {c["name"]: c for c in req.criteria}
+    for merge in merges:
+        chosen[merge["merged_into"]] = chosen.pop(merge["added"])
+    for criterion in state.criteria:
+        pick = chosen.get(criterion.name)
+        if pick:
+            criterion.recommended_priority = pick.get("recommended_priority", criterion.recommended_priority)
+            criterion.weight = pick.get("weight") or criterion.weight
+
+    packet_by_name = {p.criterion_name: p for p in state.packets}
+    confirmed = []
+    for criterion in state.criteria:
+        packet = packet_by_name.get(criterion.name)
+        item = _dump(criterion)
+        item["origin"] = packet.origin if packet else "base"
+        item["requirement_ids"] = list(packet.requirement_ids) if packet else []
+        item["source_refs"] = [_dump(r) for r in packet.source_refs] if packet else []
+        confirmed.append(item)
+
+    analysis_payload = _dump(state.analysis)
+    analysis_payload["criterion_packets"] = [_dump(p) for p in state.packets]
+    labels = _short_labels(state.analysis.requirements, req.raw_rfp_text)
+    analysis_payload["requirements"] = [
+        dict(_dump(r), short_label=label) for r, label in zip(state.analysis.requirements, labels)
+    ]
+
+    return {
+        "confirmed_criteria": confirmed,
+        "rfp_analysis": analysis_payload,
+        "merges": merges,
+        "warnings": warnings,
+    }
+
+
 @router.post("/api/score")
 def score_route(payload: dict[str, Any]) -> dict[str, Any]:
     try:

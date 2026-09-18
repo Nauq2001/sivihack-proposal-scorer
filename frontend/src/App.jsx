@@ -7,7 +7,7 @@ import SourcePane from './components/SourcePane.jsx'
 import { CitationContext } from './components/Citation.jsx'
 import { RFP, SAMPLES, matchSample, sampleById } from './data/samples.js'
 import { norm } from './lib/markdown.js'
-import { CONVERTIBLE, PLAIN_TEXT, analyseRfp, convertFile, extensionOf, scoreProposal } from './api/review.js'
+import { CONVERTIBLE, PLAIN_TEXT, analyseRfp, confirmCriteria, convertFile, extensionOf, scoreProposal } from './api/review.js'
 
 const firstSample = SAMPLES[0]
 
@@ -204,17 +204,42 @@ export default function App() {
     }
   }
 
+  /** Chot tieu chi. Buoc nay hong thi van cham duoc: dung danh sach nguoi dung
+   *  da chon, kem packet du phong — giong het nhanh offline cua agent. */
+  const confirmStep = async (edited) => {
+    try {
+      const out = await confirmCriteria({ rfp, rfp_analysis: analysis, criteria: edited })
+      const notes = [...(out.warnings || [])]
+      for (const m of out.merges || []) {
+        notes.push(`“${m.added}” already existed as “${m.merged_into}”, so the two were scored as one.`)
+      }
+      setCriteria(out.confirmed_criteria)
+      setAnalysis(out.rfp_analysis)
+      return { confirmed: out.confirmed_criteria, sourceAnalysis: out.rfp_analysis, notes }
+    } catch (err) {
+      return {
+        confirmed: edited,
+        sourceAnalysis: withUserPackets(analysis, edited),
+        notes: [`The criteria were used exactly as you set them (${err.message})`],
+      }
+    }
+  }
+
   const startScoring = async () => {
     setStage('scoring')
     window.scrollTo({ top: 0 })
     const stored = matchSample(rfp.text, proposal.text)
     try {
       const weightOf = (c) => COLUMNS.find((col) => col.id === c.recommended_priority)?.weight ?? 2
-      const confirmed = criteria.map((c) => ({ ...c, weight: weightOf(c) }))
+      const edited = criteria.map((c) => ({ ...c, weight: weightOf(c) }))
+
+      // Chot truoc, cham sau. Resolver chay o buoc chot nay, dung mot lan cho
+      // ca danh sach — them tieu chi o man 2 khong ton lan goi model nao.
+      const { confirmed, sourceAnalysis, notes } = await confirmStep(edited)
       const scoring = await withFloor(() => scoreProposal({
-        rfp, proposal, rfp_analysis: withUserPackets(analysis, confirmed), confirmed_criteria: confirmed,
+        rfp, proposal, rfp_analysis: sourceAnalysis, confirmed_criteria: confirmed,
       }))
-      setWarnings((w) => [...w, ...(scoring.warnings || [])])
+      setWarnings((w) => [...w, ...notes, ...(scoring.warnings || [])])
       // `confirmed`, khong phai `criteria`: trang ket qua phai hien dung trong so
       // da dung de cham, tuc trong so cua cot nguoi dung chot.
       setRun({ data: { meta: { proposal_name: proposal.name }, rfp_analysis: analysis, confirmed_criteria: confirmed, scoring }, source: 'api' })
@@ -240,6 +265,7 @@ export default function App() {
   const scoringSteps = useMemo(() => {
     const sections = (proposal.text.match(/^##\s/gm) || []).length
     return [
+      { title: 'Locking the criteria', detail: 'Merging anything that overlaps, linking yours to the RFP', result: 'Criteria locked' },
       { title: 'Reading the proposal', detail: `${sections} sections`, result: `${sections} sections mapped` },
       { title: 'Checking each requirement', detail: 'Addressed, vague, missing or contradicted', result: 'Requirements checked' },
       { title: 'Scoring each criterion', detail: `${criteria.length} criteria with their weights`, result: `${criteria.length} criteria scored` },
