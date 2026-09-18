@@ -17,20 +17,26 @@ Test:
 
 import os
 from pathlib import Path
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from dotenv import load_dotenv
 if __package__:
     from .rag.api import load_store, retrieve_payload
+    from .knowledge.service import KnowledgeService
 else:
     from rag.api import load_store, retrieve_payload
+    from knowledge.service import KnowledgeService
 
 load_dotenv()
 
 app = FastAPI(title="SiviHack Backend")
 
 RAG_STORE = load_store(Path(__file__).parent / "rag" / "data" / "records.jsonl")
+KNOWLEDGE_SERVICE = KnowledgeService(
+    Path(__file__).parent / "knowledge" / "data",
+    RAG_STORE.embedder,
+)
 
 # Cho phep frontend (Vite dev server) goi sang trong luc dev
 app.add_middleware(
@@ -64,6 +70,11 @@ class RagRequest(BaseModel):
     top_k: int | None = None
     top_k_per_type: int = 1
     min_hybrid_score: float = 0.45
+
+
+class KnowledgeSearchRequest(BaseModel):
+    query: str
+    top_k: int = 5
 
 
 def call_gemini(prompt: str) -> str:
@@ -118,5 +129,21 @@ def ask(req: AskRequest):
 def retrieve_rag(req: RagRequest):
     try:
         return retrieve_payload(RAG_STORE, req.model_dump())
+    except (TypeError, ValueError) as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+
+@app.post("/knowledge/files")
+async def add_knowledge_file(file: UploadFile = File(...)):
+    try:
+        return KNOWLEDGE_SERVICE.add_document(file.filename or "", await file.read())
+    except (TypeError, ValueError) as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+
+@app.post("/knowledge/search")
+def search_knowledge(req: KnowledgeSearchRequest):
+    try:
+        return {"matches": KNOWLEDGE_SERVICE.search(req.query, req.top_k)}
     except (TypeError, ValueError) as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
