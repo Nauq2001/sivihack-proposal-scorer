@@ -64,6 +64,82 @@ def _short_labels(requirements: list[Any]) -> list[str]:
     return labels
 
 
+
+def _normalise(text: str) -> tuple[str, list[int]]:
+    """Ban thuong hoa de tim trich dan, kem ban do chi so ve van ban goc.
+
+    Bo dau nhan Markdown, gom khoang trang, thong nhat gach ngang va dau nhay.
+    Nho ban do nay, doan tim duoc van duoc cat ra tu van ban goc nguyen van.
+    """
+    out: list[str] = []
+    index: list[int] = []
+    prev_space = False
+    for i, ch in enumerate(text):
+        if ch in "*_`#>":
+            continue
+        if ch in "\u2013\u2014":
+            ch = "-"
+        elif ch in "\u2018\u2019":
+            ch = "'"
+        elif ch in "\u201c\u201d":
+            ch = '"'
+        if ch.isspace():
+            if prev_space:
+                continue
+            prev_space = True
+            ch = " "
+        else:
+            prev_space = False
+        out.append(ch.lower())
+        index.append(i)
+    return "".join(out), index
+
+
+def _find_verbatim(quote: str, source: str) -> str | None:
+    """Doan nguyen van trong `source` ung voi `quote`, hoac None."""
+    if quote and quote in source:
+        return quote
+    norm_source, index = _normalise(source)
+    norm_quote, _ = _normalise(quote)
+    norm_quote = norm_quote.strip()
+    if not norm_quote:
+        return None
+    at = norm_source.find(norm_quote)
+    if at == -1:
+        return None
+    return source[index[at]: index[at + len(norm_quote) - 1] + 1]
+
+
+def _repair_analysis(analysis: Any, raw_rfp_text: str) -> list[str]:
+    """Sua trich dan ve dung nguyen van; bo yeu cau nao khong tim duoc.
+
+    Bo mot yeu cau van hon la bao hong ca lan doc RFP: nguoi dung mat mot dong
+    trong bang phu, con hon man hinh trang khong co gi.
+    """
+    dropped: list[str] = []
+    kept = []
+    for requirement in analysis.requirements:
+        fixed = _find_verbatim(requirement.source_quote, raw_rfp_text)
+        if fixed is None:
+            dropped.append(requirement.id)
+            continue
+        requirement.source_quote = fixed
+        kept.append(requirement)
+    analysis.requirements = kept
+
+    ids = {r.id for r in kept}
+    for packet in analysis.criterion_packets:
+        packet.requirement_ids = [i for i in packet.requirement_ids if i in ids]
+        refs = []
+        for ref in packet.source_refs:
+            fixed = _find_verbatim(ref.quote, raw_rfp_text)
+            if fixed is not None:
+                ref.quote = fixed
+                refs.append(ref)
+        packet.source_refs = refs
+    return dropped
+
+
 def _origin_by_criterion(packets: list[Any]) -> dict[str, str]:
     return {p.criterion_name: p.origin for p in packets}
 
@@ -95,6 +171,7 @@ def analyze_rfp_route(req: AnalyzeRequest) -> dict[str, Any]:
     try:
         from rfp_analyst.analyst import AnalystError, analyze_rfp, create_gemini_analysis_model
         from rfp_analyst.service import CriteriaState
+        from rfp_analyst.validation import ContractError, validate_analysis
     except ImportError as exc:  # pragma: no cover
         raise HTTPException(status_code=503, detail=f"RFP Analyst is not installed: {exc}") from exc
 
@@ -103,26 +180,53 @@ def analyze_rfp_route(req: AnalyzeRequest) -> dict[str, Any]:
     model_name = os.getenv("RFP_ANALYST_MODEL") or os.getenv("GEMINI_MODEL", "gemini-flash-latest")
     attempts = int(os.getenv("RFP_ANALYST_ATTEMPTS", "3"))
 
-    # analyze_rfp goi model dung mot lan roi validate_analysis bac bo neu co mot
-    # trich dan khong khop nguyen van (QUOTE_NOT_FOUND). Do la dao dong cua model
-    # chu khong phai loi co dinh, nen thu lai vai lan truoc khi bao hong.
+    # analyze_rfp goi model dung mot lan, roi validate_analysis bac bo CA BAN
+    # PHAN TICH neu chi mot trich dan khong khop nguyen van (ContractError:
+    # QUOTE_NOT_FOUND). Day la dao dong cua model, khong phai loi co dinh, nen:
+    #   1. sua trich dan ve dung nguyen van, bo yeu cau nao khong tim duoc
+    #   2. neu van hong thi thu lai ca lan goi model
+    # Hoan buoc validate cua analyst lai: neu de no chay trong analyze_rfp thi
+    # mot trich dan lech lam mat luon ca object phan tich, khong con gi de sua.
+    # Tu validate lai ngay sau khi da sua, o duoi.
+    import rfp_analyst.analyst as analyst_module
+
+    original_validate = analyst_module.validate_analysis
+    analysis = None
+    dropped: list[str] = []
     last: Exception | None = None
-    for attempt in range(1, attempts + 1):
-        try:
-            model = create_gemini_analysis_model(model_name)
-            analysis = analyze_rfp(req.raw_rfp_text, model)
-            break
-        except AnalystError as exc:
-            last = exc
-            logger.warning("analyze-rfp attempt %s/%s failed: %s", attempt, attempts, exc)
-        except Exception as exc:  # loi mang, het quota
-            logger.exception("analyze-rfp failed")
-            raise HTTPException(status_code=502, detail=f"Reading the RFP failed: {exc}") from exc
-    else:
+    try:
+        analyst_module.validate_analysis = lambda *_args, **_kwargs: None
+        for attempt in range(1, attempts + 1):
+            try:
+                model = create_gemini_analysis_model(model_name)
+                analysis = analyze_rfp(req.raw_rfp_text, model)
+                break
+            except (AnalystError, ContractError) as exc:
+                last = exc
+                logger.warning("analyze-rfp attempt %s/%s failed: %s", attempt, attempts, exc)
+            except Exception as exc:  # loi mang, het quota
+                logger.exception("analyze-rfp failed")
+                raise HTTPException(status_code=502, detail=f"Reading the RFP failed: {exc}") from exc
+    finally:
+        analyst_module.validate_analysis = original_validate
+
+    if analysis is None:
         raise HTTPException(
             status_code=502,
             detail=f"Reading the RFP failed after {attempts} attempts: {last}",
         )
+
+    # Chot lai: sua trich dan lech va bo yeu cau khong doi chieu duoc.
+    dropped = _repair_analysis(analysis, req.raw_rfp_text)
+    if not analysis.requirements:
+        raise HTTPException(
+            status_code=502,
+            detail="No requirement quote could be matched back to the RFP text.",
+        )
+    try:
+        validate_analysis(analysis, req.raw_rfp_text)
+    except ContractError as exc:
+        raise HTTPException(status_code=502, detail=f"Reading the RFP failed: {exc}") from exc
 
     # Buoc nay gan recommended_priority/priority_reason cho tung tieu chi.
     state = CriteriaState.from_analysis(analysis, req.raw_rfp_text)
@@ -145,10 +249,18 @@ def analyze_rfp_route(req: AnalyzeRequest) -> dict[str, Any]:
 
     analysis_payload["suggested_criteria_weights"] = criteria_payload
 
+    warnings: list[str] = []
+    if dropped:
+        warnings.append(
+            f"{len(dropped)} requirement(s) were dropped because their quote could not be "
+            f"matched word for word in the RFP: {', '.join(dropped)}."
+        )
+
     return {
         "schema_version": "3.0",
         "rfp_analysis": analysis_payload,
         "confirmed_criteria": criteria_payload,
+        "warnings": warnings,
     }
 
 
@@ -171,6 +283,34 @@ def score_route(payload: dict[str, Any]) -> dict[str, Any]:
         logger.exception("score failed")
         raise HTTPException(status_code=502, detail=f"Scoring failed: {exc}") from exc
 
+    # Kiem chung trich dan: moi `citation` phai co nguyen van trong proposal.
+    # Sua duoc thi sua, khong thi bo trong — mot cau trich bia lam mat niem tin
+    # vao ca ban danh gia, va giao dien se khong to sang duoc gi.
+    proposal_text = scoring_input.raw_proposal_text
+    unverified: list[str] = []
+    for finding in result.findings:
+        if not finding.citation:
+            continue
+        fixed = _find_verbatim(finding.citation, proposal_text)
+        if fixed is None:
+            unverified.append(finding.requirement_id)
+            finding.citation = ""
+        else:
+            finding.citation = fixed
+
+    for criterion in result.criteria:
+        kept = []
+        for quote in criterion.citations:
+            fixed = _find_verbatim(quote, proposal_text)
+            if fixed is not None:
+                kept.append(fixed)
+        criterion.citations = kept
+
     scoring = _dump(result)
     scoring["recommendation"] = _recommendation(result, scoring_input.rfp_analysis.requirements)
+    scoring["warnings"] = (
+        [f"{len(unverified)} citation(s) were dropped because the quote is not in the proposal "
+         f"word for word: {', '.join(unverified)}."]
+        if unverified else []
+    )
     return scoring

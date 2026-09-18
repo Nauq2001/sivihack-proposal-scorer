@@ -73,7 +73,7 @@ function FixBox({ text }) {
   )
 }
 
-export default function ResultView({ result, source, error, sampleId, onSample, onRestart }) {
+export default function ResultView({ result, source, error, sampleId, warnings = [], onSample, onRestart }) {
   const [flash, setFlash] = useState(null)
   const { rfp_analysis: analysis, confirmed_criteria: criteria, scoring } = result
 
@@ -97,6 +97,13 @@ export default function ResultView({ result, source, error, sampleId, onSample, 
         <p className="notice reveal">
           <strong>Stored sample result.</strong> {error || 'The scoring service is not connected.'} Showing the saved
           review for {result.meta.proposal_name}.
+        </p>
+      )}
+
+      {warnings.length > 0 && (
+        <p className="notice reveal">
+          <strong>Heads up.</strong> {warnings.join(' ')} Everything else below is quoted word for word from the
+          documents.
         </p>
       )}
 

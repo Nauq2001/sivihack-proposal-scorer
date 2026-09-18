@@ -6,6 +6,7 @@ import ResultView from './components/ResultView.jsx'
 import SourcePane from './components/SourcePane.jsx'
 import { CitationContext } from './components/Citation.jsx'
 import { RFP, SAMPLES, matchSample, sampleById } from './data/samples.js'
+import { norm } from './lib/markdown.js'
 import { analyseRfp, scoreProposal } from './api/review.js'
 
 const firstSample = SAMPLES[0]
@@ -27,6 +28,7 @@ export default function App() {
   const [suggested, setSuggested] = useState([])
   const [run, setRun] = useState({ data: null, source: null })
   const [notice, setNotice] = useState(null)
+  const [warnings, setWarnings] = useState([])
   const [citation, setCitation] = useState(null)
   const [tab, setTab] = useState('prop')
   const [drawer, setDrawer] = useState(false)
@@ -104,11 +106,13 @@ export default function App() {
     setCitation(null)
     window.scrollTo({ top: 0 })
     const stored = matchSample(useRfp.text, useProposal.text)
+    setWarnings([])
     try {
       const data = await withFloor(() => analyseRfp({ rfp: useRfp }))
       setAnalysis(data.rfp_analysis)
       setCriteria(data.confirmed_criteria)
       setSuggested(data.confirmed_criteria)
+      setWarnings(data.warnings || [])
       setRun({ data: null, source: 'api' })
       setStage('criteria')
     } catch (err) {
@@ -136,6 +140,7 @@ export default function App() {
       const scoring = await withFloor(() => scoreProposal({
         rfp, proposal, rfp_analysis: analysis, confirmed_criteria: confirmed,
       }))
+      setWarnings((w) => [...w, ...(scoring.warnings || [])])
       setRun({ data: { meta: { proposal_name: proposal.name }, rfp_analysis: analysis, confirmed_criteria: criteria, scoring }, source: 'api' })
       setStage('result')
     } catch (err) {
@@ -207,8 +212,11 @@ export default function App() {
         {stage === 'input' && (
           <InputView
             rfp={rfp} proposal={proposal} sampleId={sampleId} notice={notice}
-            onRfp={(text) => setRfp((d) => ({ ...d, text }))}
-            onProposal={(text) => setProposal((d) => ({ ...d, text }))}
+            onRfp={(text) => setRfp(() => ({ name: norm(text) === norm(RFP.text) ? RFP.name : 'Pasted RFP', text }))}
+            onProposal={(text) => setProposal(() => {
+              const match = SAMPLES.find((x) => norm(x.text) === norm(text))
+              return { name: match ? match.name : 'Pasted proposal', text }
+            })}
             onSample={(id) => loadSample(id)}
             onUpload={upload}
             onRun={() => startAnalysis()}
@@ -224,6 +232,7 @@ export default function App() {
             onChange={setCriteria}
             onReset={() => setCriteria(suggested)}
             onRun={startScoring}
+            warnings={warnings}
           />
         )}
 
@@ -245,7 +254,7 @@ export default function App() {
 
         {stage === 'result' && run.data && (
           <ResultView
-            result={run.data} source={run.source} error={run.error} sampleId={sampleId}
+            result={run.data} source={run.source} error={run.error} sampleId={sampleId} warnings={warnings}
             onSample={(id) => {
               const s = loadSample(id)
               startAnalysis({ rfp: { ...RFP }, proposal: { name: s.name, text: s.text } })

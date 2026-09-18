@@ -81,7 +81,7 @@ function AddForm({ onAdd, onCancel }) {
   )
 }
 
-export default function CriteriaView({ analysis, criteria, onChange, onReset, onRun }) {
+export default function CriteriaView({ analysis, criteria, onChange, onReset, onRun, warnings = [] }) {
   const [adding, setAdding] = useState(null)
   const [over, setOver] = useState(null)
 
@@ -139,6 +139,12 @@ export default function CriteriaView({ analysis, criteria, onChange, onReset, on
           <button type="button" className="btn btn-ghost" onClick={onReset}>Reset to the RFP suggestion</button>
         </div>
       </div>
+
+      {warnings.length > 0 && (
+        <p className="notice reveal">
+          <strong>Heads up.</strong> {warnings.join(' ')}
+        </p>
+      )}
 
       {analysis.detected_priority_note && (
         <aside className="priority-note reveal">
