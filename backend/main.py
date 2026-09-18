@@ -63,7 +63,7 @@ class RagRequest(BaseModel):
     requirement_context: str = ''
     top_k: int | None = None
     top_k_per_type: int = 1
-    relevance_threshold: int = 2
+    min_hybrid_score: float = 0.45
 
 
 def call_gemini(prompt: str) -> str:

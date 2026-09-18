@@ -1,6 +1,9 @@
 import json
+from pathlib import Path
 
 from .engine import BASE_CRITERIA, RAG_CRITERIA, BenchmarkStore, canonical_id
+from .embedding import SentenceEmbedder
+from .index import DEFAULT_VECTOR_INDEX, load_index
 
 
 def format_benchmark_references(matches):
@@ -31,6 +34,13 @@ def retrieve_payload(store, payload):
         raise ValueError('criterion text and document contexts must be strings')
     if sum(map(len, parts)) > 100_000:
         raise ValueError('retrieval context exceeds 100000 characters; send relevant sections')
+    if 'relevance_threshold' in payload:
+        raise ValueError('relevance_threshold was removed; use min_hybrid_score between 0 and 1')
+    min_hybrid_score = payload.get('min_hybrid_score', 0.45)
+    if (isinstance(min_hybrid_score, bool)
+            or not isinstance(min_hybrid_score, (int, float))
+            or not 0 <= min_hybrid_score <= 1):
+        raise ValueError('min_hybrid_score must be a number between 0 and 1')
     query = ' '.join(parts)
     top_k = payload.get("top_k")
     if top_k is None:
@@ -39,7 +49,7 @@ def retrieve_payload(store, payload):
         criterion_id,
         query,
         top_k,
-        payload.get("relevance_threshold", 2),
+        min_hybrid_score=min_hybrid_score,
     )
     return {'criterion_id': criterion_id,
             'retrieval_mode': 'base' if normalized_id in BASE_CRITERIA else 'custom',
@@ -47,5 +57,14 @@ def retrieve_payload(store, payload):
                         for match in result]}
 
 
-def load_store(path=None):
-    return BenchmarkStore.from_file() if path is None else BenchmarkStore.from_file(path)
+def retrieve_benchmark_references(store, payload):
+    result = retrieve_payload(store, payload)
+    return format_benchmark_references(result['matches'])
+
+
+def load_store(path=None, index_path=None, embedder=None):
+    records_path = Path(path) if path is not None else None
+    records_store = BenchmarkStore.from_file() if records_path is None else BenchmarkStore.from_file(records_path)
+    vector_index = load_index(index_path or DEFAULT_VECTOR_INDEX, records_store.records)
+    embedder = embedder or SentenceEmbedder(vector_index.model_name)
+    return BenchmarkStore(records_store.records, vectors=vector_index.vectors, embedder=embedder)
