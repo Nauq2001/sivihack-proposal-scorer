@@ -30,7 +30,7 @@ Hai route nam o `backend/review_routes.py`, chi la lop noi: nap `AI/` va
 `agent/src`, goi ham co san, doi loi thanh HTTP. Logic cham diem van o nhanh AI.
 
 Can `GEMINI_API_KEY` trong `backend/.env`. **`gemini-2.0-flash` da bi Google go
-khoi API**, dung `gemini-flash-latest` (xem `.env.example`).
+khoi API**; ca app dung `gemini-3.8-flash` (xem `.env.example`).
 
 Khi backend chua chay, frontend dung ket qua luu san cho 4 proposal mau va hien
 nhan "Stored sample result".
@@ -76,7 +76,7 @@ Khong sua code, chi sua file `.env`.
 ## 4. Luu y bao mat
 
 - File `.env` da nam trong `.gitignore` — KHONG commit len Git, KHONG paste key vao Slack/Discord/Zalo cong khai.
-- Key Gemini co limit $100 cho ca doi — dung `gemini-2.0-flash` (nhe, re) khi dev/test, chi doi model manh hon (`gemini-1.5-pro` neu can) luc lam tinh nang quan trong nhat.
+- Key Gemini co limit $100 cho ca doi. `gemini-2.0-flash` da bi go khoi API; hien dung `gemini-3.8-flash` cho ca hai agent.
 - Voucher n8n Cloud Pro (neu can workflow automation): kich hoat theo huong dan BTC gui, ma la `2026-COMMUNITY-HACKATHON-FRANKFURT-9AA2EB02`.
 
 ## 5. Khi nhan de bai ngay mai

@@ -184,7 +184,7 @@ You own the actual "brain" of the tool:
   calls' output (see below) so the JSON is validated, not just hopefully
   well-formed — handle retries/repair if a call returns invalid JSON.
 - **Model/provider choice**: `backend/main.py`'s `call_ai()` already switches
-  between Gemini (default, `gemini-2.0-flash`) and Anthropic via `AI_PROVIDER`
+  between Gemini (default, `gemini-3.8-flash`) and Anthropic via `AI_PROVIDER`
   in `.env`. Keep your logic provider-agnostic — don't hardcode to one API's
   SDK/response shape, since the shared Gemini budget ($100 team-wide cap)
   could run out mid-hackathon and the team may need to flip to Anthropic.
@@ -370,7 +370,7 @@ well the RAG heuristics score its writing quality.
   `.env`, Anthropic fallback) — reuse this pattern for both your LLM calls
   rather than inventing a new one.
 - `backend/.env` — gitignored; copy from `.env.example` if missing. Gemini key
-  has a **team-wide $100 lifetime cap** — default to `gemini-2.0-flash` while
+  has a **team-wide $100 lifetime cap** — default to `gemini-3.8-flash` while
   iterating on your prompts, only reach for a stronger model once they're
   close to final.
 - `backend/requirements.txt` — fastapi, uvicorn, pydantic, python-dotenv,
