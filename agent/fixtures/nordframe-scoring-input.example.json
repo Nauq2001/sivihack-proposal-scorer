@@ -1,0 +1,374 @@
+{
+  "rfp_analysis": {
+    "client_name": "NordFrame Logistics GmbH",
+    "project_name": "Warehouse Inventory Dashboard",
+    "detected_priority_note": "AI inference, not user-confirmed: operational continuity appears important. Requirement 3 specifies the existing PostgreSQL database and says \"migration to a new database\" is prohibited; Requirement 5 requests \"minimal disruption\". These support an emphasis on continuity, but do not establish that it outranks all other priorities. Use as explanatory context only; do not add requirements or change weights.",
+    "requirements": [
+      {
+        "id": "REQ-001",
+        "text": "A web-based dashboard showing inventory levels.",
+        "related_criterion": "Scope & Deliverables Clarity",
+        "is_hard_constraint": false,
+        "source_section": "Requirements / 1",
+        "source_quote": "A **web-based dashboard** showing real-time inventory levels across all 6\n   warehouses."
+      },
+      {
+        "id": "REQ-002",
+        "text": "Real-time inventory levels.",
+        "related_criterion": "Scope & Deliverables Clarity",
+        "is_hard_constraint": false,
+        "source_section": "Requirements / 1",
+        "source_quote": "A **web-based dashboard** showing real-time inventory levels across all 6\n   warehouses."
+      },
+      {
+        "id": "REQ-003",
+        "text": "Inventory levels across all 6 warehouses.",
+        "related_criterion": "Scope & Deliverables Clarity",
+        "is_hard_constraint": false,
+        "source_section": "Requirements / 1",
+        "source_quote": "A **web-based dashboard** showing real-time inventory levels across all 6\n   warehouses."
+      },
+      {
+        "id": "REQ-004",
+        "text": "Automated low-stock alerts sent to warehouse managers when items fall below a threshold.",
+        "related_criterion": "Scope & Deliverables Clarity",
+        "is_hard_constraint": false,
+        "source_section": "Requirements / 2",
+        "source_quote": "**Automated low-stock alerts** sent to warehouse managers when items fall\n   below a configurable threshold."
+      },
+      {
+        "id": "REQ-005",
+        "text": "A configurable low-stock threshold.",
+        "related_criterion": "Scope & Deliverables Clarity",
+        "is_hard_constraint": false,
+        "source_section": "Requirements / 2",
+        "source_quote": "**Automated low-stock alerts** sent to warehouse managers when items fall\n   below a configurable threshold."
+      },
+      {
+        "id": "REQ-006",
+        "text": "Integration with our existing PostgreSQL inventory database.",
+        "related_criterion": "Scope & Deliverables Clarity",
+        "is_hard_constraint": false,
+        "source_section": "Requirements / 3",
+        "source_quote": "Integration with our **existing PostgreSQL inventory database** — no\n   migration to a new database."
+      },
+      {
+        "id": "REQ-007",
+        "text": "No migration to a new database.",
+        "related_criterion": "Scope & Deliverables Clarity",
+        "is_hard_constraint": true,
+        "source_section": "Requirements / 3",
+        "source_quote": "Integration with our **existing PostgreSQL inventory database** — no\n   migration to a new database."
+      },
+      {
+        "id": "REQ-008",
+        "text": "Warehouse managers should only see their own site.",
+        "related_criterion": "Scope & Deliverables Clarity",
+        "is_hard_constraint": true,
+        "source_section": "Requirements / 4",
+        "source_quote": "**Role-based access** — warehouse managers should only see their own\n   site; HQ staff should see all sites."
+      },
+      {
+        "id": "REQ-009",
+        "text": "HQ staff should see all sites.",
+        "related_criterion": "Scope & Deliverables Clarity",
+        "is_hard_constraint": false,
+        "source_section": "Requirements / 4",
+        "source_quote": "**Role-based access** — warehouse managers should only see their own\n   site; HQ staff should see all sites."
+      },
+      {
+        "id": "REQ-010",
+        "text": "A data migration / onboarding plan for rolling this out across all 6 sites.",
+        "related_criterion": "Scope & Deliverables Clarity",
+        "is_hard_constraint": false,
+        "source_section": "Requirements / 5",
+        "source_quote": "A **data migration / onboarding plan** for rolling this out across all 6\n   sites with minimal disruption."
+      },
+      {
+        "id": "REQ-011",
+        "text": "Rollout with minimal disruption.",
+        "related_criterion": "Scope & Deliverables Clarity",
+        "is_hard_constraint": false,
+        "source_section": "Requirements / 5",
+        "source_quote": "A **data migration / onboarding plan** for rolling this out across all 6\n   sites with minimal disruption."
+      },
+      {
+        "id": "REQ-012",
+        "text": "Support & maintenance terms after go-live.",
+        "related_criterion": "Scope & Deliverables Clarity",
+        "is_hard_constraint": false,
+        "source_section": "Requirements / 6",
+        "source_quote": "**Support & maintenance terms** after go-live (response times, SLAs)."
+      },
+      {
+        "id": "REQ-013",
+        "text": "Post-go-live response times.",
+        "related_criterion": "Scope & Deliverables Clarity",
+        "is_hard_constraint": false,
+        "source_section": "Requirements / 6",
+        "source_quote": "**Support & maintenance terms** after go-live (response times, SLAs)."
+      },
+      {
+        "id": "REQ-014",
+        "text": "Post-go-live SLAs.",
+        "related_criterion": "Scope & Deliverables Clarity",
+        "is_hard_constraint": false,
+        "source_section": "Requirements / 6",
+        "source_quote": "**Support & maintenance terms** after go-live (response times, SLAs)."
+      },
+      {
+        "id": "REQ-015",
+        "text": "Clear documentation of any assumptions, limitations, or risks.",
+        "related_criterion": "Risk/Assumptions Transparency",
+        "is_hard_constraint": false,
+        "source_section": "Requirements / 7",
+        "source_quote": "Clear documentation of any **assumptions, limitations, or risks**, since\n   inventory decisions will be made based on this system."
+      },
+      {
+        "id": "REQ-016",
+        "text": "€80,000–€120,000 total.",
+        "related_criterion": "Pricing Clarity",
+        "is_hard_constraint": false,
+        "source_section": "Budget",
+        "source_quote": "€80,000–€120,000 total, including first year of support."
+      },
+      {
+        "id": "REQ-017",
+        "text": "Total including first year of support.",
+        "related_criterion": "Pricing Clarity",
+        "is_hard_constraint": false,
+        "source_section": "Budget",
+        "source_quote": "€80,000–€120,000 total, including first year of support."
+      },
+      {
+        "id": "REQ-018",
+        "text": "Working pilot at one warehouse within 3 months.",
+        "related_criterion": "Timeline Clarity",
+        "is_hard_constraint": false,
+        "source_section": "Timeline",
+        "source_quote": "Working pilot at one warehouse within 3 months"
+      },
+      {
+        "id": "REQ-019",
+        "text": "Full rollout to all 6 sites within 6 months.",
+        "related_criterion": "Timeline Clarity",
+        "is_hard_constraint": false,
+        "source_section": "Timeline",
+        "source_quote": "full rollout to all 6 sites\nwithin 6 months."
+      }
+    ],
+    "suggested_criteria_weights": [
+      {
+        "name": "Problem Understanding",
+        "description": "Shows understanding of the client's operational problem and intended outcome.",
+        "weight": 1.0
+      },
+      {
+        "name": "Scope & Deliverables Clarity",
+        "description": "Explains what will be delivered, its boundaries and how it will work.",
+        "weight": 1.0
+      },
+      {
+        "name": "Pricing Clarity",
+        "description": "Makes pricing, inclusions and commercial assumptions understandable.",
+        "weight": 1.0
+      },
+      {
+        "name": "Timeline Clarity",
+        "description": "Explains delivery milestones and their timing.",
+        "weight": 1.0
+      },
+      {
+        "name": "Completeness vs RFP Requirements",
+        "description": "Evaluates whether the proposal addresses the applicable RFP requirements and constraints.",
+        "weight": 1.0
+      },
+      {
+        "name": "Tone & Persuasiveness",
+        "description": "Evaluates clear, credible and client-specific communication.",
+        "weight": 1.0
+      },
+      {
+        "name": "Risk/Assumptions Transparency",
+        "description": "Explains relevant dependencies, limitations and delivery risks.",
+        "weight": 1.0
+      }
+    ],
+    "criterion_packets": [
+      {
+        "criterion_name": "Problem Understanding",
+        "origin": "base",
+        "evaluation_guidance": [
+          "Does the proposal connect its approach to the client's operational problem and outcomes?"
+        ],
+        "requirement_ids": [],
+        "source_refs": [],
+        "notes": []
+      },
+      {
+        "criterion_name": "Scope & Deliverables Clarity",
+        "origin": "base",
+        "evaluation_guidance": [
+          "Are deliverables and their scope specific enough to understand what is included?"
+        ],
+        "requirement_ids": [
+          "REQ-001",
+          "REQ-002",
+          "REQ-003",
+          "REQ-004",
+          "REQ-005",
+          "REQ-006",
+          "REQ-007",
+          "REQ-008",
+          "REQ-009",
+          "REQ-010",
+          "REQ-011",
+          "REQ-012",
+          "REQ-013",
+          "REQ-014"
+        ],
+        "source_refs": [],
+        "notes": [
+          "RFP_AMBIGUITY: real-time latency is unspecified. Preserve both existing-DB/no-migration and data-migration/onboarding wording without inventing a resolution."
+        ]
+      },
+      {
+        "criterion_name": "Pricing Clarity",
+        "origin": "base",
+        "evaluation_guidance": [
+          "Are costs, first-year support inclusions and pricing assumptions explained clearly?"
+        ],
+        "requirement_ids": [
+          "REQ-016",
+          "REQ-017"
+        ],
+        "source_refs": [],
+        "notes": []
+      },
+      {
+        "criterion_name": "Timeline Clarity",
+        "origin": "base",
+        "evaluation_guidance": [
+          "Are pilot and rollout milestones explicitly timed and clearly distinguished?"
+        ],
+        "requirement_ids": [
+          "REQ-018",
+          "REQ-019"
+        ],
+        "source_refs": [],
+        "notes": [
+          "RFP_AMBIGUITY: the event starting the three- and six-month windows is unspecified. Do not invent a calendar date."
+        ]
+      },
+      {
+        "criterion_name": "Completeness vs RFP Requirements",
+        "origin": "base",
+        "evaluation_guidance": [
+          "Does the proposal address each active requirement without contradicting its constraints?"
+        ],
+        "requirement_ids": [
+          "REQ-001",
+          "REQ-002",
+          "REQ-003",
+          "REQ-004",
+          "REQ-005",
+          "REQ-006",
+          "REQ-007",
+          "REQ-008",
+          "REQ-009",
+          "REQ-010",
+          "REQ-011",
+          "REQ-012",
+          "REQ-013",
+          "REQ-014",
+          "REQ-015",
+          "REQ-016",
+          "REQ-017",
+          "REQ-018",
+          "REQ-019"
+        ],
+        "source_refs": [],
+        "notes": []
+      },
+      {
+        "criterion_name": "Tone & Persuasiveness",
+        "origin": "base",
+        "evaluation_guidance": [
+          "Is the proposal tailored to the client and persuasive through specific support rather than unsupported claims?"
+        ],
+        "requirement_ids": [],
+        "source_refs": [],
+        "notes": []
+      },
+      {
+        "criterion_name": "Risk/Assumptions Transparency",
+        "origin": "base",
+        "evaluation_guidance": [
+          "Does the proposal disclose meaningful assumptions, limitations and risks?"
+        ],
+        "requirement_ids": [
+          "REQ-015"
+        ],
+        "source_refs": [],
+        "notes": []
+      },
+      {
+        "criterion_name": "Đào tạo nhân viên kho",
+        "origin": "user",
+        "evaluation_guidance": [
+          "Evaluate only this user-defined expectation: Proposal cần có kế hoạch đào tạo cho nhân viên kho."
+        ],
+        "requirement_ids": [],
+        "source_refs": [],
+        "notes": [
+          "USER_DEFINED_NOT_RFP: Score against the user's description; do not report it as a missing RFP requirement.",
+          "ENRICHMENT_FAILED: No verified RFP links were added; do not invent thresholds or obligations."
+        ]
+      }
+    ]
+  },
+  "raw_rfp_text": "# Request for Proposal — Warehouse Inventory Dashboard\n\n**Client:** NordFrame Logistics GmbH (fictional)\n**Industry:** Logistics / Warehousing\n\n## Background\nNordFrame Logistics operates 6 regional warehouses across Germany and\nAustria. Our current inventory tracking is split across spreadsheets and an\noutdated legacy system, making it hard to get a real-time view of stock\nlevels across sites.\n\n## Requirements\n1. A **web-based dashboard** showing real-time inventory levels across all 6\n   warehouses.\n2. **Automated low-stock alerts** sent to warehouse managers when items fall\n   below a configurable threshold.\n3. Integration with our **existing PostgreSQL inventory database** — no\n   migration to a new database.\n4. **Role-based access** — warehouse managers should only see their own\n   site; HQ staff should see all sites.\n5. A **data migration / onboarding plan** for rolling this out across all 6\n   sites with minimal disruption.\n6. **Support & maintenance terms** after go-live (response times, SLAs).\n7. Clear documentation of any **assumptions, limitations, or risks**, since\n   inventory decisions will be made based on this system.\n\n## Budget\n€80,000–€120,000 total, including first year of support.\n\n## Timeline\nWorking pilot at one warehouse within 3 months; full rollout to all 6 sites\nwithin 6 months.\n\n## Decision Date\nEnd of this quarter.\n\n",
+  "raw_proposal_text": "# Proposal: Inventory Visibility Solution for NordFrame Logistics\n\n**Submitted by:** BrightPath Software Solutions (fictional)\n**Variant: WEAK — generic, deferred on key items**\n\n## Introduction\nThank you for considering BrightPath for your inventory management needs.\nWe are a software company with experience delivering dashboards and data\nsolutions for logistics and retail clients across Europe.\n\n## Our Understanding\nNordFrame needs better visibility into warehouse inventory. We propose\nbuilding a modern dashboard solution to solve this.\n\n## Our Approach\nWe will build a cloud-based dashboard that displays inventory data in real\ntime. Managers will be able to log in and view stock levels. The system\nwill be built using modern, scalable cloud architecture and industry best\npractices to ensure reliability and performance.\n\n## Features\n- Real-time inventory dashboard\n- Notifications for low stock\n- Secure login for different users\n\n## Timeline\nWe will begin work shortly after contract signing and aim to deliver the\nsolution in a timely manner, with regular updates along the way.\n\n## Pricing\nPricing will be provided upon further discussion of detailed requirements,\nand will depend on final scope.\n\n## Why BrightPath\nWe have a talented team of engineers passionate about solving real business\nproblems with technology. We look forward to partnering with NordFrame\nLogistics on this exciting project.\n\n",
+  "confirmed_criteria": [
+    {
+      "name": "Problem Understanding",
+      "description": "Shows understanding of the client's operational problem and intended outcome.",
+      "weight": 1.0
+    },
+    {
+      "name": "Scope & Deliverables Clarity",
+      "description": "Explains what will be delivered, its boundaries and how it will work.",
+      "weight": 1.0
+    },
+    {
+      "name": "Pricing Clarity",
+      "description": "Makes pricing, inclusions and commercial assumptions understandable.",
+      "weight": 1.0
+    },
+    {
+      "name": "Timeline Clarity",
+      "description": "Explains delivery milestones and their timing.",
+      "weight": 1.0
+    },
+    {
+      "name": "Completeness vs RFP Requirements",
+      "description": "Evaluates whether the proposal addresses the applicable RFP requirements and constraints.",
+      "weight": 1.0
+    },
+    {
+      "name": "Tone & Persuasiveness",
+      "description": "Evaluates clear, credible and client-specific communication.",
+      "weight": 1.0
+    },
+    {
+      "name": "Risk/Assumptions Transparency",
+      "description": "Explains relevant dependencies, limitations and delivery risks.",
+      "weight": 1.0
+    },
+    {
+      "name": "Đào tạo nhân viên kho",
+      "description": "Proposal cần có kế hoạch đào tạo cho nhân viên kho.",
+      "weight": 3.0
+    }
+  ]
+}
