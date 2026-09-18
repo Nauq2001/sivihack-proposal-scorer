@@ -61,6 +61,7 @@ class RagRequest(BaseModel):
     criterion: dict
     proposal_context: str = ''
     requirement_context: str = ''
+    top_k: int | None = None
     top_k_per_type: int = 1
     relevance_threshold: int = 2
 

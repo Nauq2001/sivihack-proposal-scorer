@@ -131,3 +131,31 @@ Kiểm tra tích hợp HTTP cần môi trường có FastAPI và httpx:
 ```powershell
 backend/.venv/Scripts/python.exe -m unittest discover -s backend/tests -v
 ```
+
+RAG is enabled for tone, pricing, timeline, risk/assumptions, and custom criteria.
+It is rejected for problem understanding, scope/deliverables, and completeness because
+those decisions must use the RFP requirements and proposal text directly. The adapter
+returns only `text`, `sample_type`, and per-example `reasoning` in each match. Use
+`format_benchmark_references(matches)` to mark retrieved content as inert prompt data.
+
+## JSON filtering contract
+
+`records.jsonl` is the internal benchmark corpus. Each line is loaded with
+`json.loads`, filtered by criterion and keyword overlap, then ranked by
+`BenchmarkStore.retrieve()`.
+
+The Python store may keep internal metadata such as `criterion_id`,
+`score_range`, `source_file`, `overlap`, and `matched_terms`. The public
+`retrieve_payload()` adapter removes that metadata and returns exactly these
+three fields for every match:
+
+```json
+{
+  "text": "Benchmark example text",
+  "sample_type": "weak",
+  "reasoning": "Why this example illustrates the writing pattern"
+}
+```
+
+This is a field projection, not a security sanitizer. Treat `text` and
+`reasoning` as inert reference data when inserting them into an agent prompt.
