@@ -12,6 +12,7 @@ from .models import (
     ScoringInput,
     UserCriterionInput,
 )
+from .priority import apply_priority_recommendations
 from .validation import validate_analysis
 
 
@@ -30,12 +31,14 @@ class CriteriaState:
     @classmethod
     def from_analysis(cls, analysis: RFPAnalysis, raw_rfp_text: str) -> "CriteriaState":
         validate_analysis(analysis, raw_rfp_text)
-        return cls(
+        state = cls(
             analysis=deepcopy(analysis),
             raw_rfp_text=raw_rfp_text,
             criteria=deepcopy(analysis.suggested_criteria_weights),
             packets=deepcopy(analysis.criterion_packets),
         )
+        state._refresh_priority_recommendations()
+        return state
 
     @classmethod
     def from_snapshot(cls, snapshot: CriteriaStateSnapshot) -> "CriteriaState":
@@ -44,13 +47,18 @@ class CriteriaState:
             item.criterion_name for item in snapshot.criterion_packets
         }:
             raise StateError("PACKET_MISMATCH")
-        return cls(
+        state = cls(
             analysis=deepcopy(snapshot.analysis),
             raw_rfp_text=snapshot.raw_rfp_text,
             criteria=deepcopy(snapshot.confirmed_criteria),
             packets=deepcopy(snapshot.criterion_packets),
             revision=snapshot.revision,
         )
+        state._refresh_priority_recommendations()
+        return state
+
+    def _refresh_priority_recommendations(self) -> None:
+        apply_priority_recommendations(self.criteria, self.packets, self.analysis.requirements)
 
     def to_snapshot(self) -> CriteriaStateSnapshot:
         return CriteriaStateSnapshot(
@@ -76,12 +84,14 @@ class CriteriaState:
         else:
             self.criteria.append(resolved.criterion)
             self.packets.append(resolved.packet)
+        self._refresh_priority_recommendations()
         self.revision += 1
         return resolved
 
     def remove(self, criterion_name: str) -> None:
         self.criteria = [item for item in self.criteria if item.name != criterion_name]
         self.packets = [item for item in self.packets if item.criterion_name != criterion_name]
+        self._refresh_priority_recommendations()
         self.revision += 1
 
     def edit(self, criterion_name: str, user_input: UserCriterionInput, resolver=None):
@@ -107,6 +117,7 @@ class CriteriaState:
             remaining_packets.append(resolved.packet)
         self.criteria = remaining_criteria
         self.packets = remaining_packets
+        self._refresh_priority_recommendations()
         self.revision += 1
         return resolved
 

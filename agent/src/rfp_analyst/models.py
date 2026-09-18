@@ -16,6 +16,7 @@ CanonicalCriterionName = Literal[
     "Risk/Assumptions Transparency",
 ]
 Origin = Literal["base", "rfp_explicit", "ai_inferred", "user"]
+RecommendedPriority = Literal["high", "medium", "low"]
 NonEmpty = Annotated[str, Field(min_length=1)]
 
 
@@ -27,6 +28,8 @@ class CriterionWeight(StrictModel):
     name: NonEmpty
     description: NonEmpty
     weight: float = 1.0
+    recommended_priority: RecommendedPriority = "medium"
+    priority_reason: NonEmpty = "No direct RFP requirement is linked."
 
     @field_validator("name", "description")
     @classmethod

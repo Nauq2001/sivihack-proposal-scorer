@@ -6,6 +6,7 @@ from typing import Any
 
 from .config import base_criteria, base_packets
 from .models import AnalysisDraft, Requirement, RFPAnalysis
+from .priority import apply_priority_recommendations
 from .prompts import build_analysis_messages
 from .validation import reconcile_quote, validate_analysis
 
@@ -85,6 +86,8 @@ def analyze_rfp(raw_rfp_text: str, structured_model: Any) -> RFPAnalysis:
                 packet.requirement_ids = all_requirement_ids
             else:
                 packet.requirement_ids = requirement_ids_by_criterion.get(packet.criterion_name, [])
+
+    apply_priority_recommendations(criteria, packets, requirements)
 
     analysis = RFPAnalysis(
         client_name=draft.client_name.strip(),

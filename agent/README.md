@@ -7,7 +7,7 @@ RFP.md -> Gemini structured extraction -> RFPAnalysis
        -> criteria review state -> ScoringInput JSON
 ```
 
-RFP Analyst trích atomic requirements, hard constraints, citations, metadata, base/custom criteria packets và `detected_priority_note`. Criterion do người dùng thêm chỉ cần tên, mô tả và weight tùy chọn. Resolver tự kiểm tra trùng; bản trùng dùng criterion chuẩn và thay weight bằng weight người dùng vừa đặt. Không tìm được thông tin trong RFP thì giữ nội dung người dùng, để links rỗng và ghi note cho scorer.
+RFP Analyst trích atomic requirements, hard constraints, citations, metadata, base/custom criteria packets và `detected_priority_note`. Mỗi criterion cũng có `recommended_priority` (`high`, `medium`, `low`) và `priority_reason` để FE hiển thị recommendation: hard requirement là high, requirement thường là medium, không có evidence RFP là low. Recommendation không thay đổi `weight`. Criterion do người dùng thêm chỉ cần tên, mô tả và weight tùy chọn. Resolver tự kiểm tra trùng; bản trùng dùng criterion chuẩn và thay weight bằng weight người dùng vừa đặt. Không tìm được thông tin trong RFP thì giữ nội dung người dùng, để links rỗng và ghi note cho scorer.
 
 ## Cài đặt
 
@@ -64,6 +64,7 @@ uv run --no-sync rfp-analyst add-criterion \
 Mở `work/review-with-training.json` và kiểm tra:
 
 - name/description/weight vẫn đúng input;
+- `recommended_priority: "low"` và lý do nói rõ criterion không có RFP requirement liên kết;
 - packet có `origin: "user"`;
 - `requirement_ids` và `source_refs` rỗng;
 - note bắt đầu bằng `USER_DEFINED_NOT_RFP`.
@@ -140,7 +141,7 @@ Mặc định CLI không overwrite file. Dùng `--overwrite` khi chủ động t
 
 ## Contract với Scoring Agent
 
-Scorer dùng `confirmed_criteria`, không dùng suggested weights để ghi đè lựa chọn user. Mọi RFP requirement vẫn phải có finding khi criterion tương ứng bị tắt. Completeness đọc toàn bộ findings. Hard constraint bị contradicted phải được backend scorer ép severity high. Missing có proposal citation rỗng. Overall score tính bằng code.
+Scorer dùng `confirmed_criteria`, không dùng suggested weights để ghi đè lựa chọn user. `recommended_priority` và `priority_reason` chỉ phục vụ FE hiển thị, không phải scoring rule. Mọi RFP requirement vẫn phải có finding khi criterion tương ứng bị tắt. Completeness đọc toàn bộ findings. Hard constraint bị contradicted phải được backend scorer ép severity high. Missing có proposal citation rỗng. Overall score tính bằng code.
 
 `client_name`, `project_name` và `detected_priority_note` nằm trong `rfp_analysis`; scorer echo hai tên sang output. Priority note chỉ là context Level 3, không đổi weights hoặc tạo requirements.
 
