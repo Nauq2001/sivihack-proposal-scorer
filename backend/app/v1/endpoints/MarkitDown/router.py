@@ -38,7 +38,7 @@ def make_client() -> OpenAI:
     if not api_key:
         raise HTTPException(503, "Set GEMINI_API_KEY on the server before converting files.")
     return OpenAI(
-        api_key=os.environ.get("GEMINI_API_KEY", ""),
+        api_key=api_key,
         base_url="https://generativelanguage.googleapis.com/v1beta/openai/",
         timeout=120.0,
         max_retries=1,
