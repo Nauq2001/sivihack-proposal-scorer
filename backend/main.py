@@ -25,6 +25,15 @@ load_dotenv()
 
 app = FastAPI(title="SiviHack Backend")
 
+# Kho tri thuc doanh nghiep (RAG): /api/evidence/*
+# Loi o kho khong duoc lam chet phan cham diem chinh.
+try:
+    from rag.router import router as evidence_router
+
+    app.include_router(evidence_router)
+except Exception as exc:  # pragma: no cover - chi anh huong tinh nang phu
+    print(f"[rag] khong nap duoc kho tri thuc: {exc}")
+
 # Cho phep frontend (Vite dev server) goi sang trong luc dev
 app.add_middleware(
     CORSMiddleware,

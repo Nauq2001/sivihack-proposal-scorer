@@ -1,0 +1,130 @@
+{
+  "fictional": true,
+  "records": [
+    {
+      "record_id": "rate_card_01",
+      "document_type": "rate_card",
+      "fictional": true,
+      "effective_from": "2026-08-01",
+      "currency": "EUR",
+      "unit": "person_day_8_hours",
+      "rates": [
+        {
+          "role": "Software engineer",
+          "floor": 650,
+          "standard": 850
+        },
+        {
+          "role": "Solution architect",
+          "floor": 850,
+          "standard": 1100
+        }
+      ],
+      "note": "Synthetic internal floors; not derived from any customer proposal.",
+      "gate_result": {
+        "admitted": true,
+        "errors": [],
+        "warnings": [],
+        "may_assert_as_current_standard": true,
+        "may_use_cross_deal": false
+      }
+    },
+    {
+      "record_id": "sla_01",
+      "document_type": "sla_standard",
+      "fictional": true,
+      "version": "demo-1.0",
+      "approved_date": "2026-07-15",
+      "coverage": "Mon-Fri 08:00-18:00 Europe/Berlin excluding German public holidays",
+      "critical_acknowledgement_coverage_hours": 2,
+      "minor_acknowledgement_business_days": 2,
+      "delivery_capability": {
+        "implementation_staff": 4,
+        "concurrent_projects": 2,
+        "24_7_on_call_available": false
+      },
+      "note": "Acknowledgement is not guaranteed restoration; 24/7 requires separately validated capacity.",
+      "gate_result": {
+        "admitted": true,
+        "errors": [],
+        "warnings": [],
+        "may_assert_as_current_standard": true,
+        "may_use_cross_deal": false
+      }
+    },
+    {
+      "record_id": "clause_01",
+      "document_type": "approved_clause",
+      "fictional": true,
+      "approved_by": "Fictional Legal Reviewer A",
+      "approved_date": "2026-08-20",
+      "language": "en",
+      "section_role": "pricing",
+      "text": "The fixed fee covers the listed deliverables and the stated service period. Additional scope requires a written change quotation and customer approval before work begins.",
+      "gate_result": {
+        "admitted": true,
+        "errors": [],
+        "warnings": [],
+        "may_assert_as_current_standard": false,
+        "may_use_cross_deal": false
+      }
+    },
+    {
+      "record_id": "clause_02",
+      "document_type": "approved_clause",
+      "fictional": true,
+      "approved_by": "Fictional Legal Reviewer A",
+      "approved_date": "2026-08-20",
+      "language": "en",
+      "section_role": "support_sla",
+      "text": "Incident response targets measure acknowledgement during the stated support hours. Restoration time depends on diagnosis and third-party dependencies; the supplier will communicate progress and the next update time.",
+      "gate_result": {
+        "admitted": true,
+        "errors": [],
+        "warnings": [],
+        "may_assert_as_current_standard": false,
+        "may_use_cross_deal": false
+      }
+    },
+    {
+      "record_id": "clause_03",
+      "document_type": "approved_clause",
+      "fictional": true,
+      "approved_by": "Fictional Legal Reviewer B",
+      "approved_date": "2026-08-22",
+      "language": "en",
+      "section_role": "risks",
+      "text": "The schedule assumes the customer provides the agreed test data and access by the listed milestones. A missed dependency will be assessed jointly and any schedule or cost change documented for approval.",
+      "gate_result": {
+        "admitted": true,
+        "errors": [],
+        "warnings": [],
+        "may_assert_as_current_standard": false,
+        "may_use_cross_deal": false
+      }
+    },
+    {
+      "record_id": "review_01",
+      "document_type": "review_history",
+      "fictional": true,
+      "proposal_record_id": "proposal_06",
+      "quality_score": 2.14,
+      "gaps": [
+        "No firm first-year cost breakdown",
+        "Uncommitted rollout milestones",
+        "Support response times absent"
+      ],
+      "reviewer": "Fictional Demo Reviewer",
+      "review_date": "2026-09-18",
+      "scorer_version": "demo_fixture_v1",
+      "note": "Seeded demonstration review, not a real historical incident.",
+      "gate_result": {
+        "admitted": true,
+        "errors": [],
+        "warnings": [],
+        "may_assert_as_current_standard": false,
+        "may_use_cross_deal": false
+      }
+    }
+  ]
+}
