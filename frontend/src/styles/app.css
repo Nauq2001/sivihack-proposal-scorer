@@ -47,7 +47,7 @@ h1,h2,h3{text-wrap:balance}
 
 .wrap{max-width:1320px;margin:0 auto;padding-inline:24px;padding-block:28px 72px}
 body.dock .wrap{max-width:none;margin:0;padding-right:calc(440px + 48px)}
-body.dock .review-main{max-width:920px}
+body.dock .review-main{max-width:min(1280px,calc(100vw - 540px))}
 
 .view-head{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:20px}
 h1{font-size:24px;line-height:1.2;letter-spacing:-.01em;margin:0 0 6px;font-weight:600}

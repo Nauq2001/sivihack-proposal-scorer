@@ -70,7 +70,6 @@ function Pips({ score, tone }) {
 
 export default function ReviewStep({ result, criteria, sampleId, source, error, onSample, onRun, onGo }) {
   const [flash, setFlash] = useState(null)
-  const [filter, setFilter] = useState('all')
 
   const byId = Object.fromEntries(result.criteria.map((c) => [c.id, c]))
   const { score } = overallScore(criteria, byId)
@@ -79,11 +78,8 @@ export default function ReviewStep({ result, criteria, sampleId, source, error, 
 
   const counts = { met: 0, partial: 0, missing: 0, conflict: 0 }
   result.requirements.forEach((r) => { counts[r.status] += 1 })
-  const problems = result.requirements.filter((r) => r.status !== 'met')
-  const shown = filter === 'problems' ? problems : result.requirements
 
   const jump = (id) => {
-    setFilter('all')
     requestAnimationFrame(() => {
       const el = document.getElementById('req-' + id)
       if (!el) return
@@ -104,7 +100,6 @@ export default function ReviewStep({ result, criteria, sampleId, source, error, 
           ))}
         </select>
         <div className="actions">
-          <button type="button" className="btn" onClick={() => onGo('criteria')}>Adjust criteria</button>
           <button type="button" className="btn" onClick={onRun}>Run again</button>
         </div>
       </div>
@@ -183,20 +178,9 @@ export default function ReviewStep({ result, criteria, sampleId, source, error, 
       <section className="block">
         <div className="block-head">
           <h2>Requirements and fixes</h2>
-          <div className="filter" role="group" aria-label="Filter requirements">
-            <button type="button" className="chip" aria-pressed={filter === 'all'} onClick={() => setFilter('all')}>
-              All {result.requirements.length}
-            </button>
-            <button type="button" className="chip" aria-pressed={filter === 'problems'} onClick={() => setFilter('problems')}>
-              Needs work {problems.length}
-            </button>
-          </div>
         </div>
         <div className="panel">
-          {shown.length === 0 && (
-            <p className="empty">Every requirement in the RFP is addressed. Nothing to fix here.</p>
-          )}
-          {shown.map((r) => (
+          {result.requirements.map((r) => (
             <article className={'req' + (flash === r.id ? ' flash' : '')} id={'req-' + r.id} key={r.id}>
               <span className="badge" data-st={r.status}>{STATUS_GLYPH[r.status]} {r.status_label}</span>
               <div>

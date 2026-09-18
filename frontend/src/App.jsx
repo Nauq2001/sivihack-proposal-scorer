@@ -170,7 +170,7 @@ export default function App() {
             onSample={loadSample}
             onUpload={upload}
             onGo={go}
-            onRun={() => runReview()}
+            onRun={() => go('criteria')}
           />
         )}
 
