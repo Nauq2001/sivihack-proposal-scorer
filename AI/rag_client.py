@@ -1,13 +1,19 @@
-"""Client for Backend's RAG retrieval (backend/rag/), v2 "hardened contract".
+"""Client for Backend's RAG retrieval (backend/rag/), v3 "hybrid contract".
 
 Uses Backend's recommended integration path — a direct in-process Python
 import of backend/rag/api.py — not the HTTP `/rag/retrieve` endpoint, since
 both packages run in the same process once Backend wires AI/scoring.py into
-main.py. Retrieval is pure keyword overlap over a local JSONL index: no
-embedding/LLM call, so it never touches the shared Gemini budget.
+main.py.
+
+v3 change from v2: retrieval is now hybrid (keyword overlap + local
+sentence-transformers embedding cosine similarity), not pure keyword
+overlap. Still no per-request API call — the embedding model runs locally,
+so it never touches the shared Gemini budget, only a one-time model
+download/load cost. `relevance_threshold` (int, keyword-overlap count) was
+removed by Backend and replaced with `min_hybrid_score` (float 0-1).
 
 v2 change from v1: exclusion of Problem Understanding / Scope & Deliverables
-Clarity / Completeness vs RFP Requirements is now enforced by Backend itself
+Clarity / Completeness vs RFP Requirements is enforced by Backend itself
 (`retrieve_payload` raises ValueError for those) rather than by this client —
 so this module just needs to not call RAG for them at all, and matches are
 already pre-trimmed to exactly {text, sample_type, reasoning}.
@@ -70,7 +76,7 @@ def retrieve_examples(
     proposal_context: str = "",
     requirement_context: str = "",
     top_k: int = 1,
-    relevance_threshold: int = 2,
+    min_hybrid_score: float = 0.45,
 ) -> list[dict]:
     """Benchmark examples for this criterion, or [] if excluded/no match.
 
@@ -90,7 +96,7 @@ def retrieve_examples(
         "proposal_context": proposal_context,
         "requirement_context": requirement_context,
         "top_k": top_k,
-        "relevance_threshold": relevance_threshold,
+        "min_hybrid_score": min_hybrid_score,
     }
     result = retrieve_payload(_get_store(), payload)
     return result["matches"]

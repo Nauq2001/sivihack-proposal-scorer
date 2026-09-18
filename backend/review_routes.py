@@ -1,8 +1,9 @@
 """
-Hai route noi hai agent lai voi nhau, theo CLAUDE.md muc "Interface contract".
+Cac route noi hai agent lai voi nhau, theo CLAUDE.md muc "Interface contract".
 
     POST /api/analyze-rfp   RFP Analyst  -> rfp_analysis + confirmed_criteria
     POST /api/score         Proposal Analyst -> scoring
+    POST /api/create-ticket Nguoi dung bam "Send to Work" -> n8n (Jira + Slack)
 
 Lop nay khong chua logic cham diem. No chi:
   - nap duoc package AI/ va agent/src tu thu muc backend/
@@ -358,3 +359,24 @@ def score_route(payload: dict[str, Any]) -> dict[str, Any]:
         if unverified else []
     )
     return scoring
+
+
+@router.post("/api/create-ticket")
+def create_ticket_route(payload: dict[str, Any]) -> dict[str, Any]:
+    """Nguoi dung bam "Send to Work" tren man ket qua — khong tu dong chay
+    theo /api/score. `payload` la chinh object `scoring` frontend da co san."""
+    import os
+
+    webhook_url = os.getenv("N8N_TICKET_WEBHOOK_URL")
+    if not webhook_url:
+        raise HTTPException(status_code=503, detail="N8N_TICKET_WEBHOOK_URL is not configured")
+
+    try:
+        from AI.n8n_client import N8nWorkflowError, send_to_jira_slack_workflow
+    except ImportError as exc:  # pragma: no cover
+        raise HTTPException(status_code=503, detail=f"n8n client is not installed: {exc}") from exc
+
+    try:
+        return send_to_jira_slack_workflow(payload, webhook_url)
+    except N8nWorkflowError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc

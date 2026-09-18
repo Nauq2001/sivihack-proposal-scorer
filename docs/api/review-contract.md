@@ -7,6 +7,11 @@ một màn tiến trình. Hai endpoint khớp đúng hai agent trong `AI/`:
 |---|---|---|
 | `POST /api/analyze-rfp` | RFP Analyst | `rfp_analysis` + `confirmed_criteria` |
 | `POST /api/score` | Proposal Analyst | `scoring` |
+| `POST /api/create-ticket` | — (n8n) | `{ ticket_key, ticket_url }` |
+
+`/api/create-ticket` không phải bước thứ ba của pipeline — người dùng tự bấm nút
+**"Send to Work"** ở màn kết quả khi muốn nhờ team review, không tự động chạy sau
+`/api/score`. Xem mục 5.
 
 Màn Criteria là **bước người dùng duyệt**: kéo thả giữa bốn cột, thêm, xoá.
 Mức ưu tiên ban đầu lấy từ `recommended_priority` trong `AI/contracts.py`.
@@ -155,3 +160,37 @@ sẵn kèm nhãn "Stored sample result", nên demo không bao giờ chết giữ
   PDF/PPTX sang Markdown; khi nối vào thì sửa `frontend/src/api/review.js`.
 - **Ngôn ngữ**: nội dung trả về đang là tiếng Anh vì người dùng cuối là sales của
   FPT Software Europe.
+
+---
+
+## 5. `POST /api/create-ticket` — nút "Send to Work"
+
+Không phải bước thứ ba của pipeline hai agent — nút riêng ở màn kết quả
+(`ResultView.jsx`, cạnh trái nút "Start over"), người dùng tự bấm khi muốn nhờ
+team review qua Jira + Slack. `AI/scoring.py::score_proposal()` không gọi cái
+này tự động.
+
+**Request**: chính object `scoring` (`ScoringResult`) frontend đã có sẵn trong
+state — gửi thẳng, không map lại field:
+
+```json
+{ "client_name": "...", "project_name": "...", "overall_score": 2.3,
+  "verdict": "...", "criteria": [ ], "findings": [ ] }
+```
+
+**Response 200**:
+
+```json
+{ "ticket_key": "SCORE-123", "ticket_url": "https://<workspace>.atlassian.net/browse/SCORE-123" }
+```
+
+Shape này do workflow n8n (Webhook → Jira → Slack) trả về, không phải
+`AI/n8n_client.py` tự định nghĩa — khớp đúng field nào thì `ticket.ticket_key`/
+`ticket.ticket_url` phía `TicketButton` mới hiển thị đúng.
+
+**Lỗi**: cùng convention mục 3 — `502` kèm `detail` nếu không gọi được webhook
+hoặc webhook trả lỗi; `503` nếu thiếu `N8N_TICKET_WEBHOOK_URL` trong `.env`.
+
+Backend chỉ import `AI/n8n_client.py::send_to_jira_slack_workflow()` — hàm này
+lọc `findings` còn `severity != "low"` trước khi gửi, để ticket Jira gọn, không
+liệt kê mọi finding `met`.

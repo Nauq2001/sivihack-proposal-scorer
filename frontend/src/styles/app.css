@@ -60,6 +60,9 @@ body.dock .wrap{max-width:none;margin:0;padding-right:calc(440px + 48px)}
 .btn-ghost{background:none;border-color:transparent;color:var(--ink-2)}
 .btn-ghost:hover{background:var(--surface-2);border-color:transparent}
 .btn-quiet{border-color:transparent;background:none;color:var(--accent);padding:2px 6px;font-size:12.5px}
+.spinner{width:13px;height:13px;border-radius:50%;border:2px solid var(--line);border-right-color:transparent;animation:spin .8s linear infinite}
+.ticket-action{display:flex;flex-direction:column;align-items:flex-end;gap:4px}
+.ticket-error{margin:0;font-size:12.5px;color:var(--bad);display:flex;align-items:center;gap:6px}
 .field{padding:8px 11px;border-radius:9px;border:1px solid var(--line);background:var(--surface)}
 .notice{padding:12px 15px;border-radius:10px;border:1px solid var(--warn);background:var(--warn-soft);color:var(--ink);max-width:74ch;margin:0 0 20px}
 .notice strong{color:var(--warn)}

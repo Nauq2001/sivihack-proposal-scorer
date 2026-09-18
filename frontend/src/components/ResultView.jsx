@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { createTicket } from '../api/review.js'
 import { Citations, Citation } from './Citation.jsx'
 import { SAMPLES } from '../data/samples.js'
 import {
@@ -73,6 +74,48 @@ function FixBox({ text }) {
     <div className="fix">
       <div className="fix-head">Suggested wording<button type="button" className="btn btn-quiet" onClick={copy}>{label}</button></div>
       <p className="fix-text" ref={ref}>{text}</p>
+    </div>
+  )
+}
+
+/** Nut "Send to Work": nguoi dung tu bam khi muon nho team review — khong tu
+ *  dong chay sau khi cham diem. n8n tao ticket Jira roi bao vao Slack. */
+function TicketButton({ scoring }) {
+  const [state, setState] = useState('idle') // idle | sending | done | error
+  const [ticket, setTicket] = useState(null)
+  const [message, setMessage] = useState('')
+
+  const send = async () => {
+    setState('sending')
+    try {
+      const res = await createTicket(scoring)
+      setTicket(res)
+      setState('done')
+    } catch (err) {
+      setMessage(err.message || 'Something went wrong.')
+      setState('error')
+    }
+  }
+
+  if (state === 'done' && ticket) {
+    return (
+      <a className="btn btn-ghost" href={ticket.ticket_url} target="_blank" rel="noreferrer">
+        ✓ Ticket {ticket.ticket_key} created
+      </a>
+    )
+  }
+
+  return (
+    <div className="ticket-action">
+      <button type="button" className="btn" disabled={state === 'sending'} onClick={send}>
+        {state === 'sending' && <span className="spinner" aria-hidden="true" />}
+        {state === 'sending' ? 'Creating ticket…' : 'Send to Work'}
+      </button>
+      {state === 'error' && (
+        <p className="ticket-error">
+          {message} <button type="button" className="btn btn-quiet" onClick={send}>Try again</button>
+        </p>
+      )}
     </div>
   )
 }
@@ -248,6 +291,7 @@ export default function ResultView({ result, source, error, sampleId, warnings =
               ))}
             </div>
           )}
+          <TicketButton scoring={scoring} />
           <button type="button" className="btn btn-primary" onClick={onRestart}>Start over</button>
         </div>
       </footer>

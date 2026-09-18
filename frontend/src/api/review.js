@@ -39,3 +39,7 @@ export const scoreProposal = ({ rfp, proposal, rfp_analysis, confirmed_criteria 
     raw_proposal_text: proposal.text,
     confirmed_criteria,
   }, 'Scoring the proposal')
+
+/** Nut "Send to Work": nguoi dung tu bam, khong tu dong sau /api/score.
+ *  n8n tao ticket Jira roi bao vao Slack; tra ve { ticket_key, ticket_url }. */
+export const createTicket = (scoring) => post('/api/create-ticket', scoring, 'Creating the ticket')
