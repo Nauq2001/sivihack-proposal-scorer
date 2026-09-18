@@ -71,6 +71,22 @@
           "default": 1.0,
           "title": "Weight",
           "type": "number"
+        },
+        "recommended_priority": {
+          "default": "medium",
+          "enum": [
+            "high",
+            "medium",
+            "low"
+          ],
+          "title": "Recommended Priority",
+          "type": "string"
+        },
+        "priority_reason": {
+          "default": "No direct RFP requirement is linked.",
+          "minLength": 1,
+          "title": "Priority Reason",
+          "type": "string"
         }
       },
       "required": [

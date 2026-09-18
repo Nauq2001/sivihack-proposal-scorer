@@ -186,3 +186,32 @@ def test_hard_constraint_flag_is_reserved_for_explicit_prohibitions(rfp_text):
     result = analyze_rfp(rfp_text, model)
     assert result.requirements[0].is_hard_constraint is False
     assert result.requirements[1].is_hard_constraint is True
+
+
+def test_analysis_recommends_high_priority_for_a_criterion_with_a_hard_requirement(rfp_text):
+    from rfp_analyst.analyst import analyze_rfp
+
+    model = CountingRunnable(
+        {
+            "client_name": "NordFrame Logistics GmbH",
+            "project_name": "Warehouse Inventory Dashboard",
+            "detected_priority_note": None,
+            "requirements": [
+                {
+                    "text": "Use the existing database with no migration.",
+                    "related_criterion": "Scope & Deliverables Clarity",
+                    "is_hard_constraint": True,
+                    "source_section": "Requirements",
+                    "source_quote": "Integration with our existing PostgreSQL database — no migration to a new database.",
+                }
+            ],
+            "suggested_weights": [],
+            "criterion_packets": [],
+        }
+    )
+
+    result = analyze_rfp(rfp_text, model)
+    scope = next(item for item in result.suggested_criteria_weights if item.name == "Scope & Deliverables Clarity")
+
+    assert scope.recommended_priority == "high"
+    assert scope.priority_reason == "Contains hard RFP requirement REQ-001."
