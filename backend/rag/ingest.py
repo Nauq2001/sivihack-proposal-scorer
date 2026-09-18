@@ -64,6 +64,26 @@ def chunk_sections(sections, min_words=120, max_words=180, overlap_words=25):
     return chunks
 
 
+def rechunk_records(records):
+    result = []
+    for record in records:
+        if "parent_record_id" in record and "chunk_index" in record:
+            result.append(record)
+            continue
+        parent_id = record["id"]
+        chunks = chunk_sections(_sections(record.get("text", "")))
+        for chunk_index, (heading, chunk_text) in enumerate(chunks):
+            result.append({
+                **record,
+                "id": f"{parent_id}:chunk:{chunk_index:03d}",
+                "parent_record_id": parent_id,
+                "chunk_index": chunk_index,
+                "section": heading,
+                "text": chunk_text,
+            })
+    return result
+
+
 def build_records(root):
     root = Path(root)
     records = []

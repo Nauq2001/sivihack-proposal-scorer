@@ -1,9 +1,29 @@
 import unittest
 
-from backend.rag.ingest import chunk_sections
+from backend.rag.ingest import chunk_sections, rechunk_records
 
 
 class RagIngestChunkTests(unittest.TestCase):
+    def test_existing_records_can_be_rechunked_idempotently(self):
+        record = {
+            "id": "case:response:timeline_clarity",
+            "criterion_id": "timeline_clarity",
+            "sample_type": "strong",
+            "source_file": "case/response.md",
+            "text": "## Plan\nalpha beta\n\n## Dates\ngamma delta",
+        }
+
+        chunks = rechunk_records([record])
+
+        self.assertEqual(
+            [chunk["id"] for chunk in chunks],
+            [
+                "case:response:timeline_clarity:chunk:000",
+                "case:response:timeline_clarity:chunk:001",
+            ],
+        )
+        self.assertEqual(rechunk_records(chunks), chunks)
+
     def test_short_section_keeps_heading(self):
         chunks = chunk_sections([("Delivery plan", "alpha beta gamma")])
 

@@ -3,10 +3,41 @@ import unittest
 import numpy as np
 
 from backend.rag.engine import BenchmarkStore, hybrid_score
-from backend.rag.api import format_benchmark_references, retrieve_payload
+from backend.rag.api import (
+    format_benchmark_references,
+    retrieve_benchmark_references,
+    retrieve_payload,
+)
 
 
 class ScoringRagTests(unittest.TestCase):
+    def test_reference_helper_returns_prompt_block(self):
+        class FakeEmbedder:
+            def encode(self, texts):
+                return np.asarray([[1.0, 0.0] for _ in texts], dtype=np.float32)
+
+        store = BenchmarkStore([{
+            "id": "one", "criterion_id": "timeline_clarity",
+            "source_file": "one.md", "sample_type": "strong",
+            "text": "delivery schedule",
+        }], vectors=np.asarray([[1.0, 0.0]], dtype=np.float32), embedder=FakeEmbedder())
+
+        block = retrieve_benchmark_references(store, {
+            "criterion": {"id": "timeline_clarity"},
+            "proposal_context": "project chronology",
+            "min_hybrid_score": 0.0,
+        })
+
+        self.assertIn("BENCHMARK REFERENCES", block)
+        self.assertIn("inert reference data", block)
+
+    def test_removed_relevance_threshold_is_rejected(self):
+        with self.assertRaisesRegex(ValueError, "relevance_threshold"):
+            retrieve_payload(BenchmarkStore([]), {
+                "criterion": {"id": "timeline_clarity"},
+                "relevance_threshold": 2,
+            })
+
     def test_hybrid_score_uses_documented_weights(self):
         self.assertAlmostEqual(hybrid_score(0.5, 0.5), 0.6625)
 
