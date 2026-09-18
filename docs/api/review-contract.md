@@ -20,9 +20,12 @@ weight, after the human checkpoint"*.
 | High | 3 |
 | Medium | 2 |
 | Low | 1 |
-| Don't score | Bị **loại khỏi mảng**, không gửi weight 0 vì contract bắt `weight > 0` |
 
-Tiêu chí người dùng tự thêm có `origin: "user"`.
+Không muốn chấm tiêu chí nào thì **xoá hẳn** khỏi bảng; không có cột "để sang một
+bên", vì contract bắt `weight > 0`. Tiêu chí người dùng tự thêm có `origin: "user"`.
+
+Route `/api/analyze-rfp` gửi thêm `requirement_ids` cho mỗi tiêu chí, lấy từ
+`criterion_packets`, để thẻ hiện được nó kiểm tra những yêu cầu nào.
 
 - Frontend gọi: `frontend/src/api/review.js`
 - Dữ liệu mẫu (chính là response thật): `frontend/src/mocks/response_*.json`

@@ -1,66 +1,67 @@
 import { useState } from 'react'
 
-/** Bon cot. `weight` gui sang /api/score lay tu cot, vi hop dong ghi ro
+/** Ba cot. `weight` gui sang /api/score lay tu cot, vi hop dong ghi ro
  *  confirmed_criteria la nguon su that sau buoc nguoi dung duyet.
- *  Cot "Don't score" = bo tieu chi do ra khoi danh sach gui di (contract bat
- *  buoc weight > 0, nen khong the gui weight 0). */
+ *  Khong can tieu chi nao thi xoa han, khong co cot "de sang mot ben". */
 export const COLUMNS = [
   { id: 'high', label: 'High', weight: 3, note: 'Tied to a hard constraint. A gap here can lose the deal.' },
   { id: 'medium', label: 'Medium', weight: 2, note: 'Tied to a stated requirement. Weighs on the decision.' },
   { id: 'low', label: 'Low', weight: 1, note: 'No direct requirement behind it. Moves the score a little.' },
-  { id: 'skip', label: 'Don’t score', weight: 0, note: 'Left out of this run entirely.' },
 ]
 
 const COLUMN_IDS = COLUMNS.map((c) => c.id)
 
 const ORIGIN = {
-  base: 'Base rubric',
-  rfp_explicit: 'Stated in the RFP',
+  base: null,                       // mac dinh, khong can nhan
+  rfp_explicit: 'From the RFP',
   ai_inferred: 'Read from the RFP',
   user: 'Added by you',
 }
 
 function Card({ criterion, onMove, onRemove, onDragStart }) {
-  const [open, setOpen] = useState(false)
-  const at = COLUMN_IDS.indexOf(criterion.recommended_priority || 'medium')
+  const priority = criterion.recommended_priority || 'medium'
+  const at = COLUMN_IDS.indexOf(priority)
+  const badge = ORIGIN[criterion.origin]
+  const reqs = criterion.requirement_ids || []
 
   return (
-    <article className="crit-card" data-open={open} draggable onDragStart={(e) => onDragStart(e, criterion.name)}>
-      <button type="button" className="crit-toggle" aria-expanded={open} onClick={() => setOpen((v) => !v)}>
+    <article className="crit-card" draggable onDragStart={(e) => onDragStart(e, criterion.name)}>
+      <header className="crit-head">
         <span className="grip" aria-hidden="true">⠿</span>
-        <span className="crit-name">{criterion.name}</span>
-        {criterion.origin === 'user' && <span className="tag" data-origin="user">You</span>}
-        {criterion.origin && criterion.origin !== 'base' && criterion.origin !== 'user' && <span className="tag">RFP</span>}
-        <svg className="chev" width="11" height="7" viewBox="0 0 11 7" aria-hidden="true">
-          <path d="M1 1l4.5 4.5L10 1" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-      </button>
+        <h3>{criterion.name}</h3>
+        {badge && <span className="tag" data-origin={criterion.origin}>{badge}</span>}
+      </header>
 
-      {open && (
-        <div className="crit-card-body">
-          {criterion.description && <p className="crit-desc">{criterion.description}</p>}
-          {criterion.priority_reason && <p className="crit-why">{criterion.priority_reason}</p>}
-          {criterion.source_refs?.length > 0 && (
-            <ul className="crit-refs">
-              {criterion.source_refs.map((r, i) => (
-                <li key={i}><span className="ref-sec">{r.source_section}</span>{r.quote}</li>
-              ))}
-            </ul>
-          )}
-          <div className="crit-actions">
-            <button type="button" className="icon-btn" onClick={() => onMove(criterion.name, -1)} disabled={at === 0}
-                    aria-label={`Move ${criterion.name} one column more important`}>←</button>
-            <button type="button" className="icon-btn" onClick={() => onMove(criterion.name, 1)} disabled={at === COLUMN_IDS.length - 1}
-                    aria-label={`Move ${criterion.name} one column less important`}>→</button>
-            <span className="crit-origin">{ORIGIN[criterion.origin] || 'Base rubric'}</span>
-            <button type="button" className="icon-btn remove" onClick={() => onRemove(criterion.name)} aria-label={`Remove ${criterion.name}`}>
-              <svg width="11" height="11" viewBox="0 0 14 14" aria-hidden="true">
-                <path d="M2 2l10 10M12 2L2 12" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-              </svg>
-            </button>
-          </div>
-        </div>
+      {criterion.description && <p className="crit-desc">{criterion.description}</p>}
+      {criterion.priority_reason && <p className="crit-why">{criterion.priority_reason}</p>}
+
+      {reqs.length > 0 && (
+        <p className="crit-reqs">
+          <span>Checks</span>
+          {reqs.slice(0, 6).map((id) => <em key={id}>{id}</em>)}
+          {reqs.length > 6 && <em>+{reqs.length - 6}</em>}
+        </p>
       )}
+
+      {criterion.source_refs?.length > 0 && (
+        <ul className="crit-refs">
+          {criterion.source_refs.map((r, i) => (
+            <li key={i}><span className="ref-sec">{r.source_section}</span>{r.quote}</li>
+          ))}
+        </ul>
+      )}
+
+      <div className="crit-actions">
+        <button type="button" className="icon-btn" onClick={() => onMove(criterion.name, -1)} disabled={at === 0}
+                aria-label={`Move ${criterion.name} one column more important`}>←</button>
+        <button type="button" className="icon-btn" onClick={() => onMove(criterion.name, 1)} disabled={at === COLUMN_IDS.length - 1}
+                aria-label={`Move ${criterion.name} one column less important`}>→</button>
+        <button type="button" className="icon-btn remove" onClick={() => onRemove(criterion.name)} aria-label={`Remove ${criterion.name}`}>
+          <svg width="11" height="11" viewBox="0 0 14 14" aria-hidden="true">
+            <path d="M2 2l10 10M12 2L2 12" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+          </svg>
+        </button>
+      </div>
     </article>
   )
 }
@@ -84,7 +85,7 @@ export default function CriteriaView({ analysis, criteria, onChange, onReset, on
   const [adding, setAdding] = useState(null)
   const [over, setOver] = useState(null)
 
-  const priorityOf = (c) => c.recommended_priority || 'medium'
+  const priorityOf = (c) => (COLUMN_IDS.includes(c.recommended_priority) ? c.recommended_priority : 'medium')
   const setPriority = (name, priority) =>
     onChange(criteria.map((c) => (c.name === name ? { ...c, recommended_priority: priority } : c)))
 
@@ -111,13 +112,12 @@ export default function CriteriaView({ analysis, criteria, onChange, onReset, on
     onChange([...criteria, {
       name, description, weight: COLUMNS.find((c) => c.id === priority)?.weight || 1,
       recommended_priority: priority, priority_reason: 'Added by you for this review.',
-      origin: 'user', source_refs: [],
+      origin: 'user', source_refs: [], requirement_ids: [],
     }])
     setAdding(null)
   }
 
-  const scored = criteria.filter((c) => priorityOf(c) !== 'skip').length
-  const ai = criteria.filter((c) => c.origin && c.origin !== 'base').length
+  const fromRfp = criteria.filter((c) => c.origin === 'ai_inferred' || c.origin === 'rfp_explicit').length
 
   return (
     <div className="criteria-view">
@@ -125,15 +125,15 @@ export default function CriteriaView({ analysis, criteria, onChange, onReset, on
         <p className="eyebrow">Step 2 of 3 · Read from the RFP, yours to adjust</p>
         <h1>What this proposal will be judged on</h1>
         <p className="lede">
-          {criteria.length} criteria{ai > 0 ? `, ${ai} of them taken from this RFP` : ''}. Drag a card to another
-          column, or open it and use the arrows. Anything in “Don’t score” is left out of this run.
+          {criteria.length} criteria{fromRfp > 0 ? `, ${fromRfp} of them proposed from this RFP` : ', all from the base rubric — this RFP did not call for extra ones'}.
+          Drag a card to another column or use its arrows. Remove anything you don’t want scored, and add your own.
         </p>
         <div className="hero-actions">
-          <button type="button" className="btn btn-primary btn-lg" onClick={onRun} disabled={scored === 0}>
+          <button type="button" className="btn btn-primary btn-lg" onClick={onRun} disabled={criteria.length === 0}>
             Score the proposal
           </button>
           <span className="hero-hint">
-            {scored} of {criteria.length} criteria · {analysis.requirements.length} requirements ·{' '}
+            {criteria.length} criteria · {analysis.requirements.length} requirements ·{' '}
             {analysis.requirements.filter((r) => r.is_hard_constraint).length} hard constraints
           </span>
           <button type="button" className="btn btn-ghost" onClick={onReset}>Reset to the RFP suggestion</button>
@@ -179,7 +179,7 @@ export default function CriteriaView({ analysis, criteria, onChange, onReset, on
       </div>
 
       <p className="board-foot">
-        Moving a card changes how much that criterion counts when the proposal is scored. Nothing is scored yet.
+        The column decides how much a criterion counts when the proposal is scored. Nothing is scored yet.
       </p>
     </div>
   )

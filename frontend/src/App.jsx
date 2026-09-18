@@ -131,10 +131,8 @@ export default function App() {
     window.scrollTo({ top: 0 })
     const stored = matchSample(rfp.text, proposal.text)
     try {
-      const weightOf = (c) => COLUMNS.find((col) => col.id === (c.recommended_priority || 'medium'))?.weight ?? 1
-      const confirmed = criteria
-        .filter((c) => (c.recommended_priority || 'medium') !== 'skip')
-        .map((c) => ({ ...c, weight: weightOf(c) }))
+      const weightOf = (c) => COLUMNS.find((col) => col.id === c.recommended_priority)?.weight ?? 2
+      const confirmed = criteria.map((c) => ({ ...c, weight: weightOf(c) }))
       const scoring = await withFloor(() => scoreProposal({
         rfp, proposal, rfp_analysis: analysis, confirmed_criteria: confirmed,
       }))

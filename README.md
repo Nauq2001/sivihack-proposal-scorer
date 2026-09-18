@@ -92,10 +92,10 @@ Luong mot chieu ba man, giua moi man la mot man tien trinh:
 
 1. **Documents** - dan hoac upload RFP + proposal, hoac chon 1 trong 4 mau
 2. *(tien trinh)* RFP Analyst doc RFP
-3. **Criteria** - bang 4 cot High/Medium/Low/Don't score, vi tri ban dau do AI
-   de xuat. Keo tha hoac bam mui ten de doi cot, them va xoa tieu chi, hoac
-   bam "Reset to the RFP suggestion" de quay ve ban goc. Mo the de doc ly do
-   va trich dan RFP
+3. **Criteria** - bang 3 cot High/Medium/Low, vi tri ban dau do AI de xuat sau
+   khi doc RFP. Moi the hien san mo ta, ly do duoc xep muc do, va danh sach ma
+   yeu cau no kiem tra. Keo tha hoac bam mui ten de doi cot, them hoac xoa tieu
+   chi, bam "Reset to the RFP suggestion" de quay ve ban goc
 4. *(tien trinh)* Proposal Analyst cham diem
 5. **Result** - khuyen nghi + diem, dai phu yeu cau (danh dau rang buoc cung),
    diem tung tieu chi, findings kem cau sua, khung nguon tra cuu trich dan

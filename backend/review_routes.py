@@ -140,6 +140,7 @@ def analyze_rfp_route(req: AnalyzeRequest) -> dict[str, Any]:
         item["origin"] = origins.get(criterion.name, "base")
         packet = next((p for p in state.packets if p.criterion_name == criterion.name), None)
         item["source_refs"] = [_dump(ref) for ref in getattr(packet, "source_refs", [])] if packet else []
+        item["requirement_ids"] = list(getattr(packet, "requirement_ids", [])) if packet else []
         criteria_payload.append(item)
 
     analysis_payload["suggested_criteria_weights"] = criteria_payload
