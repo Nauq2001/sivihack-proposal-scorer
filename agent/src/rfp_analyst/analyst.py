@@ -108,7 +108,7 @@ def create_gemini_analysis_model(model_name: str = "gemini-3.8-flash"):
         raise AnalystError("Install project dependencies before live analysis") from exc
     model = ChatGoogleGenerativeAI(
         model=model_name,
-        temperature=1.0,
+        temperature=0.2,
         timeout=60,
         max_retries=2,
     )
