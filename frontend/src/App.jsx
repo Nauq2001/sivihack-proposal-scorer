@@ -141,7 +141,9 @@ export default function App() {
         rfp, proposal, rfp_analysis: analysis, confirmed_criteria: confirmed,
       }))
       setWarnings((w) => [...w, ...(scoring.warnings || [])])
-      setRun({ data: { meta: { proposal_name: proposal.name }, rfp_analysis: analysis, confirmed_criteria: criteria, scoring }, source: 'api' })
+      // `confirmed`, khong phai `criteria`: trang ket qua phai hien dung trong so
+      // da dung de cham, tuc trong so cua cot nguoi dung chot.
+      setRun({ data: { meta: { proposal_name: proposal.name }, rfp_analysis: analysis, confirmed_criteria: confirmed, scoring }, source: 'api' })
       setStage('result')
     } catch (err) {
       if (stored) {

@@ -72,6 +72,15 @@ Ba khối: `rfp_analysis`, `confirmed_criteria`, `evaluation`.
 `short_label` là trường frontend thêm vào so với schema của analyst — cần nó để vẽ
 dải phủ. Tối đa khoảng 14 ký tự.
 
+Nhãn này lấy **số mà chính RFP đánh** cho dòng chứa `source_quote` ("3." trong
+danh sách ⇒ `Req 3`), nên người đọc dò ngược lại tài liệu gốc được. Một dòng RFP
+tách ra hai yêu cầu thì hai nhãn trùng nhau — đúng, cả hai cùng trỏ về một chỗ.
+Dòng không đánh số thì quay về `source_section` (`Budget 1`, `Timeline 2`).
+
+`/api/score` đổi luôn mọi `REQ-0NN` trong `verdict`, `criteria[].comment`,
+`findings[].reason` và `findings[].suggested_patch` sang nhãn này: số thứ tự nội
+bộ không có nghĩa gì với người đọc RFP.
+
 `is_hard_constraint: true` được đánh dấu ◆ trên giao diện: đây là ràng buộc mà vi
 phạm thì không thể khuyến nghị gửi đi.
 

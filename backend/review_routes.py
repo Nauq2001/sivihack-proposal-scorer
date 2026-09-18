@@ -36,11 +36,34 @@ class AnalyzeRequest(BaseModel):
     raw_rfp_text: str
 
 
-def _short_labels(requirements: list[Any]) -> list[str]:
+def _rfp_item_number(quote: str, raw_rfp_text: str) -> str | None:
+    """So thu tu ma chinh RFP danh cho dong chua `quote`, neu co.
+
+    Lui tu cho trich dan len tren cho den khi gap mot dong danh so. Gap tieu de
+    hoac dong trong thi dung: het khoi danh sach, khong con so nao thuoc ve no.
+    """
+    span = _find_verbatim(quote, raw_rfp_text)
+    if span is None:
+        return None
+    at = raw_rfp_text.find(span)
+    for line in reversed(raw_rfp_text[:at].splitlines()):
+        if re.match(r"^\s*#{1,6}\s", line) or not line.strip():
+            return None
+        found = re.match(r"^\s*(\d+)[.)]\s", line)
+        if found:
+            return found.group(1)
+    return None
+
+
+def _short_labels(requirements: list[Any], raw_rfp_text: str) -> list[str]:
     """Nhan ngan cho dai phu yeu cau, toi da ~14 ky tu.
 
-    `source_section` khac nhau tuy model: co ban tra "Requirements / 3", co ban
-    chi tra "Requirements". Nen danh so trong tung muc de khong bi trung nhan.
+    Uu tien so ma RFP tu danh ("3." trong danh sach): nguoi doc do lai duoc.
+    Mot dong RFP co the sinh ra hai yeu cau — hai nhan trung nhau la dung, ca
+    hai cung tro ve mot cho.
+
+    Khong co so thi quay ve `source_section`, von khac nhau tuy model: co ban
+    tra "Requirements / 3", co ban chi tra "Requirements".
     """
     counts: dict[str, int] = {}
     for r in requirements:
@@ -54,7 +77,10 @@ def _short_labels(requirements: list[Any]) -> list[str]:
         numbered = re.search(r"(\d+)\s*$", section)
         base = re.sub(r"\s*/?\s*\d+\s*$", "", section) or "Requirement"
         short = "Req" if base.lower().startswith("requirement") else base[:9]
-        if numbered:
+        in_rfp = _rfp_item_number(getattr(r, "source_quote", "") or "", raw_rfp_text)
+        if in_rfp:
+            labels.append(f"{short} {in_rfp}")
+        elif numbered:
             labels.append(f"{short} {numbered.group(1)}")
         elif counts[section] == 1:
             labels.append(base[:14])
@@ -233,7 +259,7 @@ def analyze_rfp_route(req: AnalyzeRequest) -> dict[str, Any]:
     origins = _origin_by_criterion(state.packets)
 
     analysis_payload = _dump(analysis)
-    labels = _short_labels(analysis.requirements)
+    labels = _short_labels(analysis.requirements, req.raw_rfp_text)
     analysis_payload["requirements"] = [
         dict(_dump(r), short_label=label) for r, label in zip(analysis.requirements, labels)
     ]
@@ -306,8 +332,26 @@ def score_route(payload: dict[str, Any]) -> dict[str, Any]:
                 kept.append(fixed)
         criterion.citations = kept
 
+    # Model van viet "failing REQ-009" trong loi binh. REQ-009 la so thu tu noi
+    # bo; doi sang nhan cua RFP de nguoi doc do lai duoc trong tai lieu goc.
+    requirements = scoring_input.rfp_analysis.requirements
+    labels = dict(zip(
+        (r.id for r in requirements),
+        _short_labels(requirements, scoring_input.raw_rfp_text),
+    ))
+    def relabel(text: str) -> str:
+        out = re.sub(r"REQ-\d+", lambda m: labels.get(m.group(0), m.group(0)), text or "")
+        # Mot dong RFP tach ra hai yeu cau thi hai nhan trung nhau: "(Req 4, Req 4)".
+        return re.sub(r"\b([A-Za-z]+ \d+)(?:,\s*\1\b)+", r"\1", out)
+    for finding in result.findings:
+        finding.reason = relabel(finding.reason)
+        finding.suggested_patch = relabel(finding.suggested_patch)
+    for criterion in result.criteria:
+        criterion.comment = relabel(criterion.comment)
+    result.verdict = relabel(result.verdict)
+
     scoring = _dump(result)
-    scoring["recommendation"] = _recommendation(result, scoring_input.rfp_analysis.requirements)
+    scoring["recommendation"] = _recommendation(result, requirements)
     scoring["warnings"] = (
         [f"{len(unverified)} citation(s) were dropped because the quote is not in the proposal "
          f"word for word: {', '.join(unverified)}."]

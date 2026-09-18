@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useContext, useMemo, useState } from 'react'
+import { CitationContext } from './Citation.jsx'
 
 /** Ba cot. `weight` gui sang /api/score lay tu cot, vi hop dong ghi ro
  *  confirmed_criteria la nguon su that sau buoc nguoi dung duyet.
@@ -18,11 +19,66 @@ const ORIGIN = {
   user: 'Added by you',
 }
 
-function Card({ criterion, onMove, onRemove, onDragStart }) {
+/** Ly do de xuat muc do, viet lai tu du lieu.
+ *
+ *  Ban tu agent ghi "Contains hard RFP requirement REQ-004." — REQ-004 la so
+ *  thu tu noi bo, nguoi doc RFP khong tra ra duoc no nam o dau. */
+function reasonFor(criterion, linked) {
+  if (criterion.origin === 'user' || !linked.length) return criterion.priority_reason
+  const hard = linked.find((r) => r.is_hard_constraint)
+  if (hard) return `${labelOf(hard)} is a hard constraint — the client will not trade it away.`
+  return `Tied to ${linked.length} requirement${linked.length > 1 ? 's' : ''} the RFP states outright.`
+}
+
+const labelOf = (r) => r.short_label || r.source_section || r.id
+
+/** Tung yeu cau mot dong, bam vao mo dung doan trong RFP.
+ *
+ *  Ba dong dau la du de biet tieu chi nay soi cai gi; con lai mo ra khi can,
+ *  vi "Completeness" om ca danh sach yeu cau. */
+function Requirements({ linked }) {
+  const openCitation = useContext(CitationContext)
+  const [all, setAll] = useState(false)
+  if (!linked.length) return null
+
+  const shown = all ? linked : linked.slice(0, 3)
+  const hard = linked.filter((r) => r.is_hard_constraint).length
+
+  return (
+    <div className="crit-reqs">
+      <p className="reqs-head">
+        Checks {linked.length} requirement{linked.length > 1 ? 's' : ''} from the RFP
+        {hard > 0 && <span className="reqs-hard">{hard} hard</span>}
+      </p>
+      <ul>
+        {shown.map((r) => (
+          <li key={r.id}>
+            <button
+              type="button" className="req" data-hard={r.is_hard_constraint || undefined}
+              title={`${labelOf(r)} — open this in the RFP`}
+              onClick={() => openCitation({ source: 'rfp', found: true, label: labelOf(r), quote: r.source_quote })}
+            >
+              <em>{labelOf(r)}</em>
+              <span>{r.text}</span>
+            </button>
+          </li>
+        ))}
+      </ul>
+      {linked.length > 3 && (
+        <button type="button" className="btn-quiet reqs-more" onClick={() => setAll(!all)}>
+          {all ? 'Show fewer' : `Show all ${linked.length}`}
+        </button>
+      )}
+    </div>
+  )
+}
+
+function Card({ criterion, requirementById, onMove, onRemove, onDragStart }) {
   const priority = criterion.recommended_priority || 'medium'
   const at = COLUMN_IDS.indexOf(priority)
   const badge = ORIGIN[criterion.origin]
-  const reqs = criterion.requirement_ids || []
+  const linked = (criterion.requirement_ids || []).map((id) => requirementById[id]).filter(Boolean)
+  const why = reasonFor(criterion, linked)
 
   return (
     <article className="crit-card" draggable onDragStart={(e) => onDragStart(e, criterion.name)}>
@@ -33,15 +89,9 @@ function Card({ criterion, onMove, onRemove, onDragStart }) {
       </header>
 
       {criterion.description && <p className="crit-desc">{criterion.description}</p>}
-      {criterion.priority_reason && <p className="crit-why">{criterion.priority_reason}</p>}
+      {why && <p className="crit-why">{why}</p>}
 
-      {reqs.length > 0 && (
-        <p className="crit-reqs">
-          <span>Checks</span>
-          {reqs.slice(0, 6).map((id) => <em key={id}>{id}</em>)}
-          {reqs.length > 6 && <em>+{reqs.length - 6}</em>}
-        </p>
-      )}
+      <Requirements linked={linked} />
 
       {criterion.source_refs?.length > 0 && (
         <ul className="crit-refs">
@@ -84,6 +134,10 @@ function AddForm({ onAdd, onCancel }) {
 export default function CriteriaView({ analysis, criteria, onChange, onReset, onRun, warnings = [] }) {
   const [adding, setAdding] = useState(null)
   const [over, setOver] = useState(null)
+  const requirementById = useMemo(
+    () => Object.fromEntries((analysis.requirements || []).map((r) => [r.id, r])),
+    [analysis.requirements],
+  )
 
   const priorityOf = (c) => (COLUMN_IDS.includes(c.recommended_priority) ? c.recommended_priority : 'medium')
   const setPriority = (name, priority) =>
@@ -171,7 +225,7 @@ export default function CriteriaView({ analysis, criteria, onChange, onReset, on
               </header>
               <div className="level-body">
                 {cards.map((c) => (
-                  <Card key={c.name} criterion={c} onMove={move}
+                  <Card key={c.name} criterion={c} requirementById={requirementById} onMove={move}
                         onRemove={(name) => onChange(criteria.filter((x) => x.name !== name))}
                         onDragStart={onDragStart} />
                 ))}

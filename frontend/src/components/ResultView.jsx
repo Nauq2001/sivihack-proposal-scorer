@@ -6,6 +6,10 @@ import {
   attentionTone, countBy, reducedMotion, scoreTone, sortedFindings,
 } from '../lib/scoring.js'
 
+// Cung chu voi ba cot o man tieu chi. Khong hien "×3": nguoi dung khong chon
+// mot con so, ho chon mot cot.
+const PRIORITY = { high: 'High', medium: 'Medium', low: 'Low' }
+
 /** Điểm đếm lên, để con số là thứ đập vào mắt trước tiên. */
 function CountUp({ value }) {
   const [shown, setShown] = useState(reducedMotion() ? value : 0)
@@ -166,7 +170,9 @@ export default function ResultView({ result, source, error, sampleId, warnings =
                 </header>
                 <div className="crit-meta">
                   <Pips score={score} />
-                  <span className="weight" title="Weight in the overall score">×{c.weight}</span>
+                  <span className="weight" title="How much this counted in the overall score">
+                    {PRIORITY[c.recommended_priority] || 'Medium'} priority
+                  </span>
                   <span className="origin" data-origin={c.origin}>{ORIGIN[c.origin]}</span>
                 </div>
                 <p>{sc.comment}</p>
