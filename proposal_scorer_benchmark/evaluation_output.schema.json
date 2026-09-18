@@ -1,0 +1,217 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Proposal Scorer benchmark run output",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "case_id",
+    "response_id",
+    "run_id",
+    "scores",
+    "overall_score",
+    "requirements",
+    "findings",
+    "recommendation"
+  ],
+  "properties": {
+    "case_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "response_id": {
+      "type": "string",
+      "enum": [
+        "response_a",
+        "response_b",
+        "response_c",
+        "response_d"
+      ]
+    },
+    "run_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "scores": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "problem_understanding",
+        "scope_deliverables_clarity",
+        "pricing_clarity",
+        "timeline_clarity",
+        "completeness_vs_rfp",
+        "tone_persuasiveness",
+        "risk_assumptions_transparency"
+      ],
+      "properties": {
+        "problem_understanding": {
+          "$ref": "#/$defs/score"
+        },
+        "scope_deliverables_clarity": {
+          "$ref": "#/$defs/score"
+        },
+        "pricing_clarity": {
+          "$ref": "#/$defs/score"
+        },
+        "timeline_clarity": {
+          "$ref": "#/$defs/score"
+        },
+        "completeness_vs_rfp": {
+          "$ref": "#/$defs/score"
+        },
+        "tone_persuasiveness": {
+          "$ref": "#/$defs/score"
+        },
+        "risk_assumptions_transparency": {
+          "$ref": "#/$defs/score"
+        }
+      }
+    },
+    "overall_score": {
+      "type": "number",
+      "minimum": 1,
+      "maximum": 5
+    },
+    "requirements": {
+      "description": "Exactly one entry per R1-R8,B1,T1. Identifier uniqueness is checked by the comparison script.",
+      "type": "array",
+      "minItems": 10,
+      "maxItems": 10,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "status",
+          "rfp_quote",
+          "response_quote",
+          "rationale"
+        ],
+        "properties": {
+          "id": {
+            "$ref": "#/$defs/requirement_id"
+          },
+          "status": {
+            "enum": [
+              "met",
+              "partial",
+              "missing",
+              "contradicted",
+              "unsubstantiated"
+            ]
+          },
+          "rfp_quote": {
+            "type": "string",
+            "minLength": 1
+          },
+          "response_quote": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1
+          },
+          "rationale": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "requirement_ids",
+          "kind",
+          "severity",
+          "rfp_quote",
+          "response_quote",
+          "rationale",
+          "suggested_fix"
+        ],
+        "properties": {
+          "requirement_ids": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {
+              "$ref": "#/$defs/requirement_id"
+            }
+          },
+          "kind": {
+            "enum": [
+              "strength",
+              "missing",
+              "vague",
+              "contradiction",
+              "unsupported_promise",
+              "risk_disclosure"
+            ]
+          },
+          "severity": {
+            "enum": [
+              "info",
+              "minor",
+              "major",
+              "critical"
+            ]
+          },
+          "rfp_quote": {
+            "type": "string",
+            "minLength": 1
+          },
+          "response_quote": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1
+          },
+          "rationale": {
+            "type": "string",
+            "minLength": 1
+          },
+          "suggested_fix": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "recommendation": {
+      "enum": [
+        "ready",
+        "revise",
+        "do_not_accept_as_written"
+      ]
+    }
+  },
+  "$defs": {
+    "score": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 5
+    },
+    "requirement_id": {
+      "type": "string",
+      "enum": [
+        "R1",
+        "R2",
+        "R3",
+        "R4",
+        "R5",
+        "R6",
+        "R7",
+        "R8",
+        "B1",
+        "T1"
+      ]
+    }
+  }
+}

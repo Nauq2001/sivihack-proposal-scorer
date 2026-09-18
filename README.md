@@ -56,29 +56,18 @@ Khong sua code, chi sua file `.env`.
 
 ## 6. Frontend Proposal Scorer
 
-`frontend/` khong con la demo goi AI nua, no la app that voi 3 buoc:
+`frontend/` chay mot chieu, khong cho quay lai chinh sua:
 
-1. **Documents** - dan hoac upload RFP + proposal (.md/.txt)
-2. **Criteria** - bang 4 cot kieu MoSCoW: Deal-breaker, Important, Minor, Don't score.
-   Cot cang dam mau thi cang anh huong nhieu toi diem. 7 tieu chi goc theo Appendix A,
-   cong them tieu chi AI doc duoc tu RFP. The chi hien ten, bam vao moi mo mo ta +
-   ly do + trich dan. Keo tha hoac bam mui ten de doi cot, them/xoa tieu chi
-3. **Review** - diem tong, dai trang thai 9 yeu cau RFP, de xuat sua cho tung loi,
-   va khung nguon ben phai: bam vao trich dan la doan goc duoc to vang
+1. **Documents** - dan hoac upload RFP + proposal, hoac chon 1 trong 4 mau
+2. **Review** - man hinh tien trinh 5 buoc cua pipeline that
+3. **Result** - khuyen nghi + diem, dai phu yeu cau RFP (danh dau rang buoc cung),
+   cac tieu chi da cham kem trong so va nguon goc, findings sap theo muc nghiem
+   trong kem cau sua de dan vao, va khung nguon tra cuu trich dan
 
-App goi `POST /api/review`. Khi backend chua chay, no tu dung ket qua luu san cho
-4 proposal mau va hien nhan "Stored sample result", nen demo khong bao gio chet.
+Tieu chi do RFP Analyst doc tu RFP va chot luon, nguoi dung khong chinh.
 
-Quy tac mau dung chung ca app: **do = xu ly truoc tien**, vang = de y, xanh = on,
-xam = khong tinh diem. O trang Criteria, do la tieu chi nang nhat. O trang Review,
-do la yeu cau bi thieu/mau thuan, hoac tieu chi dang keo diem xuong nhieu nhat
-(diem thap tren mot tieu chi nang). Moi phan tu chi mang mot nghia mau duy nhat.
-
-App goi 2 endpoint: `POST /api/criteria` (doc RFP ra tieu chi) va `POST /api/review`.
-
-Hop dong API cho backend/AI: `docs/api/review-contract.md`
-Du lieu mau (response that): `frontend/src/mocks/*.json`
-Request mau: `docs/api/samples/request.example.json`
+App goi `POST /api/review` mot lan duy nhat. Khi backend chua chay, no dung ket
+qua luu san cho 4 proposal mau va hien nhan "Stored sample result".
 
 ## 7. De bai & du lieu mau
 

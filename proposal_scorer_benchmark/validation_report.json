@@ -1,0 +1,76 @@
+{
+  "dataset_version": "1.1",
+  "validation_date": "2026-09-18",
+  "actual_scorer_runs": 0,
+  "case_count": 6,
+  "pair_count": 24,
+  "label_counts": {
+    "weak": 6,
+    "strong": 6,
+    "overpromised": 6,
+    "medium": 6
+  },
+  "checks": [
+    {
+      "case_id": "01_customer_support",
+      "rfp_word_count": 400,
+      "responses": 4,
+      "requirements": 10,
+      "json_and_exact_evidence": "passed"
+    },
+    {
+      "case_id": "02_maintenance",
+      "rfp_word_count": 403,
+      "responses": 4,
+      "requirements": 10,
+      "json_and_exact_evidence": "passed"
+    },
+    {
+      "case_id": "03_training_portal",
+      "rfp_word_count": 427,
+      "responses": 4,
+      "requirements": 10,
+      "json_and_exact_evidence": "passed"
+    },
+    {
+      "case_id": "04_field_service",
+      "rfp_word_count": 447,
+      "responses": 4,
+      "requirements": 10,
+      "json_and_exact_evidence": "passed"
+    },
+    {
+      "case_id": "05_procurement",
+      "rfp_word_count": 431,
+      "responses": 4,
+      "requirements": 10,
+      "json_and_exact_evidence": "passed"
+    },
+    {
+      "case_id": "06_energy_reporting",
+      "rfp_word_count": 438,
+      "responses": 4,
+      "requirements": 10,
+      "json_and_exact_evidence": "passed"
+    }
+  ],
+  "enterprise_demo_records": 6,
+  "enterprise_demo_chunks": 34,
+  "all_exact_annotation_quotes_valid": true,
+  "input_hashes_recorded": true,
+  "policy_tests": "see policy_test_report.json",
+  "note": "Integrity verification only; scorer stability has not been measured.",
+  "comparison_tool_smoke_test": {
+    "passed": true,
+    "synthetic_test_only": true,
+    "checks": [
+      "Duplicate run rejected",
+      "Boolean score rejected",
+      "Fabricated quote detected",
+      "Score dispersion calculated",
+      "Modal status agreement calculated",
+      "Incomplete runs reported"
+    ]
+  },
+  "output_schema_validated_independently": true
+}

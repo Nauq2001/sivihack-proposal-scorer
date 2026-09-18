@@ -1,0 +1,318 @@
+{
+  "fictional": true,
+  "actual_api_evaluations_performed": false,
+  "records": [
+    {
+      "record_id": "proposal_01",
+      "document_type": "proposal",
+      "fictional": true,
+      "source_case_id": "01_customer_support",
+      "source_response_file": "../cases/01_customer_support/response_b.md",
+      "industry": "Business services",
+      "country": "DE",
+      "value_band": {
+        "currency": "EUR",
+        "min": 50000,
+        "max": 150000
+      },
+      "service_type": "Custom software implementation",
+      "submitted_date": "2026-08-01",
+      "status": "submitted",
+      "outcome": "won",
+      "outcome_source": "synthetic_manual_CRM_fixture",
+      "quality_score": 4.57,
+      "quality_provenance": {
+        "method": "mock_scoring_api",
+        "scorer_version": "demo_fixture_v1",
+        "rubric_version": "1.0",
+        "scored_at": "2026-09-18",
+        "input_sha256": "c039ca908e8364fef0f37f65599603334c76347279c41528319032b9d15e1db3",
+        "reviewed_by": "fictional_demo_reviewer"
+      },
+      "cross_deal_use": true,
+      "anonymized_customer_names": true,
+      "anonymized_amounts": true,
+      "sanitized_document": "sanitized/proposal_01.md",
+      "quality_bucket": "good",
+      "repository_role": "gold_reference",
+      "demo_gate_result": {
+        "admitted": true,
+        "errors": [],
+        "warnings": [
+          "synthetic_score_not_an_actual_api_evaluation"
+        ],
+        "may_assert_as_current_standard": false,
+        "may_use_cross_deal": true
+      },
+      "production_gate_result": {
+        "admitted": false,
+        "errors": [
+          "quality_must_be_scored_by_ingestion_api"
+        ],
+        "warnings": [],
+        "may_assert_as_current_standard": false,
+        "may_use_cross_deal": false
+      }
+    },
+    {
+      "record_id": "proposal_02",
+      "document_type": "proposal",
+      "fictional": true,
+      "source_case_id": "02_maintenance",
+      "source_response_file": "../cases/02_maintenance/response_a.md",
+      "industry": "Manufacturing",
+      "country": "DE",
+      "value_band": {
+        "currency": "EUR",
+        "min": 50000,
+        "max": 150000
+      },
+      "service_type": "Custom software implementation",
+      "submitted_date": "2026-08-02",
+      "status": "submitted",
+      "outcome": "won",
+      "outcome_source": "synthetic_manual_CRM_fixture",
+      "quality_score": 4.43,
+      "quality_provenance": {
+        "method": "mock_scoring_api",
+        "scorer_version": "demo_fixture_v1",
+        "rubric_version": "1.0",
+        "scored_at": "2026-09-18",
+        "input_sha256": "45dce6ba7ba469e368de5286e98f35ea1c83ce35aa130cea2e457cdf5826ac35",
+        "reviewed_by": "fictional_demo_reviewer"
+      },
+      "cross_deal_use": true,
+      "anonymized_customer_names": true,
+      "anonymized_amounts": true,
+      "sanitized_document": "sanitized/proposal_02.md",
+      "quality_bucket": "good",
+      "repository_role": "gold_reference",
+      "demo_gate_result": {
+        "admitted": true,
+        "errors": [],
+        "warnings": [
+          "synthetic_score_not_an_actual_api_evaluation"
+        ],
+        "may_assert_as_current_standard": false,
+        "may_use_cross_deal": true
+      },
+      "production_gate_result": {
+        "admitted": false,
+        "errors": [
+          "quality_must_be_scored_by_ingestion_api"
+        ],
+        "warnings": [],
+        "may_assert_as_current_standard": false,
+        "may_use_cross_deal": false
+      }
+    },
+    {
+      "record_id": "proposal_03",
+      "document_type": "proposal",
+      "fictional": true,
+      "source_case_id": "03_training_portal",
+      "source_response_file": "../cases/03_training_portal/response_c.md",
+      "industry": "Regional retail / internal staff learning",
+      "country": "DE",
+      "value_band": {
+        "currency": "EUR",
+        "min": 50000,
+        "max": 150000
+      },
+      "service_type": "Custom software implementation",
+      "submitted_date": "2026-08-03",
+      "status": "submitted",
+      "outcome": "won",
+      "outcome_source": "synthetic_manual_CRM_fixture",
+      "quality_score": 4.57,
+      "quality_provenance": {
+        "method": "mock_scoring_api",
+        "scorer_version": "demo_fixture_v1",
+        "rubric_version": "1.0",
+        "scored_at": "2026-09-18",
+        "input_sha256": "46dd10b8cc726ee1a843f18ec64b4168aff64c0f06254e07490f9e4fbe1c4f8e",
+        "reviewed_by": "fictional_demo_reviewer"
+      },
+      "cross_deal_use": true,
+      "anonymized_customer_names": true,
+      "anonymized_amounts": true,
+      "sanitized_document": "sanitized/proposal_03.md",
+      "quality_bucket": "good",
+      "repository_role": "gold_reference",
+      "demo_gate_result": {
+        "admitted": true,
+        "errors": [],
+        "warnings": [
+          "synthetic_score_not_an_actual_api_evaluation"
+        ],
+        "may_assert_as_current_standard": false,
+        "may_use_cross_deal": true
+      },
+      "production_gate_result": {
+        "admitted": false,
+        "errors": [
+          "quality_must_be_scored_by_ingestion_api"
+        ],
+        "warnings": [],
+        "may_assert_as_current_standard": false,
+        "may_use_cross_deal": false
+      }
+    },
+    {
+      "record_id": "proposal_04",
+      "document_type": "proposal",
+      "fictional": true,
+      "source_case_id": "04_field_service",
+      "source_response_file": "../cases/04_field_service/response_a.md",
+      "industry": "Commercial equipment installation and maintenance",
+      "country": "GB",
+      "value_band": {
+        "currency": "GBP",
+        "min": 50000,
+        "max": 150000
+      },
+      "service_type": "Custom software implementation",
+      "submitted_date": "2026-08-04",
+      "status": "submitted",
+      "outcome": "won",
+      "outcome_source": "synthetic_manual_CRM_fixture",
+      "quality_score": 2.0,
+      "quality_provenance": {
+        "method": "mock_scoring_api",
+        "scorer_version": "demo_fixture_v1",
+        "rubric_version": "1.0",
+        "scored_at": "2026-09-18",
+        "input_sha256": "f58644c1f13fb04aeff7d4db54cc3e22875ec7815b7c2647263850ed9e2a3ee4",
+        "reviewed_by": "fictional_demo_reviewer"
+      },
+      "cross_deal_use": true,
+      "anonymized_customer_names": true,
+      "anonymized_amounts": true,
+      "sanitized_document": "sanitized/proposal_04.md",
+      "quality_bucket": "poor",
+      "repository_role": "context_only",
+      "demo_gate_result": {
+        "admitted": true,
+        "errors": [],
+        "warnings": [
+          "synthetic_score_not_an_actual_api_evaluation"
+        ],
+        "may_assert_as_current_standard": false,
+        "may_use_cross_deal": true
+      },
+      "production_gate_result": {
+        "admitted": false,
+        "errors": [
+          "quality_must_be_scored_by_ingestion_api"
+        ],
+        "warnings": [],
+        "may_assert_as_current_standard": false,
+        "may_use_cross_deal": false
+      }
+    },
+    {
+      "record_id": "proposal_05",
+      "document_type": "proposal",
+      "fictional": true,
+      "source_case_id": "05_procurement",
+      "source_response_file": "../cases/05_procurement/response_a.md",
+      "industry": "Design and construction services",
+      "country": "DE",
+      "value_band": {
+        "currency": "EUR",
+        "min": 50000,
+        "max": 150000
+      },
+      "service_type": "Custom software implementation",
+      "submitted_date": "2026-08-05",
+      "status": "submitted",
+      "outcome": "lost",
+      "outcome_source": "synthetic_manual_CRM_fixture",
+      "quality_score": 4.43,
+      "quality_provenance": {
+        "method": "mock_scoring_api",
+        "scorer_version": "demo_fixture_v1",
+        "rubric_version": "1.0",
+        "scored_at": "2026-09-18",
+        "input_sha256": "5162e5f3f65dad13744d2e8a459e425f8b1bbcd3185d11067b54d5693c5c24a4",
+        "reviewed_by": "fictional_demo_reviewer"
+      },
+      "cross_deal_use": true,
+      "anonymized_customer_names": true,
+      "anonymized_amounts": true,
+      "sanitized_document": "sanitized/proposal_05.md",
+      "quality_bucket": "good",
+      "repository_role": "context_only",
+      "demo_gate_result": {
+        "admitted": true,
+        "errors": [],
+        "warnings": [
+          "synthetic_score_not_an_actual_api_evaluation"
+        ],
+        "may_assert_as_current_standard": false,
+        "may_use_cross_deal": true
+      },
+      "production_gate_result": {
+        "admitted": false,
+        "errors": [
+          "quality_must_be_scored_by_ingestion_api"
+        ],
+        "warnings": [],
+        "may_assert_as_current_standard": false,
+        "may_use_cross_deal": false
+      }
+    },
+    {
+      "record_id": "proposal_06",
+      "document_type": "proposal",
+      "fictional": true,
+      "source_case_id": "06_energy_reporting",
+      "source_response_file": "../cases/06_energy_reporting/response_c.md",
+      "industry": "Commercial property operations",
+      "country": "DE",
+      "value_band": {
+        "currency": "EUR",
+        "min": 50000,
+        "max": 150000
+      },
+      "service_type": "Custom software implementation",
+      "submitted_date": "2026-08-06",
+      "status": "submitted",
+      "outcome": "lost",
+      "outcome_source": "synthetic_manual_CRM_fixture",
+      "quality_score": 2.14,
+      "quality_provenance": {
+        "method": "mock_scoring_api",
+        "scorer_version": "demo_fixture_v1",
+        "rubric_version": "1.0",
+        "scored_at": "2026-09-18",
+        "input_sha256": "e13602b486d870a4115d5958aa2d3a4f9f6f508e09ee2339a28d861142f55924",
+        "reviewed_by": "fictional_demo_reviewer"
+      },
+      "cross_deal_use": true,
+      "anonymized_customer_names": true,
+      "anonymized_amounts": true,
+      "sanitized_document": "sanitized/proposal_06.md",
+      "quality_bucket": "poor",
+      "repository_role": "negative_reference",
+      "demo_gate_result": {
+        "admitted": true,
+        "errors": [],
+        "warnings": [
+          "synthetic_score_not_an_actual_api_evaluation"
+        ],
+        "may_assert_as_current_standard": false,
+        "may_use_cross_deal": true
+      },
+      "production_gate_result": {
+        "admitted": false,
+        "errors": [
+          "quality_must_be_scored_by_ingestion_api"
+        ],
+        "warnings": [],
+        "may_assert_as_current_standard": false,
+        "may_use_cross_deal": false
+      }
+    }
+  ]
+}

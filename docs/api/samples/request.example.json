@@ -12,56 +12,56 @@
       "id": "comp",
       "name": "Completeness vs. RFP",
       "description": "Every explicit RFP requirement is addressed.",
-      "priority": "dealbreaker",
+      "priority": "high",
       "source": "base"
     },
     {
       "id": "risk",
       "name": "Risks & assumptions",
       "description": "Dependencies and risks are flagged, not hidden.",
-      "priority": "dealbreaker",
+      "priority": "high",
       "source": "base"
     },
     {
       "id": "price",
       "name": "Pricing clarity",
       "description": "Price stated, broken down, easy to follow.",
-      "priority": "important",
+      "priority": "medium",
       "source": "base"
     },
     {
       "id": "time",
       "name": "Timeline clarity",
       "description": "Concrete milestones and dates.",
-      "priority": "important",
+      "priority": "medium",
       "source": "base"
     },
     {
       "id": "accuracy",
       "name": "Data accuracy & validation",
       "description": "Says how inventory figures are checked against reality before anyone relies on them.",
-      "priority": "important",
+      "priority": "medium",
       "source": "ai"
     },
     {
       "id": "pu",
       "name": "Problem understanding",
       "description": "Reflects the client’s actual stated problem and goals, not a generic pitch.",
-      "priority": "minor",
+      "priority": "low",
       "source": "base"
     },
     {
       "id": "scope",
       "name": "Scope & deliverables",
       "description": "Deliverables are specific; clear what is and isn’t included.",
-      "priority": "minor",
+      "priority": "low",
       "source": "base"
     },
     {
       "id": "legacy",
       "name": "Legacy system & spreadsheets",
       "description": "Says what happens to the old legacy system and the spreadsheets after go-live.",
-      "priority": "minor",
+      "priority": "low",
       "source": "ai"
     }
   ]

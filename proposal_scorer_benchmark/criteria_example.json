@@ -1,0 +1,139 @@
+{
+  "fictional": true,
+  "case_id": "01_customer_support",
+  "agent_raw": [
+    {
+      "name": "Pricing Clarity",
+      "source": "ai",
+      "priority": "critical",
+      "rfp_quote": "Lindenvale has 120 staff across four offices: Berlin, Bremen, Leipzig, and Mainz. Requests currently arrive in a shared mailbox and are copied into local spreadsheets. Managers cannot reliably see ownership or overdue work. We need one internal browser portal, retaining email intake and existing identity infrastructure. This project does not include a replacement CRM or customer-facing self-service. All quantities below are procurement assumptions for this fictional exercise; bidders have not received production data or credentials."
+    },
+    {
+      "name": "Tone & Persuasiveness",
+      "source": "base",
+      "priority": "major",
+      "rfp_quote": null
+    },
+    {
+      "name": "Operational continuity",
+      "source": "ai",
+      "priority": "critical",
+      "rfp_quote": "retaining email intake and existing identity infrastructure."
+    },
+    {
+      "name": "OPERATIONAL---CONTINUITY",
+      "source": "ai",
+      "priority": "major",
+      "rfp_quote": "Lindenvale has 120 staff across four offices: Berlin, Bremen, Leipzig, and Mainz. Requests currently arrive in a shared mailbox and are copied into local spreadsheets. Managers cannot reliably see ownership or overdue work. We need one internal browser portal, retaining email intake and existing identity infrastructure. This project does not include a replacement CRM or customer-facing self-service. All quantities below are procurement assumptions for this fictional exercise; bidders have not received production data or credentials."
+    },
+    {
+      "name": "Artificial intelligence readiness",
+      "source": "ai",
+      "priority": "major",
+      "rfp_quote": "client requires AI"
+    },
+    {
+      "name": "Unauthorized custom item",
+      "source": "custom",
+      "priority": "critical"
+    }
+  ],
+  "user_custom": [
+    {
+      "name": "Company delivery capacity",
+      "priority": "major"
+    }
+  ],
+  "normalized_proposal": {
+    "criteria": [
+      {
+        "id": "problem_understanding",
+        "name": "Problem Understanding",
+        "source": "base",
+        "priority": "minor",
+        "rfp_quote": null
+      },
+      {
+        "id": "scope_deliverables_clarity",
+        "name": "Scope & Deliverables Clarity",
+        "source": "base",
+        "priority": "minor",
+        "rfp_quote": null
+      },
+      {
+        "id": "pricing_clarity",
+        "name": "Pricing Clarity",
+        "source": "base",
+        "priority": "minor",
+        "rfp_quote": null
+      },
+      {
+        "id": "timeline_clarity",
+        "name": "Timeline Clarity",
+        "source": "base",
+        "priority": "minor",
+        "rfp_quote": null
+      },
+      {
+        "id": "completeness_vs_rfp",
+        "name": "Completeness vs. RFP Requirements",
+        "source": "base",
+        "priority": "minor",
+        "rfp_quote": null
+      },
+      {
+        "id": "tone_persuasiveness",
+        "name": "Tone & Persuasiveness",
+        "source": "base",
+        "priority": "major",
+        "rfp_quote": null
+      },
+      {
+        "id": "risk_assumptions_transparency",
+        "name": "Risk/Assumptions Transparency",
+        "source": "base",
+        "priority": "minor",
+        "rfp_quote": null
+      },
+      {
+        "id": "ai_1",
+        "name": "Operational continuity",
+        "source": "ai",
+        "priority": "critical",
+        "rfp_quote": "retaining email intake and existing identity infrastructure."
+      },
+      {
+        "id": "custom_1",
+        "name": "Company delivery capacity",
+        "source": "custom",
+        "priority": "major",
+        "rfp_quote": null
+      }
+    ],
+    "discarded": [
+      {
+        "name": "Pricing Clarity",
+        "reason": "duplicates_base"
+      },
+      {
+        "name": "Unauthorized custom item",
+        "reason": "agent_source_not_allowed"
+      },
+      {
+        "name": "OPERATIONAL---CONTINUITY",
+        "reason": "duplicates_normalized_name"
+      },
+      {
+        "name": "Artificial intelligence readiness",
+        "reason": "missing_or_invalid_rfp_quote"
+      }
+    ],
+    "requires_user_confirmation": true,
+    "table_columns": [
+      "Criterion",
+      "Source",
+      "Priority",
+      "RFP evidence"
+    ]
+  }
+}
