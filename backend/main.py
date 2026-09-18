@@ -61,6 +61,13 @@ try:  # kho tri thuc doanh nghiep
 except Exception as exc:  # pragma: no cover
     logger.warning("[enterprise] khong nap duoc: %s", exc)
 
+try:  # hai agent: /api/analyze-rfp va /api/score
+    from review_routes import router as review_router
+
+    app.include_router(review_router)
+except Exception as exc:  # pragma: no cover
+    logger.warning("[review] khong nap duoc hai route agent: %s", exc)
+
 RAG_STORE = None
 try:  # kho tham chieu cham diem theo tieu chi
     from rag.api import load_store, retrieve_payload
@@ -149,9 +156,6 @@ def retrieve_rag(req: RagRequest):
     except (TypeError, ValueError) as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
-
-# /api/analyze-rfp va /api/score do team AI noi vao, xem CLAUDE.md muc
-# "Interface contract". Frontend da san sang goi hai endpoint nay.
 
 if __name__ == "__main__":
     import uvicorn

@@ -23,14 +23,16 @@ cd frontend && npm install && npm run dev
 | `/v1/markitdown/...` | be-init | OK, chuyen PDF/PPTX sang Markdown |
 | `/rag/retrieve` | rag/development | OK, 168 ban ghi tham chieu |
 | `/api/evidence/*` | rag-enterprise | OK, kho doanh nghiep + kiem tra loi hua |
-| `/api/analyze-rfp` | feat/ai | **Chua noi HTTP** |
-| `/api/score` | feat/ai | **Chua noi HTTP** |
+| `/api/analyze-rfp` | feat/ai | OK, RFP Analyst (~11-13s) |
+| `/api/score` | feat/ai | OK, Proposal Analyst (~13-16s) |
 
-Hai endpoint cuoi la viec con lai: module `AI/` da co san `analyze_rfp` va
-`score_proposal`, chi can boc thanh route theo `CLAUDE.md` muc "Interface
-contract". Frontend da goi dung ten va dung shape.
+Hai route nam o `backend/review_routes.py`, chi la lop noi: nap `AI/` va
+`agent/src`, goi ham co san, doi loi thanh HTTP. Logic cham diem van o nhanh AI.
 
-Khi chua co chung, frontend dung ket qua luu san cho 4 proposal mau va hien
+Can `GEMINI_API_KEY` trong `backend/.env`. **`gemini-2.0-flash` da bi Google go
+khoi API**, dung `gemini-flash-latest` (xem `.env.example`).
+
+Khi backend chua chay, frontend dung ket qua luu san cho 4 proposal mau va hien
 nhan "Stored sample result".
 
 ## 1. Backend
