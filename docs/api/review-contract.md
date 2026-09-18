@@ -14,7 +14,7 @@ frontend sẽ hỏng. Thừa khoá thì frontend bỏ qua, không sao.
 
 ---
 
-## 1. Request
+## 1. Dữ liệu gửi lên (request)
 
 ```json
 {
@@ -39,7 +39,7 @@ lại từ `criteria[].score`, nên kéo trọng số là điểm đổi ngay, k
 
 ---
 
-## 2. Response
+## 2. Dữ liệu trả về (response)
 
 ```json
 {
@@ -79,8 +79,8 @@ lại từ `criteria[].score`, nên kéo trọng số là điểm đổi ngay, k
 
 ### 2.3 `requirements` — 9 phần tử, đúng thứ tự này
 
-`r1` Dashboard · `r2` Low-stock alerts · `r3` PostgreSQL · `r4` Access roles ·
-`r5` Rollout plan · `r6` Support SLAs · `r7` Risks · `budget` Budget · `timeline` Timeline
+`r1` Bảng điều khiển · `r2` Cảnh báo tồn kho thấp · `r3` PostgreSQL · `r4` Vai trò truy cập ·
+`r5` Kế hoạch triển khai · `r6` SLA hỗ trợ · `r7` Rủi ro · `budget` Ngân sách · `timeline` Lịch trình
 
 Bảy mục `r1`–`r7` là 7 yêu cầu đánh số trong RFP; `budget` và `timeline` là hai
 ràng buộc cứng. Với RFP khác, số lượng và `id` sẽ khác — frontend đọc theo mảng,
@@ -134,13 +134,13 @@ suggested weights".
 
 Cần định nghĩa rõ từng mức, nếu không cùng một proposal chấm hai lần sẽ ra hai điểm.
 
-| Điểm | Pricing clarity | Timeline clarity |
+| Điểm | Độ rõ ràng của giá | Độ rõ ràng của lịch trình |
 |---|---|---|
 | 1 | Không có con số, hoặc "báo giá sau" | Không có mốc nào |
-| 2 | Chỉ có khoảng giá, hoặc tổng tiền không breakdown | Có tên giai đoạn, không có ngày |
-| 3 | Tổng tiền và breakdown một phần | Có mốc nhưng không khớp deadline của RFP |
-| 4 | Breakdown từng hạng mục, trong ngân sách, còn một điểm mơ hồ | Mốc cụ thể, còn một khoảng chưa rõ |
-| 5 | Breakdown đủ, trong ngân sách, đủ mọi khoản RFP yêu cầu | Mốc cụ thể, khớp đủ deadline của RFP |
+| 2 | Chỉ có khoảng giá, hoặc tổng tiền không có phân bổ chi phí | Có tên giai đoạn, không có ngày |
+| 3 | Tổng tiền và phân bổ chi phí một phần | Có mốc nhưng không khớp hạn chót của RFP |
+| 4 | Phân bổ chi phí từng hạng mục, trong ngân sách, còn một điểm mơ hồ | Mốc cụ thể, còn một khoảng chưa rõ |
+| 5 | Phân bổ đầy đủ chi phí, trong ngân sách, đủ mọi khoản RFP yêu cầu | Mốc cụ thể, khớp đủ hạn chót của RFP |
 
 **`comp` (Completeness) nên tính bằng công thức, không để AI chấm cảm tính:**
 

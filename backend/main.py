@@ -21,7 +21,10 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from dotenv import load_dotenv
-from rag.api import load_store, retrieve_payload
+if __package__:
+    from .rag.api import load_store, retrieve_payload
+else:
+    from rag.api import load_store, retrieve_payload
 
 load_dotenv()
 
@@ -56,9 +59,10 @@ class AskResponse(BaseModel):
 
 class RagRequest(BaseModel):
     criterion: dict
-    proposal_context: str
-    requirement_context: str
+    proposal_context: str = ''
+    requirement_context: str = ''
     top_k_per_type: int = 1
+    relevance_threshold: int = 2
 
 
 def call_gemini(prompt: str) -> str:

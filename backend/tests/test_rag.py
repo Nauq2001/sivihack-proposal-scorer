@@ -5,6 +5,42 @@ from backend.rag.api import retrieve_payload
 
 
 class ScoringRagTests(unittest.TestCase):
+    def test_custom_criterion_uses_description_and_keeps_its_id(self):
+        store = BenchmarkStore([{
+            'id': 'example', 'criterion_id': 'completeness_vs_rfp',
+            'source_file': 'example.md', 'sample_type': 'strong',
+            'text': 'Production records and backups remain in EU regions.',
+            'score_range': [4, 5],
+        }])
+        result = retrieve_payload(store, {
+            'criterion': {'id': 'custom_residency', 'description': 'Production backups EU regions'},
+            'proposal_context': '', 'requirement_context': '',
+        })
+        self.assertEqual(result['criterion_id'], 'custom_residency')
+        self.assertEqual(result['retrieval_mode'], 'custom')
+        self.assertEqual(len(result['matches']), 1)
+        self.assertEqual(result['matches'][0]['criterion_id'], 'completeness_vs_rfp')
+        self.assertIsNone(result['matches'][0]['score_range'])
+
+    def test_threshold_is_inclusive_and_custom_results_are_deduplicated(self):
+        record = {'id': 'one', 'criterion_id': 'timeline_clarity',
+                  'source_file': 'one.md', 'sample_type': 'strong',
+                  'text': 'pilot rollout', 'score_range': [4, 5]}
+        store = BenchmarkStore([record, {**record, 'id': 'two', 'criterion_id': 'completeness_vs_rfp'}])
+        self.assertEqual(len(store.retrieve('custom', 'pilot rollout', 2, 2)), 1)
+        self.assertEqual(store.retrieve('custom', 'pilot rollout', 2, 3), [])
+
+    def test_metadata_does_not_satisfy_threshold(self):
+        store = BenchmarkStore([{'criterion_id': 'pricing_clarity', 'sample_type': 'weak',
+            'text': 'No quote supplied.', 'section': 'pilot rollout', 'reasoning': 'pilot rollout'}])
+        self.assertEqual(store.retrieve('pricing_clarity', 'pilot rollout'), [])
+
+    def test_invalid_options_are_rejected(self):
+        store = BenchmarkStore([])
+        for threshold in (0, -1, True, '2'):
+            with self.assertRaises(ValueError):
+                store.retrieve('custom', 'pilot rollout', min_overlap=threshold)
+
     def test_retrieves_balanced_examples_for_a_criterion(self):
         store = BenchmarkStore.from_file("backend/rag/data/records.jsonl")
 
