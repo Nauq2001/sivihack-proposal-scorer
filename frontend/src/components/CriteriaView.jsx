@@ -139,6 +139,7 @@ function AddForm({ onAdd, onCancel }) {
 export default function CriteriaView({ analysis, criteria, suggested = [], onChange, onReset, onRun, warnings = [] }) {
   const [adding, setAdding] = useState(null)
   const [over, setOver] = useState(null)
+  const [merged, setMerged] = useState(null)
   const requirementById = useMemo(
     () => Object.fromEntries((analysis.requirements || []).map((r) => [r.id, r])),
     [analysis.requirements],
@@ -180,14 +181,26 @@ export default function CriteriaView({ analysis, criteria, suggested = [], onCha
     if (name) setPriority(name, priority)
   }
 
+  /** Gom trung ten thay vi them ban thu hai — giong `add_or_merge` cua agent
+   *  (agent/src/rfp_analyst/criteria.py): ban trung giu criterion chuan, chi
+   *  nhan muc do moi. So khop bo dau cach thua va phan biet hoa thuong, y het
+   *  `_normalize` ben do, de "pricing  clarity" cung bat duoc. */
   const add = (priority, name, description) => {
-    if (criteria.some((c) => c.name.toLowerCase() === name.toLowerCase())) return
+    const key = (s) => String(s).toLowerCase().split(/\s+/).filter(Boolean).join(' ')
+    const existing = criteria.find((c) => key(c.name) === key(name))
+    if (existing) {
+      setPriority(existing.name, priority)
+      setAdding(null)
+      setMerged(existing.name)
+      return
+    }
     onChange([...criteria, {
       name, description, weight: COLUMNS.find((c) => c.id === priority)?.weight || 1,
       recommended_priority: priority, priority_reason: 'Added by you for this review.',
       origin: 'user', source_refs: [], requirement_ids: [],
     }])
     setAdding(null)
+    setMerged(null)
   }
 
   const fromRfp = criteria.filter((c) => c.origin === 'ai_inferred' || c.origin === 'rfp_explicit').length
@@ -212,6 +225,13 @@ export default function CriteriaView({ analysis, criteria, suggested = [], onCha
           <button type="button" className="btn btn-ghost" onClick={onReset}>Reset to the RFP suggestion</button>
         </div>
       </div>
+
+      {merged && (
+        <p className="notice reveal">
+          <strong>Already on the board.</strong> “{merged}” was moved to the column you picked instead of being
+          added twice.
+        </p>
+      )}
 
       {warnings.length > 0 && (
         <p className="notice reveal">

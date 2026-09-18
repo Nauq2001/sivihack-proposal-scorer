@@ -11,6 +11,34 @@ import { CONVERTIBLE, PLAIN_TEXT, analyseRfp, convertFile, extensionOf, scorePro
 
 const firstSample = SAMPLES[0]
 
+/** Tieu chi nguoi dung tu them phai co packet rieng truoc khi gui di cham.
+ *
+ *  Khong co packet thi prompt cua Scoring Agent chi thay "(none)" o phan huong
+ *  dan va ghi chu, mat luon rao chan `USER_DEFINED_NOT_RFP`: tieu chi tu them
+ *  khong phai yeu cau cua RFP, khong duoc bao cao nhu mot muc bi thieu.
+ *
+ *  Day dung la nhanh du phong cua `resolve_user_criterion` khi khong co
+ *  resolver (agent/src/rfp_analyst/criteria.py) — lien ket de rong, ghi chu
+ *  canh bao khong bia them nghia vu. */
+function withUserPackets(analysis, confirmed) {
+  const known = new Set((analysis.criterion_packets || []).map((p) => p.criterion_name))
+  const added = confirmed
+    .filter((c) => !known.has(c.name))
+    .map((c) => ({
+      criterion_name: c.name,
+      origin: 'user',
+      evaluation_guidance: [`Evaluate only this user-defined expectation: ${c.description}`],
+      requirement_ids: [],
+      source_refs: [],
+      notes: [
+        'USER_DEFINED_NOT_RFP: Score against the user’s description; do not report it as a missing RFP requirement.',
+        'ENRICHMENT_FAILED: No verified RFP links were added; do not invent thresholds or obligations.',
+      ],
+    }))
+  if (!added.length) return analysis
+  return { ...analysis, criterion_packets: [...(analysis.criterion_packets || []), ...added] }
+}
+
 // Ba man co noi dung; hai man tien trinh nam giua nen khong co trong thanh nay.
 const FLOW = [['input', 'Documents'], ['criteria', 'Criteria'], ['result', 'Result']]
 
@@ -154,7 +182,7 @@ export default function App() {
       const weightOf = (c) => COLUMNS.find((col) => col.id === c.recommended_priority)?.weight ?? 2
       const confirmed = criteria.map((c) => ({ ...c, weight: weightOf(c) }))
       const scoring = await withFloor(() => scoreProposal({
-        rfp, proposal, rfp_analysis: analysis, confirmed_criteria: confirmed,
+        rfp, proposal, rfp_analysis: withUserPackets(analysis, confirmed), confirmed_criteria: confirmed,
       }))
       setWarnings((w) => [...w, ...(scoring.warnings || [])])
       // `confirmed`, khong phai `criteria`: trang ket qua phai hien dung trong so
