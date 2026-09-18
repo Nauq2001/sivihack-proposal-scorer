@@ -153,10 +153,20 @@ def test_decision_date_is_context_not_a_vendor_requirement(rfp_text):
     assert result.requirements == []
 
 
-def test_hard_constraint_flag_is_reserved_for_explicit_prohibitions(rfp_text):
+def test_hard_constraint_flag_is_passed_through_from_the_model_unmodified(rfp_text):
+    """is_hard_constraint is a semantic judgment the model makes with full RFP
+    context (see the explicit instruction in prompts.py) — it must not be
+    second-guessed by a keyword regex, which has no context and misfires
+    both ways: flagging "budget must not exceed X" as a hard constraint
+    just because it contains "must not", or missing a real constraint
+    phrased without any trigger word."""
     from rfp_analyst.analyst import analyze_rfp
 
-    rfp_text = rfp_text + "Total budget is €80,000–€120,000.\n"
+    rfp_text = (
+        rfp_text
+        + "Total budget must not exceed €120,000.\n"
+        + "The vendor shall retain the existing database as the system of record.\n"
+    )
 
     model = CountingRunnable(
         {
@@ -165,18 +175,18 @@ def test_hard_constraint_flag_is_reserved_for_explicit_prohibitions(rfp_text):
             "detected_priority_note": None,
             "requirements": [
                 {
-                    "text": "Total budget is €80,000–€120,000.",
+                    "text": "Total budget must not exceed €120,000.",
                     "related_criterion": "Pricing Clarity",
-                    "is_hard_constraint": True,
+                    "is_hard_constraint": False,
                     "source_section": "Budget",
-                    "source_quote": "Total budget is €80,000–€120,000.",
+                    "source_quote": "Total budget must not exceed €120,000.",
                 },
                 {
-                    "text": "Use the existing database with no migration.",
+                    "text": "Retain the existing database as the system of record.",
                     "related_criterion": "Scope & Deliverables Clarity",
-                    "is_hard_constraint": False,
+                    "is_hard_constraint": True,
                     "source_section": "Requirements",
-                    "source_quote": "Integration with our existing PostgreSQL database — no migration to a new database.",
+                    "source_quote": "The vendor shall retain the existing database as the system of record.",
                 },
             ],
             "suggested_weights": [],

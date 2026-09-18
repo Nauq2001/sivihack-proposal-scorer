@@ -13,7 +13,7 @@ def main():
         },
         'proposal_context': 'Production records and all backups remain in EU regions.',
         'requirement_context': 'Provide a named-region data-flow diagram and restoration demonstration.',
-        'relevance_threshold': 2,
+        'min_hybrid_score': 0.45,
     })
     print(json.dumps(result, ensure_ascii=True, indent=2))
 

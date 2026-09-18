@@ -6,16 +6,16 @@ from backend.main import app
 
 
 class RagHttpTests(unittest.TestCase):
-    def test_custom_query_threshold_and_validation(self):
+    def test_custom_query_hybrid_threshold_and_validation(self):
         with TestClient(app) as client:
             payload = {'criterion': {'id': 'custom_residency', 'description': 'production backups EU regions'}}
             response = client.post('/rag/retrieve', json=payload)
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.json()['criterion_id'], 'custom_residency')
             self.assertTrue(response.json()['matches'])
-            payload['relevance_threshold'] = 100
+            payload['min_hybrid_score'] = 1.0
             self.assertEqual(client.post('/rag/retrieve', json=payload).json()['matches'], [])
-            payload['relevance_threshold'] = 0
+            payload['min_hybrid_score'] = -0.1
             self.assertEqual(client.post('/rag/retrieve', json=payload).status_code, 400)
 
     def test_disallowed_requirement_criterion_is_rejected(self):

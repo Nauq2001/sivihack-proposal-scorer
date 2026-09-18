@@ -20,8 +20,12 @@ from pathlib import Path
 
 from AI.contracts import CriterionScore, CriterionWeight, RequirementFinding, RFPAnalysis
 from AI.rag_client import retrieve_examples
-from AI.scoring import _enforce_hard_constraint_severity, compute_overall_score
-from AI.contracts import ScoringInput
+from AI.scoring import (
+    _enforce_criterion_score_rules,
+    _enforce_hard_constraint_severity,
+    compute_overall_score,
+)
+from AI.contracts import ProposalAnalystOutput, ScoringInput
 
 FIXTURE_PATH = Path(__file__).parent / "fixtures" / "nordframe_rfp_analysis.json"
 
@@ -106,6 +110,55 @@ def main() -> None:
     check(
         'status="missing" clears any citation the model invented',
         findings[1].citation == "",
+    )
+
+    # Deterministic criterion-score rules (v2): Completeness score computed
+    # from findings, and a hard-constraint cap applied to any criterion.
+    all_ids = [r.id for r in rfp_analysis.requirements]
+    almost_all_met_findings = [
+        RequirementFinding(requirement_id=rid, status="met", severity="low", reason="x")
+        for rid in all_ids
+    ]
+    almost_all_met_findings[-1].status = "missing"  # 18/19 met, 1 missing -> 94.7% credit
+    output = ProposalAnalystOutput(
+        findings=almost_all_met_findings,
+        criteria=[
+            CriterionScore(name=c.name, score=1, comment="x")  # deliberately low, to prove override
+            for c in rfp_analysis.suggested_criteria_weights
+        ],
+        verdict="x",
+    )
+    _enforce_criterion_score_rules(output, scoring_input)
+    completeness = next(c for c in output.criteria if c.name == "Completeness vs RFP Requirements")
+    check(
+        "Completeness score computed from findings (18/19 met -> 4), not left at LLM's guess",
+        completeness.score == 4,
+    )
+
+    hard_cap_findings = [
+        RequirementFinding(requirement_id=rid, status="met", severity="low", reason="x")
+        for rid in all_ids
+    ]
+    hard_cap_findings_by_id = {f.requirement_id: f for f in hard_cap_findings}
+    hard_cap_findings_by_id["REQ-007"].status = "contradicted"  # a hard constraint under Scope
+    output2 = ProposalAnalystOutput(
+        findings=hard_cap_findings,
+        criteria=[
+            CriterionScore(name=c.name, score=5, comment="x")  # deliberately high, to prove the cap fires
+            for c in rfp_analysis.suggested_criteria_weights
+        ],
+        verdict="x",
+    )
+    _enforce_criterion_score_rules(output2, scoring_input)
+    scope = next(c for c in output2.criteria if c.name == "Scope & Deliverables Clarity")
+    check(
+        "hard-constraint contradiction caps Scope & Deliverables Clarity at 2 despite LLM giving 5",
+        scope.score == 2,
+    )
+    unrelated = next(c for c in output2.criteria if c.name == "Pricing Clarity")
+    check(
+        "criteria not linked to the contradicted hard constraint are left uncapped",
+        unrelated.score == 5,
     )
 
     criteria = [

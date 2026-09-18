@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from copy import deepcopy
-import re
 from typing import Any
 
 from .config import base_criteria, base_packets
@@ -30,19 +29,19 @@ def analyze_rfp(raw_rfp_text: str, structured_model: Any) -> RFPAnalysis:
         for item in draft.requirements
         if "decision date" not in item.source_section.casefold()
     ]
+    # is_hard_constraint is a semantic judgment (see prompts.py's explicit
+    # instruction to the model) that needs full-document context — trust the
+    # model's own classification rather than a keyword regex, which has no
+    # context and misfires both ways: false positives ("budget must not
+    # exceed X" is not a hard constraint despite containing "must not") and
+    # false negatives (a real constraint phrased without a trigger word,
+    # e.g. "retain the existing database as system of record").
     requirements = [
         Requirement(
             id=f"REQ-{index:03d}",
             **{
                 **item.model_dump(),
                 "source_quote": reconcile_quote(item.source_quote, raw_rfp_text),
-                "is_hard_constraint": bool(
-                    re.search(
-                        r"\b(no|only|must not|shall not|cannot|without)\b",
-                        f"{item.text} {item.source_quote}",
-                        re.IGNORECASE,
-                    )
-                ),
             },
         )
         for index, item in enumerate(extracted_requirements, start=1)

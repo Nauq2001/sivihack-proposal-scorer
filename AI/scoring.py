@@ -40,6 +40,67 @@ def _enforce_hard_constraint_severity(
             finding.citation = ""
 
 
+def _compute_requirement_based_score(requirement_ids: list[str], findings_by_id: dict) -> int:
+    """Deterministic 1-5 score from requirement statuses: met=1.0 credit,
+    vague=0.5, missing/contradicted=0.0 credit, averaged then bucketed.
+    Mirrors the "requirement-linked" prompt rubric as arithmetic — used to
+    override the LLM's own score for "Completeness vs RFP Requirements",
+    since that criterion is cross-cutting over (near-)all requirements and
+    fully derivable from findings, so it shouldn't depend on the LLM
+    synthesizing the count correctly every run.
+    """
+    linked = [findings_by_id[rid] for rid in requirement_ids if rid in findings_by_id]
+    if not linked:
+        return 3
+    credit = {"met": 1.0, "vague": 0.5, "missing": 0.0, "contradicted": 0.0}
+    proportion = sum(credit[f.status] for f in linked) / len(linked)
+    if proportion >= 1.0:
+        return 5
+    if proportion >= 0.8:
+        return 4
+    if proportion >= 0.5:
+        return 3
+    if proportion > 0.0:
+        return 2
+    return 1
+
+
+def _hard_constraint_cap(
+    requirement_ids: list[str], findings_by_id: dict, hard_constraint_ids: set
+) -> int | None:
+    """2 if a hard-constraint requirement linked to this criterion is
+    contradicted, else None. Enforced the same way as severity above: the
+    prompt guides the model toward this, but the cap is only guaranteed by
+    applying it here, so it never depends on the LLM applying it consistently.
+    """
+    for rid in requirement_ids:
+        if rid in hard_constraint_ids:
+            finding = findings_by_id.get(rid)
+            if finding and finding.status == "contradicted":
+                return 2
+    return None
+
+
+def _enforce_criterion_score_rules(
+    output: ProposalAnalystOutput, scoring_input: ScoringInput
+) -> None:
+    packets_by_name = {
+        p.criterion_name: p for p in scoring_input.rfp_analysis.criterion_packets
+    }
+    findings_by_id = {f.requirement_id: f for f in output.findings}
+    hard_constraint_ids = {
+        r.id for r in scoring_input.rfp_analysis.requirements if r.is_hard_constraint
+    }
+    for criterion in output.criteria:
+        packet = packets_by_name.get(criterion.name)
+        requirement_ids = packet.requirement_ids if packet else []
+        if criterion.name == "Completeness vs RFP Requirements" and requirement_ids:
+            criterion.score = _compute_requirement_based_score(requirement_ids, findings_by_id)
+        cap = _hard_constraint_cap(requirement_ids, findings_by_id, hard_constraint_ids)
+        if cap is not None:
+            criterion.score = min(criterion.score, cap)
+
+
 def _validate_output(scoring_input: ScoringInput, output: ProposalAnalystOutput) -> None:
     requirement_ids = {r.id for r in scoring_input.rfp_analysis.requirements}
     finding_ids = {f.requirement_id for f in output.findings}
@@ -100,6 +161,7 @@ def score_proposal(scoring_input: ScoringInput, max_semantic_retries: int = 1) -
     for _ in range(max_semantic_retries + 1):
         output = call_ai_json(prompt, ProposalAnalystOutput)
         _enforce_hard_constraint_severity(output.findings, scoring_input)
+        _enforce_criterion_score_rules(output, scoring_input)
         try:
             _validate_output(scoring_input, output)
         except ScoringValidationError as exc:
