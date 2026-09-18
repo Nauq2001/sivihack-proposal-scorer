@@ -1,10 +1,48 @@
 import unittest
 
-from backend.rag.engine import BenchmarkStore
+import numpy as np
+
+from backend.rag.engine import BenchmarkStore, hybrid_score
 from backend.rag.api import format_benchmark_references, retrieve_payload
 
 
 class ScoringRagTests(unittest.TestCase):
+    def test_hybrid_score_uses_documented_weights(self):
+        self.assertAlmostEqual(hybrid_score(0.5, 0.5), 0.6625)
+
+    def test_semantic_match_can_win_without_keyword_overlap(self):
+        class FakeEmbedder:
+            def encode(self, texts):
+                mapping = {
+                    "project chronology": [1.0, 0.0],
+                }
+                return np.asarray([mapping[text] for text in texts], dtype=np.float32)
+
+        records = [
+            {
+                "id": "good", "criterion_id": "timeline_clarity",
+                "sample_type": "strong", "source_file": "good.md",
+                "text": "delivery schedule",
+            },
+            {
+                "id": "bad", "criterion_id": "timeline_clarity",
+                "sample_type": "strong", "source_file": "bad.md",
+                "text": "unrelated pricing",
+            },
+        ]
+        vectors = np.asarray([[1.0, 0.0], [0.0, 1.0]], dtype=np.float32)
+        store = BenchmarkStore(records, vectors=vectors, embedder=FakeEmbedder())
+
+        matches = store.retrieve(
+            "timeline_clarity",
+            "project chronology",
+            top_k_per_type=2,
+            min_hybrid_score=0.0,
+        )
+
+        self.assertEqual(matches[0]["id"], "good")
+        self.assertGreater(matches[0]["hybrid_score"], matches[1]["hybrid_score"])
+
     def test_rag_is_disabled_for_requirement_decision_criteria(self):
         store = BenchmarkStore.from_file("backend/rag/data/records.jsonl")
 
