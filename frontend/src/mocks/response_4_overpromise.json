@@ -1,90 +1,313 @@
 {
-  "schema_version": "1.0",
+  "schema_version": "2.0",
   "meta": {
     "rfp_name": "rfp_nordframe.md",
     "proposal_name": "response_4_overpromise.md",
     "model": "gemini-2.0-flash",
     "generated_at": "2026-09-17T09:00:00Z",
-    "duration_ms": 11800
+    "duration_ms": 11800,
+    "pipeline": [
+      "rfp_analyst",
+      "scoring_agent",
+      "citation_check"
+    ]
   },
-  "overall": {
-    "score": 1.38,
-    "verdict": "not_ready",
-    "summary": "It contradicts the no-migration constraint, adds AI modules nobody asked for, and promises 8-week delivery with no pilot, at a price that can’t cover that scope."
+  "rfp_analysis": {
+    "client_name": "NordFrame Logistics GmbH",
+    "project_name": "Warehouse Inventory Dashboard",
+    "detected_priority_note": "The RFP rules out a database migration and asks for rollout with minimal disruption. Proposals that change NordFrame’s infrastructure should lose points.",
+    "priorities": [
+      {
+        "id": "priority-1",
+        "title": "Continuity over new technology",
+        "text": "The RFP rules out a database migration and asks for rollout with minimal disruption. Proposals that change NordFrame’s infrastructure should lose points.",
+        "suggestion": "Completeness vs. RFP set to High",
+        "citations": [
+          {
+            "source": "rfp",
+            "found": true,
+            "label": "RFP, Req. 3",
+            "quote": "no migration to a new database"
+          },
+          {
+            "source": "rfp",
+            "found": true,
+            "label": "RFP, Req. 5",
+            "quote": "minimal disruption"
+          }
+        ]
+      },
+      {
+        "id": "priority-2",
+        "title": "Decisions will rely on this data",
+        "text": "The client asks for risks and limitations explicitly because stock decisions will be made from the dashboard.",
+        "suggestion": "Risks & assumptions set to High",
+        "citations": [
+          {
+            "source": "rfp",
+            "found": true,
+            "label": "RFP, Req. 7",
+            "quote": "inventory decisions will be made based on this system"
+          }
+        ]
+      },
+      {
+        "id": "priority-3",
+        "title": "Fixed budget and dates",
+        "text": "A published budget that includes Year 1 support, and a pilot deadline. Deferred pricing or undated plans are a real gap here.",
+        "suggestion": "Pricing and Timeline stay at Medium",
+        "citations": [
+          {
+            "source": "rfp",
+            "found": true,
+            "label": "RFP, Budget",
+            "quote": "€80,000–€120,000 total, including first year of support"
+          },
+          {
+            "source": "rfp",
+            "found": true,
+            "label": "RFP, Timeline",
+            "quote": "Working pilot at one warehouse within 3 months"
+          }
+        ]
+      }
+    ],
+    "requirements": [
+      {
+        "id": "REQ-001",
+        "short_label": "Dashboard",
+        "text": "A web-based dashboard showing real-time inventory levels across all 6 warehouses.",
+        "related_criterion": "Completeness vs RFP Requirements",
+        "is_hard_constraint": false,
+        "source_section": "Req. 1",
+        "source_quote": "web-based dashboard"
+      },
+      {
+        "id": "REQ-002",
+        "short_label": "Low-stock alerts",
+        "text": "Alerts to warehouse managers when items fall below a configurable threshold.",
+        "related_criterion": "Completeness vs RFP Requirements",
+        "is_hard_constraint": false,
+        "source_section": "Req. 2",
+        "source_quote": "Automated low-stock alerts"
+      },
+      {
+        "id": "REQ-003",
+        "short_label": "PostgreSQL",
+        "text": "Integration with the existing PostgreSQL inventory database, with no migration to a new database.",
+        "related_criterion": "Completeness vs RFP Requirements",
+        "is_hard_constraint": true,
+        "source_section": "Req. 3",
+        "source_quote": "no migration to a new database"
+      },
+      {
+        "id": "REQ-004",
+        "short_label": "Access roles",
+        "text": "Warehouse managers see only their own site; HQ staff see all sites.",
+        "related_criterion": "Completeness vs RFP Requirements",
+        "is_hard_constraint": false,
+        "source_section": "Req. 4",
+        "source_quote": "Role-based access"
+      },
+      {
+        "id": "REQ-005",
+        "short_label": "Rollout plan",
+        "text": "A data migration / onboarding plan for all 6 sites with minimal disruption.",
+        "related_criterion": "Completeness vs RFP Requirements",
+        "is_hard_constraint": false,
+        "source_section": "Req. 5",
+        "source_quote": "minimal disruption"
+      },
+      {
+        "id": "REQ-006",
+        "short_label": "Support SLAs",
+        "text": "Support and maintenance terms after go-live, including response times and SLAs.",
+        "related_criterion": "Completeness vs RFP Requirements",
+        "is_hard_constraint": false,
+        "source_section": "Req. 6",
+        "source_quote": "Support & maintenance terms"
+      },
+      {
+        "id": "REQ-007",
+        "short_label": "Risks",
+        "text": "Clear documentation of assumptions, limitations or risks, since inventory decisions will rely on the system.",
+        "related_criterion": "Completeness vs RFP Requirements",
+        "is_hard_constraint": false,
+        "source_section": "Req. 7",
+        "source_quote": "assumptions, limitations, or risks"
+      },
+      {
+        "id": "REQ-008",
+        "short_label": "Budget",
+        "text": "€80,000–€120,000 total, including the first year of support.",
+        "related_criterion": "Completeness vs RFP Requirements",
+        "is_hard_constraint": true,
+        "source_section": "Budget",
+        "source_quote": "€80,000–€120,000 total, including first year of support"
+      },
+      {
+        "id": "REQ-009",
+        "short_label": "Timeline",
+        "text": "Working pilot at one warehouse within 3 months; all 6 sites within 6 months.",
+        "related_criterion": "Completeness vs RFP Requirements",
+        "is_hard_constraint": true,
+        "source_section": "Timeline",
+        "source_quote": "Working pilot at one warehouse within 3 months"
+      }
+    ]
   },
-  "client_priorities": [
+  "confirmed_criteria": [
     {
-      "id": "priority-1",
-      "title": "Continuity over new technology",
-      "text": "The RFP rules out a database migration and asks for rollout with minimal disruption. Proposals that change NordFrame’s infrastructure should lose points.",
-      "suggestion": "Completeness vs. RFP set to High",
-      "citations": [
+      "name": "Completeness vs RFP Requirements",
+      "key": "completeness_vs_rfp",
+      "description": "Every explicit RFP requirement is addressed.",
+      "weight": 3,
+      "origin": "base",
+      "why": "The RFP lists seven numbered requirements and puts each one in bold. A buyer who writes a checklist reads the answer as a checklist.",
+      "source_refs": [
         {
-          "source": "rfp",
-          "found": true,
-          "label": "RFP, Req. 3",
-          "quote": "no migration to a new database"
-        },
-        {
-          "source": "rfp",
-          "found": true,
-          "label": "RFP, Req. 5",
-          "quote": "minimal disruption"
+          "section": "Requirements",
+          "quote": "Requirements"
         }
       ]
     },
     {
-      "id": "priority-2",
-      "title": "Decisions will rely on this data",
-      "text": "The client asks for risks and limitations explicitly because stock decisions will be made from the dashboard.",
-      "suggestion": "Risks & assumptions set to High",
-      "citations": [
+      "name": "Risk/Assumptions Transparency",
+      "key": "risk_assumptions_transparency",
+      "description": "Dependencies and risks are flagged, not hidden.",
+      "weight": 3,
+      "origin": "base",
+      "why": "Requirement 7 explains why it is asked for, which is rare. The client is telling you that hidden risk is the thing they fear.",
+      "source_refs": [
         {
-          "source": "rfp",
-          "found": true,
-          "label": "RFP, Req. 7",
+          "section": "Req. 7",
           "quote": "inventory decisions will be made based on this system"
         }
       ]
     },
     {
-      "id": "priority-3",
-      "title": "Fixed budget and dates",
-      "text": "A published budget that includes Year 1 support, and a pilot deadline. Deferred pricing or undated plans are a real gap here.",
-      "suggestion": "Pricing and Timeline stay at Medium",
-      "citations": [
+      "name": "Pricing Clarity",
+      "key": "pricing_clarity",
+      "description": "Price stated, broken down, easy to follow.",
+      "weight": 2,
+      "origin": "base",
+      "why": "The budget is published as a range and states that it includes the first year of support, so a vague price is easy to spot.",
+      "source_refs": [
         {
-          "source": "rfp",
-          "found": true,
-          "label": "RFP, Budget",
+          "section": "Budget",
           "quote": "€80,000–€120,000 total, including first year of support"
-        },
+        }
+      ]
+    },
+    {
+      "name": "Timeline Clarity",
+      "key": "timeline_clarity",
+      "description": "Concrete milestones and dates.",
+      "weight": 2,
+      "origin": "base",
+      "why": "Two hard dates are given: a pilot at one site within 3 months and all 6 sites within 6 months.",
+      "source_refs": [
         {
-          "source": "rfp",
-          "found": true,
-          "label": "RFP, Timeline",
+          "section": "Timeline",
           "quote": "Working pilot at one warehouse within 3 months"
+        }
+      ]
+    },
+    {
+      "name": "Data Accuracy & Validation",
+      "key": "data_accuracy_validation",
+      "description": "Says how inventory figures are checked against reality before anyone relies on them.",
+      "weight": 2,
+      "origin": "ai_inferred",
+      "why": "The RFP does not list this as a requirement, but it gives the reason behind Requirement 7: stock decisions will be made from this dashboard. A proposal that never says how the numbers are verified leaves that risk with the client.",
+      "source_refs": [
+        {
+          "section": "Req. 7",
+          "quote": "inventory decisions will be made based on this system"
+        }
+      ]
+    },
+    {
+      "name": "Problem Understanding",
+      "key": "problem_understanding",
+      "description": "Reflects the client’s actual stated problem and goals, not a generic pitch.",
+      "weight": 1,
+      "origin": "base",
+      "why": "Worth checking, but Completeness already tests it against each requirement. Scoring both at a high weight counts the same gap twice.",
+      "source_refs": [
+        {
+          "section": "Background",
+          "quote": "6 regional warehouses across Germany and Austria"
+        }
+      ]
+    },
+    {
+      "name": "Scope & Deliverables Clarity",
+      "key": "scope_deliverables_clarity",
+      "description": "Deliverables are specific; clear what is and isn’t included.",
+      "weight": 1,
+      "origin": "base",
+      "why": "Same overlap as Problem understanding: the scope constraints sit inside the numbered requirements.",
+      "source_refs": [
+        {
+          "section": "Req. 3",
+          "quote": "no migration to a new database"
+        }
+      ]
+    },
+    {
+      "name": "Tone & Persuasiveness",
+      "key": "tone_persuasiveness",
+      "description": "Reads as confident, client-focused and professional, not boilerplate.",
+      "weight": 1,
+      "origin": "base",
+      "why": "The RFP says nothing about presentation, and this buyer is working through a checklist. Worth fixing, but it rarely decides a deal on its own.",
+      "source_refs": []
+    },
+    {
+      "name": "Legacy System & Spreadsheets",
+      "key": "legacy_system_spreadsheets",
+      "description": "Says what happens to the old legacy system and the spreadsheets after go-live.",
+      "weight": 1,
+      "origin": "ai_inferred",
+      "why": "The legacy system appears only in the Background, never in the numbered requirements, so the checklist will not catch a proposal that ignores it. Someone still has to switch it off.",
+      "source_refs": [
+        {
+          "section": "Background",
+          "quote": "split across spreadsheets and an outdated legacy system"
         }
       ]
     }
   ],
-  "criteria": [
-    {
-      "id": "comp",
-      "name": "Completeness vs. RFP",
-      "description": "Every explicit RFP requirement is addressed.",
-      "score": 1,
-      "comment": "Contradicts requirement 3, leaves 4, 5 and 7 unaddressed, and covers 2 and 6 only partly.",
-      "citations": [],
-      "priority": "high"
+  "evaluation": {
+    "overall_score": 1.38,
+    "recommendation": "do_not_accept_as_written",
+    "summary": "It contradicts the no-migration constraint, adds AI modules nobody asked for, and promises 8-week delivery with no pilot, at a price that can’t cover that scope.",
+    "scores": {
+      "completeness_vs_rfp": 1,
+      "risk_assumptions_transparency": 1,
+      "pricing_clarity": 2,
+      "timeline_clarity": 2,
+      "data_accuracy_validation": 1,
+      "problem_understanding": 1,
+      "scope_deliverables_clarity": 2,
+      "tone_persuasiveness": 2,
+      "legacy_system_spreadsheets": 1
     },
-    {
-      "id": "risk",
-      "name": "Risks & assumptions",
-      "description": "Dependencies and risks are flagged, not hidden.",
-      "score": 1,
-      "comment": "A database migration and an 8-week schedule are the riskiest items here, and neither comes with a single assumption or risk.",
-      "citations": [
+    "rationales": {
+      "completeness_vs_rfp": "Contradicts requirement 3, leaves 4, 5 and 7 unaddressed, and covers 2 and 6 only partly.",
+      "risk_assumptions_transparency": "A database migration and an 8-week schedule are the riskiest items here, and neither comes with a single assumption or risk.",
+      "pricing_clarity": "€98,000 is inside the budget but claims to cover a migration, three AI modules and a year of support, with no breakdown.",
+      "timeline_clarity": "Concrete but not credible: 8 weeks for a platform migration plus all AI modules, and no pilot phase.",
+      "data_accuracy_validation": "Proposes moving the data to another platform with no validation step anywhere, while adding forecasting on top of figures nobody has checked.",
+      "problem_understanding": "Reframes a dashboard brief as an “AI-Powered Supply Chain Intelligence Suite”. The client asked for continuity and minimal disruption.",
+      "scope_deliverables_clarity": "Scope grows to forecasting, automated reordering and supplier scoring, none of it requested, while role-based access and onboarding are left out.",
+      "tone_persuasiveness": "Hype-driven, and it implies the client’s own brief is too small.",
+      "legacy_system_spreadsheets": "Silent on the legacy system and the spreadsheets, although it proposes replacing the database they feed."
+    },
+    "criterion_citations": {
+      "completeness_vs_rfp": [],
+      "risk_assumptions_transparency": [
         {
           "source": "proposal",
           "found": false,
@@ -95,15 +318,7 @@
           ]
         }
       ],
-      "priority": "high"
-    },
-    {
-      "id": "price",
-      "name": "Pricing clarity",
-      "description": "Price stated, broken down, easy to follow.",
-      "score": 2,
-      "comment": "€98,000 is inside the budget but claims to cover a migration, three AI modules and a year of support, with no breakdown.",
-      "citations": [
+      "pricing_clarity": [
         {
           "source": "proposal",
           "found": true,
@@ -111,15 +326,7 @@
           "quote": "covering the full suite described above"
         }
       ],
-      "priority": "medium"
-    },
-    {
-      "id": "time",
-      "name": "Timeline clarity",
-      "description": "Concrete milestones and dates.",
-      "score": 2,
-      "comment": "Concrete but not credible: 8 weeks for a platform migration plus all AI modules, and no pilot phase.",
-      "citations": [
+      "timeline_clarity": [
         {
           "source": "proposal",
           "found": true,
@@ -133,15 +340,7 @@
           "quote": "Working pilot at one warehouse within 3 months"
         }
       ],
-      "priority": "medium"
-    },
-    {
-      "id": "accuracy",
-      "name": "Data accuracy & validation",
-      "description": "Says how inventory figures are checked against reality before anyone relies on them.",
-      "score": 1,
-      "comment": "Proposes moving the data to another platform with no validation step anywhere, while adding forecasting on top of figures nobody has checked.",
-      "citations": [
+      "data_accuracy_validation": [
         {
           "source": "proposal",
           "found": true,
@@ -149,15 +348,7 @@
           "quote": "migrating away from your current PostgreSQL database"
         }
       ],
-      "priority": "medium"
-    },
-    {
-      "id": "pu",
-      "name": "Problem understanding",
-      "description": "Reflects the client’s actual stated problem and goals, not a generic pitch.",
-      "score": 1,
-      "comment": "Reframes a dashboard brief as an “AI-Powered Supply Chain Intelligence Suite”. The client asked for continuity and minimal disruption.",
-      "citations": [
+      "problem_understanding": [
         {
           "source": "proposal",
           "found": true,
@@ -171,15 +362,7 @@
           "quote": "no migration to a new database"
         }
       ],
-      "priority": "low"
-    },
-    {
-      "id": "scope",
-      "name": "Scope & deliverables",
-      "description": "Deliverables are specific; clear what is and isn’t included.",
-      "score": 2,
-      "comment": "Scope grows to forecasting, automated reordering and supplier scoring, none of it requested, while role-based access and onboarding are left out.",
-      "citations": [
+      "scope_deliverables_clarity": [
         {
           "source": "proposal",
           "found": true,
@@ -193,31 +376,15 @@
           "quote": "Supplier performance scoring"
         }
       ],
-      "priority": "low"
-    },
-    {
-      "id": "tone",
-      "name": "Tone & persuasiveness",
-      "description": "Reads as confident, client-focused and professional, not boilerplate.",
-      "priority": "low",
-      "score": 2,
-      "comment": "Hype-driven, and it implies the client’s own brief is too small.",
-      "citations": [
+      "tone_persuasiveness": [
         {
           "source": "proposal",
           "found": true,
           "label": "Proposal, Why Vantix",
           "quote": "full power of modern machine learning"
         }
-      ]
-    },
-    {
-      "id": "legacy",
-      "name": "Legacy system & spreadsheets",
-      "description": "Says what happens to the old legacy system and the spreadsheets after go-live.",
-      "score": 1,
-      "comment": "Silent on the legacy system and the spreadsheets, although it proposes replacing the database they feed.",
-      "citations": [
+      ],
+      "legacy_system_spreadsheets": [
         {
           "source": "proposal",
           "found": false,
@@ -227,288 +394,238 @@
             "spreadsheet"
           ]
         }
-      ],
-      "priority": "low"
-    }
-  ],
-  "requirements": [
-    {
-      "id": "r1",
-      "short_label": "Dashboard",
-      "name": "Web dashboard for all 6 sites",
-      "ask": "A web-based dashboard showing real-time inventory levels across all 6 warehouses.",
-      "rfp_citation": {
-        "source": "rfp",
-        "found": true,
-        "label": "RFP, Req. 1",
-        "quote": "web-based dashboard"
-      },
-      "status": "met",
-      "status_label": "Addressed",
-      "finding": "Real-time dashboard across all 6 warehouses.",
-      "suggested_fix": null,
-      "citations": [
-        {
-          "source": "proposal",
-          "found": true,
-          "label": "Proposal, Proposed Solution",
-          "quote": "Real-time dashboard"
-        }
       ]
     },
-    {
-      "id": "r2",
-      "short_label": "Low-stock alerts",
-      "name": "Automated low-stock alerts",
-      "ask": "Alerts to warehouse managers when items fall below a configurable threshold.",
-      "rfp_citation": {
-        "source": "rfp",
-        "found": true,
-        "label": "RFP, Req. 2",
-        "quote": "Automated low-stock alerts"
+    "requirements": [
+      {
+        "id": "REQ-001",
+        "status": "met",
+        "status_label": "Addressed",
+        "rfp_quote": "web-based dashboard",
+        "response_quote": "Real-time dashboard",
+        "searched_terms": null,
+        "rationale": "Real-time dashboard across all 6 warehouses."
       },
-      "status": "partial",
-      "status_label": "Vague",
-      "finding": "Promises “real-time alerts” in general, not low-stock alerts with configurable thresholds sent to warehouse managers.",
-      "suggested_fix": "Replace with: “Low-stock alerts: warehouse managers are notified when an item falls below a threshold they configure per item.”",
-      "citations": [
-        {
-          "source": "proposal",
-          "found": true,
-          "label": "Proposal, Proposed Solution",
-          "quote": "Real-time alerts across all locations simultaneously"
-        }
-      ]
-    },
-    {
-      "id": "r3",
-      "short_label": "PostgreSQL",
-      "name": "Existing PostgreSQL, no migration",
-      "ask": "Integration with the existing PostgreSQL inventory database, with no migration to a new database.",
-      "rfp_citation": {
-        "source": "rfp",
-        "found": true,
-        "label": "RFP, Req. 3",
-        "quote": "no migration to a new database"
+      {
+        "id": "REQ-002",
+        "status": "partial",
+        "status_label": "Vague",
+        "rfp_quote": "Automated low-stock alerts",
+        "response_quote": "Real-time alerts across all locations simultaneously",
+        "searched_terms": null,
+        "rationale": "Promises “real-time alerts” in general, not low-stock alerts with configurable thresholds sent to warehouse managers."
       },
-      "status": "conflict",
-      "status_label": "Contradicts",
-      "finding": "Recommends “migrating away from your current PostgreSQL database” to a proprietary platform. The RFP says “no migration to a new database”.",
-      "suggested_fix": "Remove the platform migration and state: “The dashboard connects to your existing PostgreSQL inventory database; no data is migrated.” If a new platform is worth raising, move it to an optional, separately priced “Later phases” note.",
-      "citations": [
-        {
-          "source": "proposal",
-          "found": true,
-          "label": "Proposal, Proposed Solution",
-          "quote": "migrating away from your current PostgreSQL database"
-        },
-        {
-          "source": "rfp",
-          "found": true,
-          "label": "RFP, Req. 3",
-          "quote": "no migration to a new database"
-        }
-      ]
-    },
-    {
-      "id": "r4",
-      "short_label": "Access roles",
-      "name": "Role-based access",
-      "ask": "Warehouse managers see only their own site; HQ staff see all sites.",
-      "rfp_citation": {
-        "source": "rfp",
-        "found": true,
-        "label": "RFP, Req. 4",
-        "quote": "Role-based access"
+      {
+        "id": "REQ-003",
+        "status": "contradicted",
+        "status_label": "Contradicts",
+        "rfp_quote": "no migration to a new database",
+        "response_quote": "migrating away from your current PostgreSQL database",
+        "searched_terms": null,
+        "rationale": "Recommends “migrating away from your current PostgreSQL database” to a proprietary platform. The RFP says “no migration to a new database”."
       },
-      "status": "missing",
-      "status_label": "Missing",
-      "finding": "No user roles or site-level access are described.",
-      "suggested_fix": "Add: “Role-based access: warehouse managers see only their own site; HQ staff see all 6 sites.”",
-      "citations": [
-        {
-          "source": "proposal",
-          "found": false,
-          "label": "Proposal: not found",
-          "searched_terms": [
-            "role",
-            "access"
-          ]
-        }
-      ]
-    },
-    {
-      "id": "r5",
-      "short_label": "Rollout plan",
-      "name": "Onboarding plan for 6 sites",
-      "ask": "A data migration / onboarding plan for all 6 sites with minimal disruption.",
-      "rfp_citation": {
-        "source": "rfp",
-        "found": true,
-        "label": "RFP, Req. 5",
-        "quote": "minimal disruption"
+      {
+        "id": "REQ-004",
+        "status": "missing",
+        "status_label": "Missing",
+        "rfp_quote": "Role-based access",
+        "response_quote": null,
+        "searched_terms": [
+          "role",
+          "access"
+        ],
+        "rationale": "No user roles or site-level access are described."
       },
-      "status": "missing",
-      "status_label": "Missing",
-      "finding": "The only migration described is of the data platform. There is no plan for rolling out to the 6 sites with minimal disruption.",
-      "suggested_fix": "Add a rollout plan: pilot at one warehouse, a parallel run, then the remaining sites in batches, with dates.",
-      "citations": [
-        {
-          "source": "proposal",
-          "found": false,
-          "label": "Proposal: not found",
-          "searched_terms": [
-            "rollout",
-            "onboarding",
-            "pilot"
-          ]
-        }
-      ]
-    },
-    {
-      "id": "r6",
-      "short_label": "Support SLAs",
-      "name": "Support & maintenance terms",
-      "ask": "Support and maintenance terms after go-live, including response times and SLAs.",
-      "rfp_citation": {
-        "source": "rfp",
-        "found": true,
-        "label": "RFP, Req. 6",
-        "quote": "Support & maintenance terms"
+      {
+        "id": "REQ-005",
+        "status": "missing",
+        "status_label": "Missing",
+        "rfp_quote": "minimal disruption",
+        "response_quote": null,
+        "searched_terms": [
+          "rollout",
+          "onboarding",
+          "pilot"
+        ],
+        "rationale": "The only migration described is of the data platform. There is no plan for rolling out to the 6 sites with minimal disruption."
       },
-      "status": "partial",
-      "status_label": "No terms",
-      "finding": "“One year of support” is included, with no response times or SLAs.",
-      "suggested_fix": "Add response times per severity and support hours for the included year.",
-      "citations": [
-        {
-          "source": "proposal",
-          "found": true,
-          "label": "Proposal, Pricing",
-          "quote": "one year of support"
-        }
-      ]
-    },
-    {
-      "id": "r7",
-      "short_label": "Risks",
-      "name": "Assumptions, limitations, risks",
-      "ask": "Clear documentation of assumptions, limitations or risks, since inventory decisions will rely on the system.",
-      "rfp_citation": {
-        "source": "rfp",
-        "found": true,
-        "label": "RFP, Req. 7",
-        "quote": "assumptions, limitations, or risks"
+      {
+        "id": "REQ-006",
+        "status": "partial",
+        "status_label": "No terms",
+        "rfp_quote": "Support & maintenance terms",
+        "response_quote": "one year of support",
+        "searched_terms": null,
+        "rationale": "“One year of support” is included, with no response times or SLAs."
       },
-      "status": "missing",
-      "status_label": "Missing",
-      "finding": "No risks are disclosed, despite a proposed database migration and an 8-week schedule.",
-      "suggested_fix": "Add “Risks & assumptions” covering data migration risk, access to supplier systems for reordering, and how much sales history the forecasting model needs.",
-      "citations": [
-        {
-          "source": "proposal",
-          "found": false,
-          "label": "Proposal: not found",
-          "searched_terms": [
-            "risk",
-            "assumption"
-          ]
-        }
-      ]
-    },
-    {
-      "id": "budget",
-      "short_label": "Budget",
-      "name": "Within budget",
-      "ask": "€80,000–€120,000 total, including the first year of support.",
-      "rfp_citation": {
-        "source": "rfp",
-        "found": true,
-        "label": "RFP, Budget",
-        "quote": "€80,000–€120,000 total, including first year of support"
+      {
+        "id": "REQ-007",
+        "status": "missing",
+        "status_label": "Missing",
+        "rfp_quote": "assumptions, limitations, or risks",
+        "response_quote": null,
+        "searched_terms": [
+          "risk",
+          "assumption"
+        ],
+        "rationale": "No risks are disclosed, despite a proposed database migration and an 8-week schedule."
       },
-      "status": "partial",
-      "status_label": "Not credible",
-      "finding": "€98,000 is inside the budget but is said to cover a platform migration, three AI modules and a year of support, with no breakdown.",
-      "suggested_fix": "Price the requested scope on its own with a line-item breakdown; list forecasting, reordering and supplier scoring as optional add-ons with separate prices.",
-      "citations": [
-        {
-          "source": "proposal",
-          "found": true,
-          "label": "Proposal, Pricing",
-          "quote": "covering the full suite described above"
-        }
-      ]
-    },
-    {
-      "id": "timeline",
-      "short_label": "Timeline",
-      "name": "Pilot in 3 months, rollout in 6",
-      "ask": "Working pilot at one warehouse within 3 months; all 6 sites within 6 months.",
-      "rfp_citation": {
-        "source": "rfp",
-        "found": true,
-        "label": "RFP, Timeline",
-        "quote": "Working pilot at one warehouse within 3 months"
+      {
+        "id": "REQ-008",
+        "status": "partial",
+        "status_label": "Not credible",
+        "rfp_quote": "€80,000–€120,000 total, including first year of support",
+        "response_quote": "covering the full suite described above",
+        "searched_terms": null,
+        "rationale": "€98,000 is inside the budget but is said to cover a platform migration, three AI modules and a year of support, with no breakdown."
       },
-      "status": "partial",
-      "status_label": "Unrealistic",
-      "finding": "8 weeks for the full suite including a migration, and no pilot. The client asked for a pilot at one site within 3 months, then rollout within 6.",
-      "suggested_fix": "Follow the client’s phasing: pilot at one warehouse by Month 3, all 6 sites by Month 6, with milestones. Drop “well ahead of typical industry timelines” unless a comparable project backs it.",
-      "citations": [
-        {
-          "source": "proposal",
-          "found": true,
-          "label": "Proposal, Timeline",
-          "quote": "within 8 weeks"
-        },
-        {
-          "source": "rfp",
-          "found": true,
-          "label": "RFP, Timeline",
-          "quote": "full rollout to all 6 sites within 6 months"
-        }
-      ]
-    }
-  ],
-  "other_issues": [
-    {
-      "id": "other-1",
-      "status": "conflict",
-      "label": "Out of scope",
-      "title": "Features the client didn’t ask for",
-      "finding": "AI demand forecasting, automated reordering and supplier scoring add cost, integration work and delivery risk to a fixed budget and deadline.",
-      "suggested_fix": "Keep the four requested capabilities as the offer. Move the extra modules to an “Optional next steps” section, marked as not included in the price.",
-      "citations": [
-        {
-          "source": "proposal",
-          "found": true,
-          "label": "Proposal, Proposed Solution",
-          "quote": "AI demand forecasting"
-        },
-        {
-          "source": "proposal",
-          "found": true,
-          "label": "Proposal, Proposed Solution",
-          "quote": "Automated reorder recommendations"
-        }
-      ]
-    },
-    {
-      "id": "other-2",
-      "status": "partial",
-      "label": "Framing",
-      "title": "Opening dismisses the brief",
-      "finding": "“NordFrame deserves more than a simple dashboard” tells the client their own requirements are wrong.",
-      "suggested_fix": "Open with the client’s goal instead: “NordFrame needs one real-time view of stock across its 6 warehouses, without changing its database or disrupting operations.”",
-      "citations": [
-        {
-          "source": "proposal",
-          "found": true,
-          "label": "Proposal, Our Vision",
-          "quote": "NordFrame deserves more than a simple dashboard"
-        }
-      ]
-    }
-  ]
+      {
+        "id": "REQ-009",
+        "status": "partial",
+        "status_label": "Unrealistic",
+        "rfp_quote": "Working pilot at one warehouse within 3 months",
+        "response_quote": "within 8 weeks",
+        "searched_terms": null,
+        "rationale": "8 weeks for the full suite including a migration, and no pilot. The client asked for a pilot at one site within 3 months, then rollout within 6."
+      }
+    ],
+    "findings": [
+      {
+        "id": "F01",
+        "requirement_ids": [
+          "REQ-002"
+        ],
+        "kind": "vague",
+        "severity": "minor",
+        "rfp_quote": "Automated low-stock alerts",
+        "response_quote": "Real-time alerts across all locations simultaneously",
+        "searched_terms": null,
+        "rationale": "Promises “real-time alerts” in general, not low-stock alerts with configurable thresholds sent to warehouse managers.",
+        "suggested_fix": "Replace with: “Low-stock alerts: warehouse managers are notified when an item falls below a threshold they configure per item.”"
+      },
+      {
+        "id": "F02",
+        "requirement_ids": [
+          "REQ-003"
+        ],
+        "kind": "contradiction",
+        "severity": "critical",
+        "rfp_quote": "no migration to a new database",
+        "response_quote": "migrating away from your current PostgreSQL database",
+        "searched_terms": null,
+        "rationale": "Recommends “migrating away from your current PostgreSQL database” to a proprietary platform. The RFP says “no migration to a new database”.",
+        "suggested_fix": "Remove the platform migration and state: “The dashboard connects to your existing PostgreSQL inventory database; no data is migrated.” If a new platform is worth raising, move it to an optional, separately priced “Later phases” note."
+      },
+      {
+        "id": "F03",
+        "requirement_ids": [
+          "REQ-004"
+        ],
+        "kind": "missing",
+        "severity": "major",
+        "rfp_quote": "Role-based access",
+        "response_quote": null,
+        "searched_terms": [
+          "role",
+          "access"
+        ],
+        "rationale": "No user roles or site-level access are described.",
+        "suggested_fix": "Add: “Role-based access: warehouse managers see only their own site; HQ staff see all 6 sites.”"
+      },
+      {
+        "id": "F04",
+        "requirement_ids": [
+          "REQ-005"
+        ],
+        "kind": "missing",
+        "severity": "major",
+        "rfp_quote": "minimal disruption",
+        "response_quote": null,
+        "searched_terms": [
+          "rollout",
+          "onboarding",
+          "pilot"
+        ],
+        "rationale": "The only migration described is of the data platform. There is no plan for rolling out to the 6 sites with minimal disruption.",
+        "suggested_fix": "Add a rollout plan: pilot at one warehouse, a parallel run, then the remaining sites in batches, with dates."
+      },
+      {
+        "id": "F05",
+        "requirement_ids": [
+          "REQ-006"
+        ],
+        "kind": "vague",
+        "severity": "minor",
+        "rfp_quote": "Support & maintenance terms",
+        "response_quote": "one year of support",
+        "searched_terms": null,
+        "rationale": "“One year of support” is included, with no response times or SLAs.",
+        "suggested_fix": "Add response times per severity and support hours for the included year."
+      },
+      {
+        "id": "F06",
+        "requirement_ids": [
+          "REQ-007"
+        ],
+        "kind": "missing",
+        "severity": "major",
+        "rfp_quote": "assumptions, limitations, or risks",
+        "response_quote": null,
+        "searched_terms": [
+          "risk",
+          "assumption"
+        ],
+        "rationale": "No risks are disclosed, despite a proposed database migration and an 8-week schedule.",
+        "suggested_fix": "Add “Risks & assumptions” covering data migration risk, access to supplier systems for reordering, and how much sales history the forecasting model needs."
+      },
+      {
+        "id": "F07",
+        "requirement_ids": [
+          "REQ-008"
+        ],
+        "kind": "vague",
+        "severity": "minor",
+        "rfp_quote": "€80,000–€120,000 total, including first year of support",
+        "response_quote": "covering the full suite described above",
+        "searched_terms": null,
+        "rationale": "€98,000 is inside the budget but is said to cover a platform migration, three AI modules and a year of support, with no breakdown.",
+        "suggested_fix": "Price the requested scope on its own with a line-item breakdown; list forecasting, reordering and supplier scoring as optional add-ons with separate prices."
+      },
+      {
+        "id": "F08",
+        "requirement_ids": [
+          "REQ-009"
+        ],
+        "kind": "vague",
+        "severity": "minor",
+        "rfp_quote": "Working pilot at one warehouse within 3 months",
+        "response_quote": "within 8 weeks",
+        "searched_terms": null,
+        "rationale": "8 weeks for the full suite including a migration, and no pilot. The client asked for a pilot at one site within 3 months, then rollout within 6.",
+        "suggested_fix": "Follow the client’s phasing: pilot at one warehouse by Month 3, all 6 sites by Month 6, with milestones. Drop “well ahead of typical industry timelines” unless a comparable project backs it."
+      },
+      {
+        "id": "F09",
+        "requirement_ids": [],
+        "kind": "contradiction",
+        "severity": "major",
+        "rfp_quote": null,
+        "response_quote": "AI demand forecasting",
+        "searched_terms": null,
+        "rationale": "Features the client didn’t ask for. AI demand forecasting, automated reordering and supplier scoring add cost, integration work and delivery risk to a fixed budget and deadline.",
+        "suggested_fix": "Keep the four requested capabilities as the offer. Move the extra modules to an “Optional next steps” section, marked as not included in the price."
+      },
+      {
+        "id": "F10",
+        "requirement_ids": [],
+        "kind": "vague",
+        "severity": "minor",
+        "rfp_quote": null,
+        "response_quote": "NordFrame deserves more than a simple dashboard",
+        "searched_terms": null,
+        "rationale": "Opening dismisses the brief. “NordFrame deserves more than a simple dashboard” tells the client their own requirements are wrong.",
+        "suggested_fix": "Open with the client’s goal instead: “NordFrame needs one real-time view of stock across its 6 warehouses, without changing its database or disrupting operations.”"
+      }
+    ]
+  }
 }

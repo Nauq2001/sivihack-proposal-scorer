@@ -1,45 +1,33 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import DocumentsStep from './components/DocumentsStep.jsx'
-import CriteriaStep from './components/CriteriaStep.jsx'
-import ReviewStep from './components/ReviewStep.jsx'
-import RunProgress from './components/RunProgress.jsx'
+import InputView from './components/InputView.jsx'
+import RunView from './components/RunView.jsx'
+import ResultView from './components/ResultView.jsx'
 import SourcePane from './components/SourcePane.jsx'
 import { CitationContext } from './components/Citation.jsx'
-import { RFP, SAMPLES, SUGGESTED_CRITERIA, matchSample, sampleById } from './data/samples.js'
-import { reviewProposal, suggestCriteria } from './api/review.js'
-import { criteriaPayload, weightNote } from './lib/scoring.js'
-
-const STEPS = [
-  ['docs', 'Documents'],
-  ['criteria', 'Criteria'],
-  ['review', 'Review'],
-]
+import { RFP, SAMPLES, matchSample, sampleById } from './data/samples.js'
+import { reviewProposal } from './api/review.js'
 
 const firstSample = SAMPLES[0]
-const withPriority = (list) => list.map((c) => ({ ...c, priority: c.suggested_priority || 'medium' }))
 
+/** Luồng thẳng một chiều: nhập tài liệu -> chạy -> đọc kết quả.
+ *  Không có bước chỉnh tiêu chí: RFP Analyst chốt tiêu chí và trọng số. */
 export default function App() {
-  const [step, setStep] = useState('review')
+  const [stage, setStage] = useState('result') // input | running | result | error
   const [rfp, setRfp] = useState({ ...RFP })
   const [proposal, setProposal] = useState({ name: firstSample.name, text: firstSample.text })
-  const [criteria, setCriteria] = useState(() => withPriority(SUGGESTED_CRITERIA.criteria))
-  // The RFP the current suggestions were read from, so we only re-read when it changes.
-  const [criteriaFor, setCriteriaFor] = useState(RFP.text)
-  const [criteriaNotice, setCriteriaNotice] = useState(null)
-  // run: {state: 'done'|'running'|'error', data, source: 'api'|'sample', error}
-  const [run, setRun] = useState({ state: 'done', data: firstSample.result, source: 'sample' })
+  const [run, setRun] = useState({ data: firstSample.result, source: 'sample' })
+  const [notice, setNotice] = useState(null)
   const [citation, setCitation] = useState(null)
   const [tab, setTab] = useState('prop')
   const [drawer, setDrawer] = useState(false)
-  const [notice, setNotice] = useState(null)
-  const [wide, setWide] = useState(() => window.matchMedia('(min-width: 1100px)').matches)
+  const [wide, setWide] = useState(() => window.matchMedia('(min-width: 1180px)').matches)
 
   const sample = matchSample(rfp.text, proposal.text)
   const sampleId = sample ? sample.id : null
-  const docked = wide && step === 'review'
+  const docked = wide && stage === 'result'
 
   useEffect(() => {
-    const mq = window.matchMedia('(min-width: 1100px)')
+    const mq = window.matchMedia('(min-width: 1180px)')
     const onChange = (e) => setWide(e.matches)
     mq.addEventListener('change', onChange)
     return () => mq.removeEventListener('change', onChange)
@@ -56,39 +44,15 @@ export default function App() {
     return () => document.removeEventListener('keydown', onKey)
   }, [])
 
-  // A different RFP means different priorities, so read it again when the user
-  // opens the board.
-  useEffect(() => {
-    if (step !== 'criteria' || rfp.text === criteriaFor) return
-    let cancelled = false
-    setCriteriaNotice(null)
-    suggestCriteria(rfp)
-      .then((data) => {
-        if (cancelled) return
-        setCriteria((current) => [
-          ...withPriority(data.criteria),
-          ...current.filter((c) => c.source === 'custom'),
-        ])
-      })
-      .catch((err) => { if (!cancelled) setCriteriaNotice(`${err.message} Showing the criteria read from the sample RFP.`) })
-      .finally(() => { if (!cancelled) setCriteriaFor(rfp.text) })
-    return () => { cancelled = true }
-  }, [step, rfp.text, criteriaFor, rfp])
-
   const openCitation = useCallback((c) => {
     setCitation(c)
     setTab(c.source === 'rfp' ? 'rfp' : 'prop')
-    if (!(window.matchMedia('(min-width: 1100px)').matches && step === 'review')) setDrawer(true)
-  }, [step])
-
-  const go = (next) => {
-    setStep(next)
-    window.scrollTo({ top: 0 })
-  }
+    if (!(window.matchMedia('(min-width: 1180px)').matches && stage === 'result')) setDrawer(true)
+  }, [stage])
 
   const loadSample = (id) => {
     const s = sampleById(id)
-    if (!s) return
+    if (!s) return null
     setRfp({ ...RFP })
     setProposal({ name: s.name, text: s.text })
     setNotice(null)
@@ -98,7 +62,7 @@ export default function App() {
   const upload = (which, file, input) => {
     if (!file) return
     if (/\.pdf$/i.test(file.name)) {
-      setNotice(`PDF import isn’t supported yet, so ${file.name} was not loaded. Paste the text instead.`)
+      setNotice(`PDF import is not wired up yet, so ${file.name} was not loaded. Paste the text instead.`)
       input.value = ''
       return
     }
@@ -112,142 +76,119 @@ export default function App() {
     input.value = ''
   }
 
+  // Cac buoc chay phai kip hien ra, ke ca khi backend tra loi ngay lap tuc.
+  const RUN_FLOOR_MS = 3600
+
   const runReview = async (docs) => {
     const useRfp = docs?.rfp || rfp
     const useProposal = docs?.proposal || proposal
-    setRun({ state: 'running' })
+    const started = Date.now()
+    setStage('running')
     setCitation(null)
-    go('review')
+    window.scrollTo({ top: 0 })
+
+    const settle = async (next) => {
+      const floor = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : RUN_FLOOR_MS
+      const left = floor - (Date.now() - started)
+      if (left > 0) await new Promise((r) => setTimeout(r, left))
+      next()
+    }
+
     try {
-      const data = await reviewProposal({ rfp: useRfp, proposal: useProposal, criteria: criteriaPayload(criteria) })
-      setRun({ state: 'done', data, source: 'api' })
+      const data = await reviewProposal({ rfp: useRfp, proposal: useProposal })
+      await settle(() => { setRun({ data, source: 'api' }); setStage('result') })
     } catch (err) {
       const stored = matchSample(useRfp.text, useProposal.text)
-      if (stored) setRun({ state: 'done', data: stored.result, source: 'sample', error: err.message })
-      else setRun({ state: 'error', error: err.message })
+      if (stored) {
+        await settle(() => { setRun({ data: stored.result, source: 'sample', error: err.message }); setStage('result') })
+      } else {
+        await settle(() => { setRun({ data: null, source: null, error: err.message }); setStage('error') })
+      }
     }
   }
 
-  const runSteps = useMemo(() => ([
-    ['Reading the RFP', 'Pulling out every explicit requirement'],
-    ['Mapping the proposal', `${(proposal.text.match(/^##\s/gm) || []).length} sections in ${proposal.name}`],
-    ['Checking each requirement against the proposal', 'Matches, vague wording and contradictions'],
-    [`Scoring ${criteria.length} criteria`, weightNote(criteria)],
-    ['Writing suggested fixes', 'One per gap, with citations'],
-  ]), [proposal.text, proposal.name, criteria])
+  const steps = useMemo(() => {
+    const sections = (proposal.text.match(/^##\s/gm) || []).length
+    const data = run.data
+    return [
+      { title: 'Reading the RFP', detail: 'Pulling out every requirement and constraint',
+        result: data ? `${data.rfp_analysis.requirements.length} requirements, ${data.rfp_analysis.requirements.filter((r) => r.is_hard_constraint).length} hard constraints` : 'Requirements extracted' },
+      { title: 'Setting the criteria', detail: 'Base rubric plus anything this RFP adds',
+        result: data ? `${data.confirmed_criteria.length} criteria weighted` : 'Criteria weighted' },
+      { title: 'Reading the proposal', detail: `${sections} sections`, result: `${sections} sections mapped` },
+      { title: 'Scoring against each requirement', detail: 'Match, vague, missing or contradicted',
+        result: data ? `${data.evaluation.requirements.filter((r) => r.status !== 'met').length} gaps found` : 'Gaps found' },
+      { title: 'Checking every quote', detail: 'A finding without a real quote is dropped',
+        result: data ? `${data.evaluation.findings.length} findings kept` : 'Findings verified' },
+    ]
+  }, [proposal.text, run.data])
 
   return (
     <CitationContext.Provider value={openCitation}>
       <header className="topbar">
-        <div className="brand">
+        <button type="button" className="brand" onClick={() => setStage('input')}>
           <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
             <path d="M5 3h9l5 5v13H5z" fill="var(--surface)" stroke="var(--ink)" strokeWidth="1.6" strokeLinejoin="round" />
             <path d="M14 3v5h5" stroke="var(--ink)" strokeWidth="1.6" strokeLinejoin="round" />
             <path d="M8.5 14.5l2.2 2.2 4.8-5" stroke="var(--accent)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
           Proposal Scorer
+        </button>
+        <div className="flow" aria-label="Progress">
+          {['Documents', 'Review', 'Result'].map((label, i) => {
+            const index = stage === 'input' ? 0 : stage === 'running' ? 1 : 2
+            return <span key={label} className="flow-step" data-state={i < index ? 'done' : i === index ? 'now' : 'next'}>{label}</span>
+          })}
         </div>
-        <nav className="steps" aria-label="Review steps">
-          {STEPS.map(([id, label], i) => (
-            <button type="button" className="step" key={id} aria-current={step === id ? 'step' : 'false'} onClick={() => go(id)}>
-              <span className="n">{i + 1}</span>
-              {label}
-            </button>
-          ))}
-        </nav>
         <div className="meta">{sampleId ? 'Fictional sample data' : 'Your documents'}</div>
       </header>
 
       <main className="wrap">
-        {step === 'docs' && (
-          <DocumentsStep
-            rfp={rfp}
-            proposal={proposal}
-            sampleId={sampleId}
-            notice={notice}
+        {stage === 'input' && (
+          <InputView
+            rfp={rfp} proposal={proposal} sampleId={sampleId} notice={notice}
             onRfp={(text) => setRfp((d) => ({ ...d, text }))}
             onProposal={(text) => setProposal((d) => ({ ...d, text }))}
-            onSample={loadSample}
+            onSample={(id) => loadSample(id)}
             onUpload={upload}
-            onGo={go}
-            onRun={() => go('criteria')}
+            onRun={() => runReview()}
           />
         )}
 
-        {step === 'criteria' && (
-          <>
-            {criteriaNotice && <p className="notice" style={{ marginBottom: 16 }}>{criteriaNotice}</p>}
-            <CriteriaStep
-              criteria={criteria}
-              onPriority={(id, priority) => setCriteria((list) => list.map((c) => (c.id === id ? { ...c, priority } : c)))}
-              onMove={(id, dir) => setCriteria((list) => list.map((c) => {
-                if (c.id !== id) return c
-                const order = ['high', 'medium', 'low', 'skip']
-                const next = order[Math.min(order.length - 1, Math.max(0, order.indexOf(c.priority) + dir))]
-                return { ...c, priority: next }
-              }))}
-              onRemove={(id) => setCriteria((list) => list.filter((c) => c.id !== id))}
-              onAdd={({ name, description, priority }) => setCriteria((list) => [
-                ...list,
-                { id: 'custom-' + Date.now(), name, description, priority, source: 'custom' },
-              ])}
-              onReset={() => setCriteria(() => [
-                ...withPriority(SUGGESTED_CRITERIA.criteria),
-                ...criteria.filter((c) => c.source === 'custom'),
-              ])}
-              onGo={go}
-              onRun={() => runReview()}
-            />
-          </>
+        {stage === 'running' && <RunView steps={steps} rfpName={rfp.name} proposalName={proposal.name} />}
+
+        {stage === 'error' && (
+          <div className="run-view">
+            <div className="run-card">
+              <h1>No review yet</h1>
+              <p className="lede">{run.error}</p>
+              <div className="hero-actions">
+                <button type="button" className="btn btn-primary" onClick={() => runReview()}>Try again</button>
+                <button type="button" className="btn" onClick={() => {
+                  const s = loadSample(firstSample.id)
+                  runReview({ rfp: { ...RFP }, proposal: { name: s.name, text: s.text } })
+                }}>Load a sample instead</button>
+              </div>
+            </div>
+          </div>
         )}
 
-        {step === 'review' && (
-          <div className="review-main">
-            {run.state === 'running' && <RunProgress steps={runSteps} rfpName={rfp.name} proposalName={proposal.name} />}
-
-            {run.state === 'error' && (
-              <div className="panel run">
-                <h2>No review yet</h2>
-                <p>{run.error}</p>
-                <div className="actions">
-                  <button type="button" className="btn btn-primary" onClick={() => runReview()}>Try again</button>
-                  <button
-                    type="button"
-                    className="btn"
-                    onClick={() => { const s = loadSample(firstSample.id); runReview({ rfp: { ...RFP }, proposal: { name: s.name, text: s.text } }) }}
-                  >
-                    Load a sample instead
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {run.state === 'done' && (
-              <ReviewStep
-                result={run.data}
-                criteria={criteria}
-                sampleId={sampleId}
-                source={run.source}
-                error={run.error}
-                onSample={(id) => { const s = loadSample(id); runReview({ rfp: { ...RFP }, proposal: { name: s.name, text: s.text } }) }}
-                onRun={() => runReview()}
-                onGo={go}
-              />
-            )}
-          </div>
+        {stage === 'result' && run.data && (
+          <ResultView
+            result={run.data} source={run.source} error={run.error} sampleId={sampleId}
+            onSample={(id) => {
+              const s = loadSample(id)
+              runReview({ rfp: { ...RFP }, proposal: { name: s.name, text: s.text } })
+            }}
+            onRestart={() => { setStage('input'); window.scrollTo({ top: 0 }) }}
+          />
         )}
       </main>
 
       {drawer && !docked && <div id="scrim" onClick={() => setDrawer(false)} />}
       <SourcePane
-        rfp={rfp}
-        proposal={proposal}
-        tab={tab}
-        onTab={setTab}
-        citation={citation}
-        docked={docked}
-        open={drawer}
-        onClose={() => setDrawer(false)}
+        rfp={rfp} proposal={proposal} tab={tab} onTab={setTab} citation={citation}
+        docked={docked} open={drawer} onClose={() => setDrawer(false)}
       />
     </CitationContext.Provider>
   )

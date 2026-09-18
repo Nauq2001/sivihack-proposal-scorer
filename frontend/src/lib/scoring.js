@@ -1,71 +1,67 @@
-/** Criteria priorities and the overall score.
- *  Shared with the backend contract: see docs/api/review-contract.md */
+/** Đọc kết quả từ backend. Hợp đồng: docs/api/review-contract.md
+ *
+ *  Người dùng không chỉnh tiêu chí nữa: trọng số do RFP Analyst đề xuất và đi
+ *  thẳng vào chấm điểm, nên frontend chỉ hiển thị chứ không tính lại. */
 
-/** How much a criterion pulls on the overall score. `weight` is the multiplier;
- *  the interface shows the note, never the number. */
-export const PRIORITIES = [
-  { id: 'high', label: 'High', weight: 3, hint: 'Pulls the score hardest. A gap here can lose the deal.' },
-  { id: 'medium', label: 'Medium', weight: 2, hint: 'Weighs on the decision, but rarely decides it alone.' },
-  { id: 'low', label: 'Low', weight: 1, hint: 'Worth getting right, moves the score a little.' },
-  { id: 'skip', label: 'Don’t score', weight: 0, hint: 'Still reviewed and reported, left out of the number.' },
-]
-
-export const PRIORITY_IDS = PRIORITIES.map((p) => p.id)
-export const PRIORITY_WEIGHT = Object.fromEntries(PRIORITIES.map((p) => [p.id, p.weight]))
-export const PRIORITY_LABEL = Object.fromEntries(PRIORITIES.map((p) => [p.id, p.label]))
-
-/** Weighted average of the scores the backend returned. Kept on the client so
- *  moving a card updates the score without a new request. */
-export function overallScore(criteria, scoreById) {
-  const counted = criteria.filter((c) => PRIORITY_WEIGHT[c.priority] > 0 && typeof scoreById[c.id]?.score === 'number')
-  const total = counted.reduce((sum, c) => sum + PRIORITY_WEIGHT[c.priority], 0)
-  if (!total) return { score: 0, counted: [] }
-  const score = counted.reduce((sum, c) => sum + scoreById[c.id].score * PRIORITY_WEIGHT[c.priority], 0) / total
-  return { score, counted }
+export const RECOMMENDATION = {
+  ready: { tone: 'good', label: 'Ready to send', note: 'Minor edits at most' },
+  revise: { tone: 'warn', label: 'Revise before sending', note: 'The gaps are fixable' },
+  do_not_accept_as_written: { tone: 'bad', label: 'Do not send as written', note: 'A stated constraint is broken' },
 }
 
-export function verdictOf(score) {
-  if (score < 2.5) return ['bad', 'Not ready to send']
-  if (score < 4) return ['warn', 'Revise before sending']
-  return ['good', 'Ready after minor edits']
+export const STATUS = {
+  met: { glyph: '✓', label: 'Addressed', tone: 'good' },
+  partial: { glyph: '~', label: 'Vague or partial', tone: 'warn' },
+  missing: { glyph: '✕', label: 'Missing', tone: 'bad' },
+  contradicted: { glyph: '≠', label: 'Contradicts the RFP', tone: 'conflict' },
+  unsubstantiated: { glyph: '!', label: 'Promised without backing', tone: 'conflict' },
+}
+
+export const KIND = {
+  strength: 'Strength',
+  missing: 'Missing',
+  vague: 'Vague',
+  contradiction: 'Contradiction',
+  unsupported_promise: 'Unsupported promise',
+  risk_disclosure: 'Risk disclosure',
+}
+
+export const SEVERITY = {
+  critical: { rank: 0, label: 'Critical', tone: 'bad' },
+  major: { rank: 1, label: 'Major', tone: 'bad' },
+  minor: { rank: 2, label: 'Minor', tone: 'warn' },
+  info: { rank: 3, label: 'Note', tone: 'good' },
+}
+
+export const ORIGIN = {
+  base: 'Base rubric',
+  rfp_explicit: 'Stated in the RFP',
+  ai_inferred: 'Read from the RFP',
+  user: 'Added by the team',
 }
 
 export function scoreTone(score) {
   return score <= 2 ? 'bad' : score < 4 ? 'warn' : 'good'
 }
 
-/** One colour rule for the whole app: red means deal with this first.
- *  On the criteria board that is the heaviest criterion; here it is the one
- *  dragging the score down hardest, which is the gap below 5 times the weight.
- *  A weak score on a deal-breaker outranks the same score on a minor criterion. */
-export function attentionTone(score, priority) {
-  const weight = PRIORITY_WEIGHT[priority] ?? 0
-  if (!weight || typeof score !== 'number') return null
-  const drag = (5 - score) * weight
+/** Màu theo mức cần xử lý trước: điểm thấp trên tiêu chí nặng thì đỏ. */
+export function attentionTone(score, weight) {
+  if (typeof score !== 'number') return null
+  const drag = (5 - score) * (weight || 1)
   if (drag >= 6) return 'bad'
   if (drag >= 3) return 'warn'
   return 'good'
 }
 
-export function matchesSuggestion(criteria) {
-  return criteria.every((c) => !c.suggested_priority || c.priority === c.suggested_priority)
+export function sortedFindings(findings) {
+  return [...findings].sort((a, b) => (SEVERITY[a.severity]?.rank ?? 9) - (SEVERITY[b.severity]?.rank ?? 9))
 }
 
-export function weightNote(criteria) {
-  if (matchesSuggestion(criteria)) return 'Weighted for this client’s priorities'
-  return 'Weighted by you'
+export function countBy(items, key) {
+  return items.reduce((acc, item) => {
+    acc[item[key]] = (acc[item[key]] || 0) + 1
+    return acc
+  }, {})
 }
 
-/** What goes to POST /api/review. */
-export function criteriaPayload(criteria) {
-  return criteria.map((c) => ({
-    id: c.id,
-    name: c.name,
-    description: c.description,
-    priority: c.priority,
-    source: c.source,
-  }))
-}
-
-export const STATUS_GLYPH = { met: '✓', partial: '~', missing: '✕', conflict: '≠' }
-export const STATUS_LABEL = { met: 'Addressed', partial: 'Vague or partial', missing: 'Missing', conflict: 'Contradicts RFP' }
+export const reducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches

@@ -1,90 +1,313 @@
 {
-  "schema_version": "1.0",
+  "schema_version": "2.0",
   "meta": {
     "rfp_name": "rfp_nordframe.md",
     "proposal_name": "response_3_strong.md",
     "model": "gemini-2.0-flash",
     "generated_at": "2026-09-17T09:00:00Z",
-    "duration_ms": 11800
+    "duration_ms": 11800,
+    "pipeline": [
+      "rfp_analyst",
+      "scoring_agent",
+      "citation_check"
+    ]
   },
-  "overall": {
-    "score": 4.88,
-    "verdict": "ready",
-    "summary": "Every RFP requirement is addressed with specifics. Two small clarifications, on out-of-hours support and cost after Year 1, would remove the remaining ambiguity."
+  "rfp_analysis": {
+    "client_name": "NordFrame Logistics GmbH",
+    "project_name": "Warehouse Inventory Dashboard",
+    "detected_priority_note": "The RFP rules out a database migration and asks for rollout with minimal disruption. Proposals that change NordFrame’s infrastructure should lose points.",
+    "priorities": [
+      {
+        "id": "priority-1",
+        "title": "Continuity over new technology",
+        "text": "The RFP rules out a database migration and asks for rollout with minimal disruption. Proposals that change NordFrame’s infrastructure should lose points.",
+        "suggestion": "Completeness vs. RFP set to High",
+        "citations": [
+          {
+            "source": "rfp",
+            "found": true,
+            "label": "RFP, Req. 3",
+            "quote": "no migration to a new database"
+          },
+          {
+            "source": "rfp",
+            "found": true,
+            "label": "RFP, Req. 5",
+            "quote": "minimal disruption"
+          }
+        ]
+      },
+      {
+        "id": "priority-2",
+        "title": "Decisions will rely on this data",
+        "text": "The client asks for risks and limitations explicitly because stock decisions will be made from the dashboard.",
+        "suggestion": "Risks & assumptions set to High",
+        "citations": [
+          {
+            "source": "rfp",
+            "found": true,
+            "label": "RFP, Req. 7",
+            "quote": "inventory decisions will be made based on this system"
+          }
+        ]
+      },
+      {
+        "id": "priority-3",
+        "title": "Fixed budget and dates",
+        "text": "A published budget that includes Year 1 support, and a pilot deadline. Deferred pricing or undated plans are a real gap here.",
+        "suggestion": "Pricing and Timeline stay at Medium",
+        "citations": [
+          {
+            "source": "rfp",
+            "found": true,
+            "label": "RFP, Budget",
+            "quote": "€80,000–€120,000 total, including first year of support"
+          },
+          {
+            "source": "rfp",
+            "found": true,
+            "label": "RFP, Timeline",
+            "quote": "Working pilot at one warehouse within 3 months"
+          }
+        ]
+      }
+    ],
+    "requirements": [
+      {
+        "id": "REQ-001",
+        "short_label": "Dashboard",
+        "text": "A web-based dashboard showing real-time inventory levels across all 6 warehouses.",
+        "related_criterion": "Completeness vs RFP Requirements",
+        "is_hard_constraint": false,
+        "source_section": "Req. 1",
+        "source_quote": "web-based dashboard"
+      },
+      {
+        "id": "REQ-002",
+        "short_label": "Low-stock alerts",
+        "text": "Alerts to warehouse managers when items fall below a configurable threshold.",
+        "related_criterion": "Completeness vs RFP Requirements",
+        "is_hard_constraint": false,
+        "source_section": "Req. 2",
+        "source_quote": "Automated low-stock alerts"
+      },
+      {
+        "id": "REQ-003",
+        "short_label": "PostgreSQL",
+        "text": "Integration with the existing PostgreSQL inventory database, with no migration to a new database.",
+        "related_criterion": "Completeness vs RFP Requirements",
+        "is_hard_constraint": true,
+        "source_section": "Req. 3",
+        "source_quote": "no migration to a new database"
+      },
+      {
+        "id": "REQ-004",
+        "short_label": "Access roles",
+        "text": "Warehouse managers see only their own site; HQ staff see all sites.",
+        "related_criterion": "Completeness vs RFP Requirements",
+        "is_hard_constraint": false,
+        "source_section": "Req. 4",
+        "source_quote": "Role-based access"
+      },
+      {
+        "id": "REQ-005",
+        "short_label": "Rollout plan",
+        "text": "A data migration / onboarding plan for all 6 sites with minimal disruption.",
+        "related_criterion": "Completeness vs RFP Requirements",
+        "is_hard_constraint": false,
+        "source_section": "Req. 5",
+        "source_quote": "minimal disruption"
+      },
+      {
+        "id": "REQ-006",
+        "short_label": "Support SLAs",
+        "text": "Support and maintenance terms after go-live, including response times and SLAs.",
+        "related_criterion": "Completeness vs RFP Requirements",
+        "is_hard_constraint": false,
+        "source_section": "Req. 6",
+        "source_quote": "Support & maintenance terms"
+      },
+      {
+        "id": "REQ-007",
+        "short_label": "Risks",
+        "text": "Clear documentation of assumptions, limitations or risks, since inventory decisions will rely on the system.",
+        "related_criterion": "Completeness vs RFP Requirements",
+        "is_hard_constraint": false,
+        "source_section": "Req. 7",
+        "source_quote": "assumptions, limitations, or risks"
+      },
+      {
+        "id": "REQ-008",
+        "short_label": "Budget",
+        "text": "€80,000–€120,000 total, including the first year of support.",
+        "related_criterion": "Completeness vs RFP Requirements",
+        "is_hard_constraint": true,
+        "source_section": "Budget",
+        "source_quote": "€80,000–€120,000 total, including first year of support"
+      },
+      {
+        "id": "REQ-009",
+        "short_label": "Timeline",
+        "text": "Working pilot at one warehouse within 3 months; all 6 sites within 6 months.",
+        "related_criterion": "Completeness vs RFP Requirements",
+        "is_hard_constraint": true,
+        "source_section": "Timeline",
+        "source_quote": "Working pilot at one warehouse within 3 months"
+      }
+    ]
   },
-  "client_priorities": [
+  "confirmed_criteria": [
     {
-      "id": "priority-1",
-      "title": "Continuity over new technology",
-      "text": "The RFP rules out a database migration and asks for rollout with minimal disruption. Proposals that change NordFrame’s infrastructure should lose points.",
-      "suggestion": "Completeness vs. RFP set to High",
-      "citations": [
+      "name": "Completeness vs RFP Requirements",
+      "key": "completeness_vs_rfp",
+      "description": "Every explicit RFP requirement is addressed.",
+      "weight": 3,
+      "origin": "base",
+      "why": "The RFP lists seven numbered requirements and puts each one in bold. A buyer who writes a checklist reads the answer as a checklist.",
+      "source_refs": [
         {
-          "source": "rfp",
-          "found": true,
-          "label": "RFP, Req. 3",
-          "quote": "no migration to a new database"
-        },
-        {
-          "source": "rfp",
-          "found": true,
-          "label": "RFP, Req. 5",
-          "quote": "minimal disruption"
+          "section": "Requirements",
+          "quote": "Requirements"
         }
       ]
     },
     {
-      "id": "priority-2",
-      "title": "Decisions will rely on this data",
-      "text": "The client asks for risks and limitations explicitly because stock decisions will be made from the dashboard.",
-      "suggestion": "Risks & assumptions set to High",
-      "citations": [
+      "name": "Risk/Assumptions Transparency",
+      "key": "risk_assumptions_transparency",
+      "description": "Dependencies and risks are flagged, not hidden.",
+      "weight": 3,
+      "origin": "base",
+      "why": "Requirement 7 explains why it is asked for, which is rare. The client is telling you that hidden risk is the thing they fear.",
+      "source_refs": [
         {
-          "source": "rfp",
-          "found": true,
-          "label": "RFP, Req. 7",
+          "section": "Req. 7",
           "quote": "inventory decisions will be made based on this system"
         }
       ]
     },
     {
-      "id": "priority-3",
-      "title": "Fixed budget and dates",
-      "text": "A published budget that includes Year 1 support, and a pilot deadline. Deferred pricing or undated plans are a real gap here.",
-      "suggestion": "Pricing and Timeline stay at Medium",
-      "citations": [
+      "name": "Pricing Clarity",
+      "key": "pricing_clarity",
+      "description": "Price stated, broken down, easy to follow.",
+      "weight": 2,
+      "origin": "base",
+      "why": "The budget is published as a range and states that it includes the first year of support, so a vague price is easy to spot.",
+      "source_refs": [
         {
-          "source": "rfp",
-          "found": true,
-          "label": "RFP, Budget",
+          "section": "Budget",
           "quote": "€80,000–€120,000 total, including first year of support"
-        },
+        }
+      ]
+    },
+    {
+      "name": "Timeline Clarity",
+      "key": "timeline_clarity",
+      "description": "Concrete milestones and dates.",
+      "weight": 2,
+      "origin": "base",
+      "why": "Two hard dates are given: a pilot at one site within 3 months and all 6 sites within 6 months.",
+      "source_refs": [
         {
-          "source": "rfp",
-          "found": true,
-          "label": "RFP, Timeline",
+          "section": "Timeline",
           "quote": "Working pilot at one warehouse within 3 months"
+        }
+      ]
+    },
+    {
+      "name": "Data Accuracy & Validation",
+      "key": "data_accuracy_validation",
+      "description": "Says how inventory figures are checked against reality before anyone relies on them.",
+      "weight": 2,
+      "origin": "ai_inferred",
+      "why": "The RFP does not list this as a requirement, but it gives the reason behind Requirement 7: stock decisions will be made from this dashboard. A proposal that never says how the numbers are verified leaves that risk with the client.",
+      "source_refs": [
+        {
+          "section": "Req. 7",
+          "quote": "inventory decisions will be made based on this system"
+        }
+      ]
+    },
+    {
+      "name": "Problem Understanding",
+      "key": "problem_understanding",
+      "description": "Reflects the client’s actual stated problem and goals, not a generic pitch.",
+      "weight": 1,
+      "origin": "base",
+      "why": "Worth checking, but Completeness already tests it against each requirement. Scoring both at a high weight counts the same gap twice.",
+      "source_refs": [
+        {
+          "section": "Background",
+          "quote": "6 regional warehouses across Germany and Austria"
+        }
+      ]
+    },
+    {
+      "name": "Scope & Deliverables Clarity",
+      "key": "scope_deliverables_clarity",
+      "description": "Deliverables are specific; clear what is and isn’t included.",
+      "weight": 1,
+      "origin": "base",
+      "why": "Same overlap as Problem understanding: the scope constraints sit inside the numbered requirements.",
+      "source_refs": [
+        {
+          "section": "Req. 3",
+          "quote": "no migration to a new database"
+        }
+      ]
+    },
+    {
+      "name": "Tone & Persuasiveness",
+      "key": "tone_persuasiveness",
+      "description": "Reads as confident, client-focused and professional, not boilerplate.",
+      "weight": 1,
+      "origin": "base",
+      "why": "The RFP says nothing about presentation, and this buyer is working through a checklist. Worth fixing, but it rarely decides a deal on its own.",
+      "source_refs": []
+    },
+    {
+      "name": "Legacy System & Spreadsheets",
+      "key": "legacy_system_spreadsheets",
+      "description": "Says what happens to the old legacy system and the spreadsheets after go-live.",
+      "weight": 1,
+      "origin": "ai_inferred",
+      "why": "The legacy system appears only in the Background, never in the numbered requirements, so the checklist will not catch a proposal that ignores it. Someone still has to switch it off.",
+      "source_refs": [
+        {
+          "section": "Background",
+          "quote": "split across spreadsheets and an outdated legacy system"
         }
       ]
     }
   ],
-  "criteria": [
-    {
-      "id": "comp",
-      "name": "Completeness vs. RFP",
-      "description": "Every explicit RFP requirement is addressed.",
-      "score": 5,
-      "comment": "All 7 requirements, budget and timeline addressed.",
-      "citations": [],
-      "priority": "high"
+  "evaluation": {
+    "overall_score": 4.88,
+    "recommendation": "ready",
+    "summary": "Every RFP requirement is addressed with specifics. Two small clarifications, on out-of-hours support and cost after Year 1, would remove the remaining ambiguity.",
+    "scores": {
+      "completeness_vs_rfp": 5,
+      "risk_assumptions_transparency": 5,
+      "pricing_clarity": 5,
+      "timeline_clarity": 5,
+      "data_accuracy_validation": 5,
+      "problem_understanding": 5,
+      "scope_deliverables_clarity": 5,
+      "tone_persuasiveness": 4,
+      "legacy_system_spreadsheets": 4
     },
-    {
-      "id": "risk",
-      "name": "Risks & assumptions",
-      "description": "Dependencies and risks are flagged, not hidden.",
-      "score": 5,
-      "comment": "Three concrete assumptions, each with its effect on the schedule.",
-      "citations": [
+    "rationales": {
+      "completeness_vs_rfp": "All 7 requirements, budget and timeline addressed.",
+      "risk_assumptions_transparency": "Three concrete assumptions, each with its effect on the schedule.",
+      "pricing_clarity": "Itemised €102,000 total inside the budget, with Year 1 support as its own line.",
+      "timeline_clarity": "Week-based plan mapped to both targets: pilot in Weeks 1–10, rollout in Weeks 13–24.",
+      "data_accuracy_validation": "A 2-week parallel run against the existing spreadsheet process before cutover, stated as the way data accuracy is confirmed.",
+      "problem_understanding": "Reflects the 6 sites in Germany and Austria and the client’s goal of not disrupting existing infrastructure.",
+      "scope_deliverables_clarity": "Each requirement has its own section with concrete behaviour, such as access enforced at database query level.",
+      "tone_persuasiveness": "Confident and specific throughout. The references are credible but unnamed.",
+      "legacy_system_spreadsheets": "The spreadsheets keep running during validation, which covers the transition. Switching off the legacy system is still not addressed."
+    },
+    "criterion_citations": {
+      "completeness_vs_rfp": [],
+      "risk_assumptions_transparency": [
         {
           "source": "proposal",
           "found": true,
@@ -92,15 +315,7 @@
           "quote": "delays here would shift"
         }
       ],
-      "priority": "high"
-    },
-    {
-      "id": "price",
-      "name": "Pricing clarity",
-      "description": "Price stated, broken down, easy to follow.",
-      "score": 5,
-      "comment": "Itemised €102,000 total inside the budget, with Year 1 support as its own line.",
-      "citations": [
+      "pricing_clarity": [
         {
           "source": "proposal",
           "found": true,
@@ -108,15 +323,7 @@
           "quote": "Year 1 support & maintenance"
         }
       ],
-      "priority": "medium"
-    },
-    {
-      "id": "time",
-      "name": "Timeline clarity",
-      "description": "Concrete milestones and dates.",
-      "score": 5,
-      "comment": "Week-based plan mapped to both targets: pilot in Weeks 1–10, rollout in Weeks 13–24.",
-      "citations": [
+      "timeline_clarity": [
         {
           "source": "proposal",
           "found": true,
@@ -130,15 +337,7 @@
           "quote": "Remaining 5 warehouses added in 2 batches"
         }
       ],
-      "priority": "medium"
-    },
-    {
-      "id": "accuracy",
-      "name": "Data accuracy & validation",
-      "description": "Says how inventory figures are checked against reality before anyone relies on them.",
-      "score": 5,
-      "comment": "A 2-week parallel run against the existing spreadsheet process before cutover, stated as the way data accuracy is confirmed.",
-      "citations": [
+      "data_accuracy_validation": [
         {
           "source": "proposal",
           "found": true,
@@ -146,15 +345,7 @@
           "quote": "running in parallel with existing spreadsheet process"
         }
       ],
-      "priority": "medium"
-    },
-    {
-      "id": "pu",
-      "name": "Problem understanding",
-      "description": "Reflects the client’s actual stated problem and goals, not a generic pitch.",
-      "score": 5,
-      "comment": "Reflects the 6 sites in Germany and Austria and the client’s goal of not disrupting existing infrastructure.",
-      "citations": [
+      "problem_understanding": [
         {
           "source": "proposal",
           "found": true,
@@ -168,15 +359,7 @@
           "quote": "without disrupting existing data infrastructure"
         }
       ],
-      "priority": "low"
-    },
-    {
-      "id": "scope",
-      "name": "Scope & deliverables",
-      "description": "Deliverables are specific; clear what is and isn’t included.",
-      "score": 5,
-      "comment": "Each requirement has its own section with concrete behaviour, such as access enforced at database query level.",
-      "citations": [
+      "scope_deliverables_clarity": [
         {
           "source": "proposal",
           "found": true,
@@ -184,154 +367,15 @@
           "quote": "enforced at the database query level"
         }
       ],
-      "priority": "low"
-    },
-    {
-      "id": "tone",
-      "name": "Tone & persuasiveness",
-      "description": "Reads as confident, client-focused and professional, not boilerplate.",
-      "priority": "low",
-      "score": 4,
-      "comment": "Confident and specific throughout. The references are credible but unnamed.",
-      "citations": [
+      "tone_persuasiveness": [
         {
           "source": "proposal",
           "found": true,
           "label": "Proposal, Why Fernglow",
           "quote": "two regional logistics operators"
         }
-      ]
-    },
-    {
-      "id": "legacy",
-      "name": "Legacy system & spreadsheets",
-      "description": "Says what happens to the old legacy system and the spreadsheets after go-live.",
-      "score": 4,
-      "comment": "The spreadsheets keep running during validation, which covers the transition. Switching off the legacy system is still not addressed.",
-      "citations": [
-        {
-          "source": "proposal",
-          "found": true,
-          "label": "Proposal, Rollout Plan",
-          "quote": "running in parallel with existing spreadsheet process"
-        }
       ],
-      "priority": "low"
-    }
-  ],
-  "requirements": [
-    {
-      "id": "r1",
-      "short_label": "Dashboard",
-      "name": "Web dashboard for all 6 sites",
-      "ask": "A web-based dashboard showing real-time inventory levels across all 6 warehouses.",
-      "rfp_citation": {
-        "source": "rfp",
-        "found": true,
-        "label": "RFP, Req. 1",
-        "quote": "web-based dashboard"
-      },
-      "status": "met",
-      "status_label": "Addressed",
-      "finding": "Live levels across all 6 warehouses, continuously refreshed.",
-      "suggested_fix": null,
-      "citations": [
-        {
-          "source": "proposal",
-          "found": true,
-          "label": "Proposal, Real-Time Dashboard",
-          "quote": "Live inventory levels across all 6 warehouses"
-        }
-      ]
-    },
-    {
-      "id": "r2",
-      "short_label": "Low-stock alerts",
-      "name": "Automated low-stock alerts",
-      "ask": "Alerts to warehouse managers when items fall below a configurable threshold.",
-      "rfp_citation": {
-        "source": "rfp",
-        "found": true,
-        "label": "RFP, Req. 2",
-        "quote": "Automated low-stock alerts"
-      },
-      "status": "met",
-      "status_label": "Addressed",
-      "finding": "Per-item thresholds; email or SMS to the responsible manager.",
-      "suggested_fix": null,
-      "citations": [
-        {
-          "source": "proposal",
-          "found": true,
-          "label": "Proposal, Low-Stock Alerts",
-          "quote": "alerts sent by email/SMS"
-        }
-      ]
-    },
-    {
-      "id": "r3",
-      "short_label": "PostgreSQL",
-      "name": "Existing PostgreSQL, no migration",
-      "ask": "Integration with the existing PostgreSQL inventory database, with no migration to a new database.",
-      "rfp_citation": {
-        "source": "rfp",
-        "found": true,
-        "label": "RFP, Req. 3",
-        "quote": "no migration to a new database"
-      },
-      "status": "met",
-      "status_label": "Addressed",
-      "finding": "Read-only connector to the existing database; no migration or schema changes.",
-      "suggested_fix": null,
-      "citations": [
-        {
-          "source": "proposal",
-          "found": true,
-          "label": "Proposal, Real-Time Dashboard",
-          "quote": "read-only connector"
-        }
-      ]
-    },
-    {
-      "id": "r4",
-      "short_label": "Access roles",
-      "name": "Role-based access",
-      "ask": "Warehouse managers see only their own site; HQ staff see all sites.",
-      "rfp_citation": {
-        "source": "rfp",
-        "found": true,
-        "label": "RFP, Req. 4",
-        "quote": "Role-based access"
-      },
-      "status": "met",
-      "status_label": "Addressed",
-      "finding": "Site-level access, enforced in the database queries rather than hidden in the UI.",
-      "suggested_fix": null,
-      "citations": [
-        {
-          "source": "proposal",
-          "found": true,
-          "label": "Proposal, Role-Based Access",
-          "quote": "enforced at the database query level"
-        }
-      ]
-    },
-    {
-      "id": "r5",
-      "short_label": "Rollout plan",
-      "name": "Onboarding plan for 6 sites",
-      "ask": "A data migration / onboarding plan for all 6 sites with minimal disruption.",
-      "rfp_citation": {
-        "source": "rfp",
-        "found": true,
-        "label": "RFP, Req. 5",
-        "quote": "minimal disruption"
-      },
-      "status": "met",
-      "status_label": "Addressed",
-      "finding": "Pilot, a 2-week parallel run against the spreadsheets, then 2 rollout batches.",
-      "suggested_fix": null,
-      "citations": [
+      "legacy_system_spreadsheets": [
         {
           "source": "proposal",
           "found": true,
@@ -340,145 +384,127 @@
         }
       ]
     },
-    {
-      "id": "r6",
-      "short_label": "Support SLAs",
-      "name": "Support & maintenance terms",
-      "ask": "Support and maintenance terms after go-live, including response times and SLAs.",
-      "rfp_citation": {
-        "source": "rfp",
-        "found": true,
-        "label": "RFP, Req. 6",
-        "quote": "Support & maintenance terms"
+    "requirements": [
+      {
+        "id": "REQ-001",
+        "status": "met",
+        "status_label": "Addressed",
+        "rfp_quote": "web-based dashboard",
+        "response_quote": "Live inventory levels across all 6 warehouses",
+        "searched_terms": null,
+        "rationale": "Live levels across all 6 warehouses, continuously refreshed."
       },
-      "status": "met",
-      "status_label": "Addressed",
-      "finding": "Response times by severity, included in Year 1 pricing.",
-      "suggested_fix": null,
-      "citations": [
-        {
-          "source": "proposal",
-          "found": true,
-          "label": "Proposal, Support & Maintenance",
-          "quote": "24-hour response time for critical"
-        }
-      ],
-      "clarification": {
-        "title": "Critical support only covers business hours",
-        "text": "A “system down” issue gets a 24-hour response but only “during CET business hours”, so an outage on Friday evening could wait until Monday.",
-        "suggested_fix": "State cover for critical incidents outside business hours, for example: “Critical issues (system down) are handled 24/7 with a 4-hour response; minor issues within 3 business days during CET business hours.”",
-        "citations": [
-          {
-            "source": "proposal",
-            "found": true,
-            "label": "Proposal, Support & Maintenance",
-            "quote": "during CET business hours"
-          }
-        ]
+      {
+        "id": "REQ-002",
+        "status": "met",
+        "status_label": "Addressed",
+        "rfp_quote": "Automated low-stock alerts",
+        "response_quote": "alerts sent by email/SMS",
+        "searched_terms": null,
+        "rationale": "Per-item thresholds; email or SMS to the responsible manager."
+      },
+      {
+        "id": "REQ-003",
+        "status": "met",
+        "status_label": "Addressed",
+        "rfp_quote": "no migration to a new database",
+        "response_quote": "read-only connector",
+        "searched_terms": null,
+        "rationale": "Read-only connector to the existing database; no migration or schema changes."
+      },
+      {
+        "id": "REQ-004",
+        "status": "met",
+        "status_label": "Addressed",
+        "rfp_quote": "Role-based access",
+        "response_quote": "enforced at the database query level",
+        "searched_terms": null,
+        "rationale": "Site-level access, enforced in the database queries rather than hidden in the UI."
+      },
+      {
+        "id": "REQ-005",
+        "status": "met",
+        "status_label": "Addressed",
+        "rfp_quote": "minimal disruption",
+        "response_quote": "running in parallel with existing spreadsheet process",
+        "searched_terms": null,
+        "rationale": "Pilot, a 2-week parallel run against the spreadsheets, then 2 rollout batches."
+      },
+      {
+        "id": "REQ-006",
+        "status": "met",
+        "status_label": "Addressed",
+        "rfp_quote": "Support & maintenance terms",
+        "response_quote": "24-hour response time for critical",
+        "searched_terms": null,
+        "rationale": "Response times by severity, included in Year 1 pricing."
+      },
+      {
+        "id": "REQ-007",
+        "status": "met",
+        "status_label": "Addressed",
+        "rfp_quote": "assumptions, limitations, or risks",
+        "response_quote": "delays here would shift",
+        "searched_terms": null,
+        "rationale": "Database access, site contacts and threshold tuning, each with its impact."
+      },
+      {
+        "id": "REQ-008",
+        "status": "met",
+        "status_label": "Addressed",
+        "rfp_quote": "€80,000–€120,000 total, including first year of support",
+        "response_quote": "€102,000",
+        "searched_terms": null,
+        "rationale": "€102,000 itemised, inside the budget, Year 1 support shown separately."
+      },
+      {
+        "id": "REQ-009",
+        "status": "met",
+        "status_label": "Addressed",
+        "rfp_quote": "Working pilot at one warehouse within 3 months",
+        "response_quote": "Weeks 1–10",
+        "searched_terms": null,
+        "rationale": "Pilot in Weeks 1–10 and rollout in Weeks 13–24, each mapped to the client’s target."
       }
-    },
-    {
-      "id": "r7",
-      "short_label": "Risks",
-      "name": "Assumptions, limitations, risks",
-      "ask": "Clear documentation of assumptions, limitations or risks, since inventory decisions will rely on the system.",
-      "rfp_citation": {
-        "source": "rfp",
-        "found": true,
-        "label": "RFP, Req. 7",
-        "quote": "assumptions, limitations, or risks"
+    ],
+    "findings": [
+      {
+        "id": "F01",
+        "requirement_ids": [
+          "REQ-006"
+        ],
+        "kind": "vague",
+        "severity": "minor",
+        "rfp_quote": "Support & maintenance terms",
+        "response_quote": "during CET business hours",
+        "searched_terms": null,
+        "rationale": "Critical support only covers business hours. A “system down” issue gets a 24-hour response but only “during CET business hours”, so an outage on Friday evening could wait until Monday.",
+        "suggested_fix": "State cover for critical incidents outside business hours, for example: “Critical issues (system down) are handled 24/7 with a 4-hour response; minor issues within 3 business days during CET business hours.”"
       },
-      "status": "met",
-      "status_label": "Addressed",
-      "finding": "Database access, site contacts and threshold tuning, each with its impact.",
-      "suggested_fix": null,
-      "citations": [
-        {
-          "source": "proposal",
-          "found": true,
-          "label": "Proposal, Risks & Assumptions",
-          "quote": "delays here would shift"
-        }
-      ]
-    },
-    {
-      "id": "budget",
-      "short_label": "Budget",
-      "name": "Within budget",
-      "ask": "€80,000–€120,000 total, including the first year of support.",
-      "rfp_citation": {
-        "source": "rfp",
-        "found": true,
-        "label": "RFP, Budget",
-        "quote": "€80,000–€120,000 total, including first year of support"
+      {
+        "id": "F02",
+        "requirement_ids": [
+          "REQ-008"
+        ],
+        "kind": "vague",
+        "severity": "minor",
+        "rfp_quote": "€80,000–€120,000 total, including first year of support",
+        "response_quote": "Year 1 support & maintenance",
+        "searched_terms": null,
+        "rationale": "Cost after Year 1 isn’t stated. The client will need to budget for support from Year 2.",
+        "suggested_fix": "Add a line: “Support & maintenance from Year 2: €18,000 per year on the same terms.”"
       },
-      "status": "met",
-      "status_label": "Addressed",
-      "finding": "€102,000 itemised, inside the budget, Year 1 support shown separately.",
-      "suggested_fix": null,
-      "citations": [
-        {
-          "source": "proposal",
-          "found": true,
-          "label": "Proposal, Pricing",
-          "quote": "€102,000"
-        }
-      ],
-      "clarification": {
-        "title": "Cost after Year 1 isn’t stated",
-        "text": "The client will need to budget for support from Year 2.",
-        "suggested_fix": "Add a line: “Support & maintenance from Year 2: €18,000 per year on the same terms.”",
-        "citations": [
-          {
-            "source": "proposal",
-            "found": true,
-            "label": "Proposal, Pricing",
-            "quote": "Year 1 support & maintenance"
-          }
-        ]
+      {
+        "id": "F03",
+        "requirement_ids": [],
+        "kind": "vague",
+        "severity": "minor",
+        "rfp_quote": null,
+        "response_quote": "two regional logistics operators",
+        "searched_terms": null,
+        "rationale": "References are unnamed. “Two regional logistics operators” is credible but can’t be checked.",
+        "suggested_fix": "Add the sector, size and one measurable result for each, or offer a reference call."
       }
-    },
-    {
-      "id": "timeline",
-      "short_label": "Timeline",
-      "name": "Pilot in 3 months, rollout in 6",
-      "ask": "Working pilot at one warehouse within 3 months; all 6 sites within 6 months.",
-      "rfp_citation": {
-        "source": "rfp",
-        "found": true,
-        "label": "RFP, Timeline",
-        "quote": "Working pilot at one warehouse within 3 months"
-      },
-      "status": "met",
-      "status_label": "Addressed",
-      "finding": "Pilot in Weeks 1–10 and rollout in Weeks 13–24, each mapped to the client’s target.",
-      "suggested_fix": null,
-      "citations": [
-        {
-          "source": "proposal",
-          "found": true,
-          "label": "Proposal, Rollout Plan",
-          "quote": "Weeks 1–10"
-        }
-      ]
-    }
-  ],
-  "other_issues": [
-    {
-      "id": "other-1",
-      "status": "partial",
-      "label": "Polish",
-      "title": "References are unnamed",
-      "finding": "“Two regional logistics operators” is credible but can’t be checked.",
-      "suggested_fix": "Add the sector, size and one measurable result for each, or offer a reference call.",
-      "citations": [
-        {
-          "source": "proposal",
-          "found": true,
-          "label": "Proposal, Why Fernglow",
-          "quote": "two regional logistics operators"
-        }
-      ]
-    }
-  ]
+    ]
+  }
 }

@@ -1,0 +1,29 @@
+{
+  "rubric_version": "1.0",
+  "language": "en",
+  "scale": {"minimum": 1, "maximum": 5, "integer_scores": true},
+  "overall_formula": "Arithmetic mean of the seven criterion scores, rounded to two decimal places. Do not average requirement statuses or apply an undisclosed penalty.",
+  "recommendation_rule": "Any explicit critical constraint contradiction prevents a ready recommendation even when the arithmetic mean is high. Use revise for remediable omissions and do_not_accept_as_written for critical contradictions. A recommendation is separate from the overall arithmetic score.",
+  "criteria": [
+    {"id": "problem_understanding", "name": "Problem Understanding", "weight": 1,
+      "anchors": {"1": "Misunderstands the core client problem.", "2": "Acknowledges the general domain but misses important client context.", "3": "Understands the main objective with limited connection to operational priorities.", "4": "Accurately connects the proposed approach to client context and priorities.", "5": "Demonstrates precise understanding of the objective, operating context and relevant trade-offs."}},
+    {"id": "scope_deliverables_clarity", "name": "Scope & Deliverables Clarity", "weight": 1,
+      "anchors": {"1": "No usable description of deliverables.", "2": "Generic feature list with unclear outputs or boundaries.", "3": "Main outputs are named but important boundaries or acceptance details remain vague.", "4": "Specific outputs and boundaries with only minor ambiguities.", "5": "Concrete, testable deliverables with explicit scope boundaries and acceptance approach."}},
+    {"id": "pricing_clarity", "name": "Pricing Clarity", "weight": 1,
+      "anchors": {"1": "Price is absent or entirely deferred.", "2": "A headline estimate leaves major inclusions or recurring charges unknown.", "3": "A usable total is provided but the breakdown or included period has gaps.", "4": "An internally consistent total and breakdown identify the main inclusions and recurring costs.", "5": "Transparent, internally consistent cost breakdown covers the requested period, assumptions and treatment of additional scope."},
+      "note": "Judge transparency here. Budget breaches belong in requirement compliance and findings; a clearly priced noncompliant offer can still score highly for pricing clarity."},
+    {"id": "timeline_clarity", "name": "Timeline Clarity", "weight": 1,
+      "anchors": {"1": "No dates, durations or milestones.", "2": "General duration or aspiration without a usable schedule.", "3": "Delivery date and some stages are given but sequencing or dependencies are unclear.", "4": "Clear relative or absolute milestones and sequencing with minor gaps.", "5": "Clear milestone schedule, acceptance gates and dependencies make the delivery sequence explicit."},
+      "note": "Judge clarity here. Do not infer impossibility from a short timeline alone. Explicitly skipping a required pilot or acceptance gate is a compliance failure even if the schedule is clear."},
+    {"id": "completeness_vs_rfp", "name": "Completeness vs. RFP Requirements", "weight": 1,
+      "anchors": {"1": "Most important requirements are absent or contradicted, or multiple central constraints are explicitly violated.", "2": "Some requirements are covered but major gaps or a central constraint violation remain.", "3": "Most requirements are addressed with material partial coverage or unresolved omissions.", "4": "All key requirements are addressed, with minor omissions or ambiguity.", "5": "All stated requirements, including budget and timeline constraints, are explicitly and coherently addressed."}},
+    {"id": "tone_persuasiveness", "name": "Tone & Persuasiveness", "weight": 1,
+      "anchors": {"1": "Confusing, inappropriate or almost entirely empty sales language.", "2": "Readable but generic, poorly tailored or dependent on unsupported superlatives.", "3": "Professional and partly tailored, with uneven evidence or excessive promotional language.", "4": "Clear, client-specific and mostly evidence-led.", "5": "Consistently clear and persuasive through relevant specifics and balanced reasoning."},
+      "note": "Length, confidence, AI terminology and polished formatting are not evidence of suitability. Do not require unprovided customer references."},
+    {"id": "risk_assumptions_transparency", "name": "Risk/Assumptions Transparency", "weight": 1,
+      "anchors": {"1": "No material risks or assumptions disclosed, or unsupported risk-free guarantees.", "2": "Generic caveats without concrete dependencies or mitigations.", "3": "Relevant risks or assumptions are named but ownership, mitigation or impact is incomplete.", "4": "Material dependencies and risks are specific, with sensible mitigations or schedule/cost implications.", "5": "Clear assumptions, limitations, owners and mitigations explain the delivery consequences of unmet dependencies."}}
+  ],
+  "requirement_statuses": ["met", "partial", "missing", "contradicted", "unsubstantiated"],
+  "status_precedence_note": "Use contradicted if an explicit conflict exists. Otherwise missing means absent; partial means incomplete coverage; unsubstantiated means an unsupported commitment; met means a sufficiently specific and consistent response.",
+  "calibration_note": "Expected score intervals are provisional synthetic annotations. They are not measured scorer outputs or statistically validated acceptance limits. Do not force an overall ordering between weak and overpromised."
+}
