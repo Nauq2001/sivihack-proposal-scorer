@@ -1,165 +1,163 @@
-# Thiết kế RAG hybrid chạy local
+# Thiết kế MVP/PoC RAG hybrid chạy local
 
-## 1. Mục tiêu và phạm vi
+## 1. Mục tiêu
 
-Nâng cấp module truy xuất benchmark chấm điểm từ cơ chế trùng từ khóa sang truy xuất hybrid chạy local, kết hợp đối sánh lexical với semantic embedding từ `sentence-transformers/all-MiniLM-L6-v2`. Cải thiện cách chia nhỏ Markdown để ví dụ được truy xuất là các đoạn ngắn, liền mạch thay vì gần như toàn bộ proposal.
+Xây bản PoC chứng minh RAG có thể tìm benchmark bằng ngữ nghĩa tốt hơn cơ chế trùng từ khóa hiện tại, đặc biệt với từ đồng nghĩa và custom criterion.
 
-Phần việc này cũng cung cấp một helper Python nhỏ để truy xuất và định dạng benchmark reference cho một tiêu chí chấm điểm. Team Scoring Agent riêng chịu trách nhiệm endpoint `/api/review`, prompt của agent, điểm cuối cùng, citation và tích hợp xuyên suốt.
+MVP sử dụng `sentence-transformers/all-MiniLM-L6-v2` chạy local, kết hợp semantic score với keyword score. Phần tích hợp vào Scoring Agent và endpoint `/api/review` do team khác thực hiện.
 
-## 2. Các ràng buộc
+Kết quả demo cần chứng minh được một query dùng cách diễn đạt khác với benchmark vẫn đưa ví dụ phù hợp lên đầu.
 
-- Embedding chạy local; quá trình truy xuất không được gọi Gemini, Hugging Face Inference API hay dịch vụ mạng khác.
-- Model embedding là `sentence-transformers/all-MiniLM-L6-v2`, tạo vector 384 chiều.
-- Input dài hơn 256 word pieces sẽ bị model cắt, vì vậy mỗi record phải là một chunk ngắn.
-- Vector được lưu bằng NumPy `.npz`; dự án không thêm FAISS, Chroma hay vector database.
-- `records.jsonl` tiếp tục là nguồn chính cho text và metadata. File `.npz` lưu vector và metadata nhận diện index, không lưu bản sao nội dung record.
-- Retrieval tiếp tục cân bằng kết quả giữa bốn loại `weak`, `medium`, `strong` và `overpromise`.
-- Nội dung benchmark chỉ là dữ liệu hiệu chỉnh. Không được coi nó là bằng chứng hay chỉ dẫn.
+## 2. Phạm vi MVP
 
-## 3. Kiến trúc
+MVP gồm:
+
+- chunk benchmark Markdown thành các đoạn ngắn;
+- tạo embedding local bằng `all-MiniLM-L6-v2`;
+- lưu vector vào `backend/rag/data/embeddings.npz`;
+- kết hợp keyword score và semantic score;
+- giữ cách lọc criterion, cân bằng sample type và loại trùng nguồn;
+- cung cấp helper để team Scoring Agent lấy block `BENCHMARK REFERENCES`;
+- thêm test tối thiểu và hướng dẫn chạy.
+
+Ngoài phạm vi:
+
+- triển khai `/api/review` và prompt chấm điểm cuối cùng;
+- FAISS, Chroma hoặc vector database;
+- nhiều embedding provider/model;
+- evaluation framework đầy đủ như Recall@k hoặc MRR;
+- production fallback, monitoring và tối ưu deployment;
+- citation validation và thay đổi frontend.
+
+## 3. Luồng xử lý
 
 ```text
-Benchmark Markdown + expected.json
-        |
-        v
-ingest và chunk theo cấu trúc section
-        |
-        +--> records.jsonl
-        |
-        v
-all-MiniLM-L6-v2 encoder
-        |
-        +--> embeddings.npz
+Benchmark Markdown
+    -> chunk theo section
+    -> records.jsonl
+    -> all-MiniLM-L6-v2
+    -> embeddings.npz
 
-criterion + ngữ cảnh tài liệu
-        |
-        v
-chuẩn hóa và embedding query
-        |
-        v
-lọc theo criterion
-        |
-        +--> lexical score
-        +--> cosine semantic score
-        |
-        v
-weighted hybrid score và threshold
-        |
-        v
-cân bằng sample type và loại trùng nguồn
-        |
-        v
-public projection an toàn cho prompt
-        |
-        v
-khối BENCHMARK REFERENCES
+Query
+    -> keyword score + cosine semantic score
+    -> hybrid score
+    -> threshold
+    -> cân bằng weak/medium/strong/overpromise
+    -> BENCHMARK REFERENCES
 ```
 
-Trách nhiệm của các module:
+Các file chính:
 
-- `backend/rag/ingest.py`: đọc benchmark package và tạo các chunk theo section với ID ổn định.
-- `backend/rag/embedding.py`: định nghĩa interface embedding và implementation Sentence Transformers local.
-- `backend/rag/index.py`: tạo, lưu, nạp và kiểm tra NumPy vector index.
-- `backend/rag/engine.py`: lọc candidate, tính lexical/semantic score, kết hợp điểm và chọn kết quả cân bằng.
-- `backend/rag/api.py`: kiểm tra public payload, truy xuất match, chỉ trả các trường an toàn và định dạng reference cho agent.
-- `backend/rag/evaluate.py`: so sánh lexical-only với hybrid retrieval trên evaluation set.
+- `backend/rag/ingest.py`: tạo chunk và `records.jsonl`.
+- `backend/rag/embedding.py`: load model và encode text/query.
+- `backend/rag/index.py`: tạo và nạp `embeddings.npz`.
+- `backend/rag/engine.py`: tính điểm và chọn kết quả.
+- `backend/rag/api.py`: giữ public response và format reference.
 
-## 4. Thiết kế chunk record
+## 4. Chunking
 
-Mỗi record được tạo gồm:
+Chunking giữ ranh giới heading Markdown:
 
-| Trường | Ý nghĩa |
-|---|---|
-| `id` | ID chunk ổn định, tạo từ parent record và chỉ số chunk bắt đầu từ 0 |
-| `parent_record_id` | ID ổn định của cặp proposal–criterion trước khi chunk |
-| `chunk_index` | Chỉ số bắt đầu từ 0 trong parent record |
-| `criterion_id` | Tiêu chí benchmark mà chunk đại diện |
-| `sample_type` | `weak`, `medium`, `strong` hoặc `overpromise` |
-| `section` | Heading Markdown cung cấp ngữ cảnh cục bộ |
-| `text` | Heading cộng nội dung chunk, dùng cho lexical và semantic retrieval |
-| `score_range` | Khoảng điểm benchmark giả lập, được giữ cho provenance nội bộ |
-| `reasoning` | Giải thích kiểu trình bày mà ví dụ minh họa |
-| `source_file` | Đường dẫn tương đối tới proposal gốc |
+- section tối đa 180 từ trở thành một chunk;
+- section dài hơn được chia thành chunk 120–180 từ;
+- overlap mục tiêu khoảng 25 từ;
+- heading được thêm vào đầu mỗi chunk;
+- không ghép các section không liền nhau.
 
-Chunking tôn trọng ranh giới heading Markdown. Section có tối đa 180 từ trở thành một chunk. Section dài hơn được chia thành các chunk mục tiêu 120–180 từ với overlap 25–30 từ. Heading của section được thêm vào đầu mọi chunk. Không chunk nào kết hợp các section không liền nhau.
+Mỗi record giữ các trường cần thiết:
 
-ID chunk có định dạng `<parent_record_id>:chunk:<zero-padded-index>`. Chạy lại ingest với input giống nhau phải tạo cùng ID và thứ tự.
+```json
+{
+  "id": "case:response:criterion:chunk:000",
+  "parent_record_id": "case:response:criterion",
+  "chunk_index": 0,
+  "criterion_id": "timeline_clarity",
+  "sample_type": "strong",
+  "section": "Delivery plan",
+  "text": "## Delivery plan\n...",
+  "score_range": [4, 5],
+  "reasoning": "...",
+  "source_file": "cases/example/response.md"
+}
+```
 
-## 5. Thiết kế vector index
+Chạy ingest nhiều lần với cùng input phải tạo cùng ID và thứ tự.
 
-`embeddings.npz` gồm:
+## 5. Embedding và vector index
 
-- `vectors`: mảng `float32` hai chiều có shape `(record_count, 384)`.
-- `record_ids`: mảng string một chiều, có thứ tự tương ứng với `vectors`.
-- `model_name`: chính xác là `sentence-transformers/all-MiniLM-L6-v2`.
-- `dimension`: số nguyên `384`.
-- `records_digest`: SHA-256 digest của danh sách record ID và text theo đúng thứ tự.
-- `index_version`: phiên bản schema dạng số nguyên, ban đầu là `1`.
+Model cố định:
 
-Document embedding được L2-normalize khi tạo index. Query embedding được chuẩn hóa bởi cùng embedding adapter. Vì vậy cosine similarity được tính bằng phép nhân ma trận với vector.
+```text
+sentence-transformers/all-MiniLM-L6-v2
+```
 
-Quá trình load phải dừng và báo lỗi có hướng xử lý khi index bị thiếu, không đọc được, dùng model hoặc dimension khác, chứa ID trùng/sai thứ tự, hoặc digest không khớp `records.jsonl`. Production retrieval không được âm thầm fallback sang lexical-only.
+`embeddings.npz` chỉ cần chứa:
 
-Sentence Transformer model được khởi tạo một lần khi store khởi động, không phải mỗi query. Lần cài đặt đầu tiên có thể tải model từ Hugging Face; tài liệu triển khai phải hướng dẫn tải trước hoặc giữ local model cache để demo offline.
+- `vectors`: mảng `float32` có shape `(record_count, 384)`;
+- `record_ids`: ID theo đúng thứ tự vector;
+- `model_name`: tên model dùng để tạo index.
+
+Vector document và query đều được L2-normalize. Semantic score được tính bằng dot product, tương đương cosine similarity.
+
+Khi khởi động, store nạp `records.jsonl`, `embeddings.npz` và model một lần. Nếu thiếu index hoặc số vector không khớp số record, hệ thống báo lỗi yêu cầu tạo lại index. MVP không cần hệ thống version/digest phức tạp.
 
 ## 6. Hybrid retrieval
 
-Public query text là chuỗi ghép từ `name`, `description`, `evaluation_question` của criterion cùng `proposal_context` và `requirement_context`. Các trường được phép rỗng, nhưng query không có nội dung hữu ích sẽ trả danh sách rỗng.
+Query được ghép từ:
 
-Với base criterion, hệ thống lọc record theo canonical criterion ID trước. Custom criterion tìm trên toàn bộ record. Các criterion không được phép dùng RAG tiếp tục phát sinh validation error.
+- `criterion.name`;
+- `criterion.description`;
+- `criterion.evaluation_question`;
+- `proposal_context`;
+- `requirement_context`.
 
-Điểm cho mỗi candidate:
+Điểm được tính như sau:
 
 ```text
-keyword_score = số query term khác nhau khớp / số query term hợp lệ khác nhau
+keyword_score = số query term khác nhau khớp / số query term hợp lệ
 semantic_score = (cosine_similarity + 1) / 2
 hybrid_score = 0.35 * keyword_score + 0.65 * semantic_score
 ```
 
-Cả ba điểm nằm trong `[0, 1]`. Các trọng số trên là giá trị khởi đầu, không phải tuyên bố rằng chúng tối ưu; chỉ thay đổi khi evaluation data chứng minh được lợi ích.
+Base criterion chỉ tìm trong record cùng criterion ID. Custom criterion tìm trên toàn corpus. Kết quả dưới `min_hybrid_score` bị loại.
 
-Candidate thấp hơn `min_hybrid_score` bị loại. Giá trị mặc định ban đầu là `0.45`. Các candidate còn lại được sắp xếp lần lượt theo `hybrid_score` giảm dần, `semantic_score` giảm dần và cuối cùng là thứ tự record ổn định. Trong mỗi sample type, hệ thống trả tối đa `top_k_per_type` kết quả và chỉ được chọn một chunk cho mỗi `source_file`.
+Trong mỗi loại `weak`, `medium`, `strong`, `overpromise`, hệ thống lấy tối đa `top_k_per_type` kết quả và không lấy hai chunk từ cùng `source_file`.
 
-Kết quả nội bộ có thể chứa `keyword_score`, `semantic_score`, `hybrid_score` và retrieval provenance để evaluation và debug. Public adapter chỉ trả đúng ba trường `text`, `sample_type` và `reasoning` cho mỗi match.
+Các score chỉ dùng nội bộ. Public match vẫn chỉ trả:
 
-## 7. Hợp đồng Python công khai
+```json
+{
+  "text": "...",
+  "sample_type": "strong",
+  "reasoning": "..."
+}
+```
 
-Request được khuyến nghị:
+## 7. Public API cho team tích hợp
+
+Payload:
 
 ```json
 {
   "criterion": {
     "id": "custom_data_residency",
     "name": "EU data residency",
-    "description": "Production records and backups must stay in EU regions",
-    "evaluation_question": "Where are production records and backups stored?"
+    "description": "Production records and backups must stay in EU regions"
   },
   "proposal_context": "Production records remain in Frankfurt.",
-  "requirement_context": "All production data and backups must remain in the EU.",
+  "requirement_context": "All records must remain in the EU.",
   "top_k_per_type": 1,
   "min_hybrid_score": 0.45
 }
 ```
 
-`top_k_per_type` là số nguyên từ 1 đến 3. `min_hybrid_score` là số từ 0 đến 1. Trường `relevance_threshold` cũ bị loại bỏ thay vì âm thầm gán cho nó ý nghĩa mới. Test, ví dụ và tài liệu RAG phải được cập nhật cùng nhau.
+Quy tắc:
 
-`retrieve_payload(store, payload)` giữ nguyên outer response shape:
+- `top_k_per_type`: số nguyên từ 1 đến 3, mặc định `1`;
+- `min_hybrid_score`: số từ 0 đến 1, mặc định `0.45`;
+- bỏ trường `relevance_threshold` cũ để contract dễ hiểu.
 
-```json
-{
-  "criterion_id": "custom_data_residency",
-  "retrieval_mode": "custom",
-  "matches": [
-    {
-      "text": "...",
-      "sample_type": "strong",
-      "reasoning": "..."
-    }
-  ]
-}
-```
-
-Một helper mới thực hiện retrieval và format cho một criterion trong một lần gọi:
+`retrieve_payload()` giữ nguyên outer response hiện tại. Thêm helper:
 
 ```python
 def retrieve_benchmark_references(store, payload) -> str:
@@ -167,52 +165,35 @@ def retrieve_benchmark_references(store, payload) -> str:
     return format_benchmark_references(result["matches"])
 ```
 
-Đây là ranh giới bàn giao cho team Scoring Agent. Team đó quyết định vị trí của block được trả về trong prompt và cách xử lý khi retrieval không có match.
+Team Scoring Agent gọi helper một lần cho mỗi criterion phù hợp và chèn kết quả vào prompt. Benchmark chỉ là dữ liệu hiệu chỉnh, không phải bằng chứng; citation vẫn phải đến từ RFP và proposal hiện tại.
 
-## 8. Xử lý lỗi
+## 8. Test và tiêu chí hoàn thành
 
-- Payload type, criterion ID, `top_k_per_type` hoặc `min_hybrid_score` không hợp lệ sẽ làm Python adapter phát sinh `ValueError`.
-- Records/vector index bị thiếu hoặc hỏng sẽ gây lỗi khởi tạo, trong đó nêu rõ đường dẫn bị ảnh hưởng và lệnh rebuild.
-- Model name, dimension, record ID hoặc digest không khớp sẽ gây index compatibility error; retrieval không được tiếp tục với vector cũ.
-- Query hợp lệ nhưng không có candidate vượt threshold sẽ trả `matches: []`.
-- Semantic query rỗng trả `matches: []` mà không chạy ranking.
-- Lỗi model hoặc inference được truyền thành retrieval error rõ ràng, không được chuyển thành kết quả keyword không tương đương.
+Unit test sử dụng fake embedder để không tải model hoặc truy cập mạng. Các test tối thiểu:
 
-## 9. Sinh index và artifact trong repository
+- chunk giữ heading và không vượt giới hạn chính;
+- vector index tạo/nạp đúng thứ tự record;
+- công thức hybrid score đúng;
+- lọc criterion, threshold, cân bằng sample type và loại trùng nguồn;
+- public match chỉ có ba trường an toàn;
+- helper trả block có nhãn `BENCHMARK REFERENCES`.
 
-Một CLI workflow được ghi trong tài liệu sẽ tạo lại cả hai artifact theo thứ tự:
+Smoke test model thật xác nhận một query dùng từ đồng nghĩa xếp đúng benchmark cao hơn text không liên quan.
 
-1. Đọc benchmark cases và ghi `records.jsonl` đã được chunk.
-2. Nạp records, encode text theo batch và ghi `embeddings.npz` theo cách atomic.
-3. Nạp lại cả hai file và chạy compatibility validation trước khi báo thành công.
+MVP hoàn thành khi:
 
-Repository tiếp tục track file `records.jsonl` đã sinh vì file này nhỏ. Việc commit `embeddings.npz` được quyết định dựa trên kích thước thực tế trong quá trình triển khai: commit nếu kích thước hợp lý với repository; nếu không, tài liệu phải mô tả cách tạo lại xác định và cache file khi deploy. Không commit file index tạm hoặc chưa hoàn chỉnh.
+1. Có thể tạo lại `records.jsonl` và `embeddings.npz` bằng lệnh được ghi trong README.
+2. Unit test pass mà không cần mạng.
+3. Smoke test với `all-MiniLM-L6-v2` pass sau khi model đã được tải.
+4. Demo được ít nhất một trường hợp hybrid search tìm tốt hơn keyword-only.
+5. Team khác có thể gọi `retrieve_benchmark_references()` mà không cần biết chi tiết vector search.
 
-## 10. Evaluation và kiểm thử
+## 9. Tài liệu bàn giao
 
-Unit test dùng fake embedder xác định để các test thông thường không tải model và không truy cập mạng. Các test bao phủ:
+`backend/rag/README.md` cần bổ sung:
 
-- chunk ổn định theo section và giới hạn overlap;
-- giữ heading và không ghép section không liền nhau;
-- vector index round-trip và mọi trường hợp incompatibility;
-- cosine scoring và công thức weighted score;
-- lọc criterion, custom criterion, biên threshold, loại trùng nguồn và cân bằng sample type;
-- public match projection nghiêm ngặt;
-- helper lấy và format reference trong một lần gọi;
-- validation của `min_hybrid_score` và từ chối trường cũ đã bị loại bỏ.
-
-Một smoke test riêng, được đánh dấu hoặc gọi tường minh, sẽ load `all-MiniLM-L6-v2`, tạo index nhỏ và xác nhận query dùng từ đồng nghĩa xếp text mong đợi cao hơn text không liên quan.
-
-Evaluation set được commit chứa các query cùng criterion/source được kỳ vọng là liên quan. Nó bao gồm exact keyword, synonym, paraphrase và custom criterion. Lệnh evaluation báo cáo Recall@k và mean reciprocal rank cho lexical-only lẫn hybrid. Không bật hybrid retrieval làm mặc định cho đến khi nó cải thiện retrieval với synonym/paraphrase mà không làm exact-keyword case suy giảm đáng kể. Lệnh chỉ báo cáo metric; không tuyên bố độ chính xác trên chính benchmark record đã dùng để xây index.
-
-## 11. Tài liệu và bàn giao cho team khác
-
-`backend/rag/README.md` và `backend/rag/docs/design.md` sẽ mô tả cài đặt local, model cache, cách tạo index, threshold mới, evaluation và helper cho Scoring Agent. Phần bàn giao nêu rõ:
-
-- gọi retrieval một lần cho mỗi final criterion được phép dùng RAG;
-- chèn block trả về dưới dạng dữ liệu `BENCHMARK REFERENCES` không có hiệu lực chỉ dẫn;
-- tiếp tục dùng rubric đã duyệt làm căn cứ chấm điểm;
-- chỉ trích dẫn RFP và proposal hiện tại;
-- không đưa điểm retrieval nội bộ vào scoring response.
-
-Việc triển khai `/api/review`, prompt chấm điểm cuối cùng, citation validation và thay đổi frontend nằm ngoài phạm vi công việc này.
+- cách cài `sentence-transformers` và NumPy;
+- cách tạo records và vector index;
+- ví dụ gọi `retrieve_payload()` và `retrieve_benchmark_references()`;
+- cách chạy unit test và smoke test;
+- lưu ý model được tải về máy ở lần chạy đầu tiên.
