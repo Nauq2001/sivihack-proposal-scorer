@@ -231,6 +231,12 @@ body.dock .wrap{max-width:none;margin:0;padding-right:calc(440px + 48px)}
 .pip{width:12px;height:12px;border-radius:3px;background:var(--surface-2)}
 .pips[data-tone] .pip.on{background:currentColor}
 
+.commitments{display:grid;gap:12px}
+.commitment{background:var(--surface);border:1px solid var(--line);border-left:3px solid var(--conflict);border-radius:13px;padding:18px 20px;display:grid;gap:10px}
+.commitment header{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.commitment .kind{font-size:12.5px;color:var(--ink-3)}
+.stale{margin-left:auto;padding:2px 8px;border-radius:6px;background:var(--surface-2);color:var(--ink-3);font-size:11.5px}
+
 .findings{display:grid;gap:12px}
 .finding{background:var(--surface);border:1px solid var(--line);border-radius:13px;padding:18px 20px;display:grid;gap:10px;scroll-margin-top:96px;transition:border-color .2s,box-shadow .2s}
 .finding:hover{border-color:var(--ink-3)}

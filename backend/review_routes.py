@@ -170,23 +170,63 @@ def _origin_by_criterion(packets: list[Any]) -> dict[str, str]:
     return {p.criterion_name: p.origin for p in packets}
 
 
-def _recommendation(result: Any, requirements: list[Any]) -> str:
+REVISE_FLOOR = 2.0
+
+
+def _recommendation(result: Any, requirements: list[Any]) -> tuple[str, str]:
     """Khuyen nghi cuoi cung — tinh bang code, khong hoi LLM.
 
     Theo `rubric.json` cua benchmark: vi pham mot rang buoc cung thi khong the
     khuyen nghi gui di, du diem trung binh co cao.
+
+    Duoi REVISE_FLOOR cung khong the goi la "sua duoc": ban 1.4/5 ma AI ta la
+    "non-responsive" van hien "Revise — the gaps are fixable" thi badge dang
+    noi nguoc lai chinh nhan xet ngay ben canh no.
     """
     hard = {r.id for r in requirements if getattr(r, "is_hard_constraint", False)}
     for finding in result.findings:
         if finding.status == "contradicted" and finding.requirement_id in hard:
-            return "do_not_accept_as_written"
+            return "do_not_accept_as_written", "A hard constraint in the RFP is contradicted."
     if any(f.status == "contradicted" for f in result.findings):
-        return "do_not_accept_as_written"
-    return "ready" if result.overall_score >= 4 else "revise"
+        return "do_not_accept_as_written", "The draft contradicts something the RFP states."
+    if result.overall_score < REVISE_FLOOR:
+        return "do_not_accept_as_written", "Too little of the RFP is answered to edit this into shape."
+    if result.overall_score >= 4:
+        return "ready", "Minor edits at most."
+    return "revise", "The gaps are fixable."
 
 
 def _dump(model: Any) -> dict[str, Any]:
     return model.model_dump() if hasattr(model, "model_dump") else dict(model)
+
+
+def _company_checks(raw_proposal_text: str) -> dict[str, Any]:
+    """Loi hua trong ban thao ma cong ty chua chac giu duoc.
+
+    Doi chieu voi rate card va chuan SLA noi bo (backend/enterprise/): khong goi
+    model, khong truy xuat — chi so chuoi, nen lan nao chay cung ra ket qua nhu
+    nhau va moi phat hien deu keo theo mot cau nguyen van. Day la phan RFP
+    khong the bat duoc: RFP khong biet gia san hay gio truc cua ben minh.
+
+    Khong co kho thi bo qua; mot ban danh gia thieu phan nay van dung.
+    """
+    try:
+        from enterprise.evidence import check_commitments
+        from enterprise.router import corpus
+
+        result = check_commitments(corpus(), raw_proposal_text)
+    except Exception as exc:  # pragma: no cover
+        logger.warning("enterprise commitment check unavailable: %s", exc)
+        return {"findings": [], "available": False}
+
+    # Trich dan phai co that trong ban thao, y nhu moi trich dan khac.
+    findings = [f for f in result.get("findings", []) if _find_verbatim(f.get("quote", ""), raw_proposal_text)]
+    return {
+        "findings": findings,
+        "available": True,
+        "standards_checked": result.get("standards_checked", []),
+        "stale_standards": result.get("stale_standards", []),
+    }
 
 
 @router.post("/api/analyze-rfp")
@@ -351,7 +391,8 @@ def score_route(payload: dict[str, Any]) -> dict[str, Any]:
     result.verdict = relabel(result.verdict)
 
     scoring = _dump(result)
-    scoring["recommendation"] = _recommendation(result, requirements)
+    scoring["recommendation"], scoring["recommendation_reason"] = _recommendation(result, requirements)
+    scoring["company_checks"] = _company_checks(proposal_text)
     scoring["warnings"] = (
         [f"{len(unverified)} citation(s) were dropped because the quote is not in the proposal "
          f"word for word: {', '.join(unverified)}."]

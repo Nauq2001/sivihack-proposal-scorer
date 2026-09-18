@@ -42,22 +42,45 @@ function withUserPackets(analysis, confirmed) {
 // Ba man co noi dung; hai man tien trinh nam giua nen khong co trong thanh nay.
 const FLOW = [['input', 'Documents'], ['criteria', 'Criteria'], ['result', 'Result']]
 
+const SESSION_KEY = 'proposal-scorer/run'
+
+/** Mot lan chay ton khoang 30 giay va hai luot goi Gemini. Lo bam F5 giua buoi
+ *  demo ma phai chay lai tu dau la mat trang. Chi luu trong tab dang mo: doi
+ *  tai lieu khac thi khong keo theo ket qua cu. */
+function loadSession() {
+  try {
+    const raw = sessionStorage.getItem(SESSION_KEY)
+    return raw ? JSON.parse(raw) : null
+  } catch {
+    return null
+  }
+}
+
+function saveSession(state) {
+  try {
+    sessionStorage.setItem(SESSION_KEY, JSON.stringify(state))
+  } catch {
+    // Het cho hoac tab rieng tu — mat phien luu khong lam hong phien dang chay.
+  }
+}
+
 /** Luong mot chieu, ba man co noi dung: tai lieu -> tieu chi -> ket qua.
  *  Giua moi buoc la mot man tien trinh, vi ca hai agent deu mat thoi gian.
  *  Nguoi dung khong sua tieu chi: RFP Analyst chot mua ky. */
 export default function App() {
-  const [stage, setStage] = useState('input') // input | analysing | criteria | scoring | result | error
-  const [rfp, setRfp] = useState({ ...RFP })
-  const [proposal, setProposal] = useState({ name: firstSample.name, text: firstSample.text })
+  const saved = loadSession()
+  const [stage, setStage] = useState(saved?.stage || 'input') // input | analysing | criteria | scoring | result | error
+  const [rfp, setRfp] = useState(saved?.rfp || { ...RFP })
+  const [proposal, setProposal] = useState(saved?.proposal || { name: firstSample.name, text: firstSample.text })
   // Bat dau rong: hai buoc sau chi mo khi da co du lieu that cua lan chay nay.
-  const [analysis, setAnalysis] = useState(null)
-  const [criteria, setCriteria] = useState([])
+  const [analysis, setAnalysis] = useState(saved?.analysis || null)
+  const [criteria, setCriteria] = useState(saved?.criteria || [])
   // Ban goc tu RFP Analyst, de nut "Reset to the RFP suggestion" quay ve duoc.
-  const [suggested, setSuggested] = useState([])
-  const [run, setRun] = useState({ data: null, source: null })
+  const [suggested, setSuggested] = useState(saved?.suggested || [])
+  const [run, setRun] = useState(saved?.run || { data: null, source: null })
   const [notice, setNotice] = useState(null)
   const [converting, setConverting] = useState(null) // 'rfp' | 'proposal' khi dang doc file
-  const [warnings, setWarnings] = useState([])
+  const [warnings, setWarnings] = useState(saved?.warnings || [])
   const [citation, setCitation] = useState(null)
   const [tab, setTab] = useState('prop')
   const [drawer, setDrawer] = useState(false)
@@ -67,6 +90,13 @@ export default function App() {
   const sampleId = sample ? sample.id : null
   const docked = wide && stage === 'result'
   const RUN_FLOOR = 3400
+
+  // Hai man tien trinh khong luu: tai lai giua chung thi khong co gi de tiep
+  // tuc, quay ve man truoc do la dung hon.
+  useEffect(() => {
+    const resume = { analysing: 'input', scoring: 'criteria' }[stage] || stage
+    saveSession({ stage: resume, rfp, proposal, analysis, criteria, suggested, run, warnings })
+  }, [stage, rfp, proposal, analysis, criteria, suggested, run, warnings])
 
   useEffect(() => {
     const mq = window.matchMedia('(min-width: 1180px)')

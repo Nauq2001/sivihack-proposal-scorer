@@ -10,6 +10,13 @@ import {
 // mot con so, ho chon mot cot.
 const PRIORITY = { high: 'High', medium: 'Medium', low: 'Low' }
 
+// Ten luat cua backend/enterprise/evidence.py, viet lai cho nguoi ban doc.
+const RULE_LABEL = {
+  coverage_beyond_capability: 'Cover we do not staff',
+  restoration_guarantee: 'A fix time we do not commit to',
+  day_rate_below_floor: 'Below the rate card floor',
+}
+
 /** Điểm đếm lên, để con số là thứ đập vào mắt trước tiên. */
 function CountUp({ value }) {
   const [shown, setShown] = useState(reducedMotion() ? value : 0)
@@ -86,6 +93,7 @@ export default function ResultView({ result, source, error, sampleId, warnings =
   const critMeta = Object.fromEntries(criteria.map((c) => [c.name, c]))
   const findings = sortedFindings(scoring.findings)
   const rec = RECOMMENDATION[scoring.recommendation] || RECOMMENDATION.revise
+  const company = scoring.company_checks?.findings || []
 
   const jump = (id) => {
     const el = document.getElementById('req-' + id)
@@ -115,7 +123,10 @@ export default function ResultView({ result, source, error, sampleId, warnings =
         <div className="verdict-score">
           <span className="pill" data-tone={rec.tone}>{rec.label}</span>
           <div className="score-big"><CountUp value={scoring.overall_score} /><small>/5</small></div>
-          <p className="score-note">{rec.note}</p>
+          {/* Ly do do backend tinh, di kem chinh luat ra khuyen nghi; khong
+              lay cau co dinh theo nhan nua, vi mot ban 1.4/5 va mot ban pha
+              rang buoc cung deu la "Do not send" nhung khong cung mot ly do. */}
+          <p className="score-note">{scoring.recommendation_reason || rec.note}</p>
         </div>
         <div className="verdict-body">
           <p className="client">{analysis.client_name} · {analysis.project_name}</p>
@@ -151,6 +162,31 @@ export default function ResultView({ result, source, error, sampleId, warnings =
           })}
         </div>
       </section>
+
+      {company.length > 0 && (
+        <section className="block reveal" style={{ '--delay': '90ms' }}>
+          <div className="block-head">
+            <h2>Promises your company has not signed off</h2>
+            <p>Checked against the internal rate card and SLA standard — not against the RFP</p>
+          </div>
+          <div className="commitments">
+            {company.map((f, i) => (
+              <article className="commitment" key={i} data-sev={f.severity}>
+                <header>
+                  <span className="sev" data-tone={SEVERITY[f.severity]?.tone}>{SEVERITY[f.severity]?.label}</span>
+                  <span className="kind">{RULE_LABEL[f.rule] || f.rule.replace(/_/g, ' ')}</span>
+                  {f.standard?.is_current === false && <span className="stale">Standard out of date</span>}
+                </header>
+                <blockquote className="quote" data-src="prop">
+                  <Citation citation={{ source: 'proposal', found: true, label: 'In the proposal', quote: f.quote }} />
+                  <span>{f.quote}</span>
+                </blockquote>
+                <p className="rationale">{f.message}</p>
+              </article>
+            ))}
+          </div>
+        </section>
+      )}
 
       <section className="block reveal" style={{ '--delay': '120ms' }}>
         <div className="block-head">
