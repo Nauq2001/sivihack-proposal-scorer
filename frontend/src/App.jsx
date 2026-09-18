@@ -10,16 +10,20 @@ import { analyseRfp, scoreProposal } from './api/review.js'
 
 const firstSample = SAMPLES[0]
 
+// Ba man co noi dung; hai man tien trinh nam giua nen khong co trong thanh nay.
+const FLOW = [['input', 'Documents'], ['criteria', 'Criteria'], ['result', 'Result']]
+
 /** Luong mot chieu, ba man co noi dung: tai lieu -> tieu chi -> ket qua.
  *  Giua moi buoc la mot man tien trinh, vi ca hai agent deu mat thoi gian.
  *  Nguoi dung khong sua tieu chi: RFP Analyst chot mua ky. */
 export default function App() {
-  const [stage, setStage] = useState('result') // input | analysing | criteria | scoring | result | error
+  const [stage, setStage] = useState('input') // input | analysing | criteria | scoring | result | error
   const [rfp, setRfp] = useState({ ...RFP })
   const [proposal, setProposal] = useState({ name: firstSample.name, text: firstSample.text })
-  const [analysis, setAnalysis] = useState(firstSample.result.rfp_analysis)
-  const [criteria, setCriteria] = useState(firstSample.result.confirmed_criteria)
-  const [run, setRun] = useState({ data: firstSample.result, source: 'sample' })
+  // Bat dau rong: hai buoc sau chi mo khi da co du lieu that cua lan chay nay.
+  const [analysis, setAnalysis] = useState(null)
+  const [criteria, setCriteria] = useState([])
+  const [run, setRun] = useState({ data: null, source: null })
   const [notice, setNotice] = useState(null)
   const [citation, setCitation] = useState(null)
   const [tab, setTab] = useState('prop')
@@ -158,6 +162,7 @@ export default function App() {
 
   const flowIndex = { input: 0, analysing: 0, criteria: 1, scoring: 1, result: 2, error: 0 }[stage]
 
+
   return (
     <CitationContext.Provider value={openCitation}>
       <header className="topbar">
@@ -169,11 +174,26 @@ export default function App() {
           </svg>
           Proposal Scorer
         </button>
-        <div className="flow" aria-label="Progress">
-          {['Documents', 'Criteria', 'Result'].map((label, i) => (
-            <span key={label} className="flow-step" data-state={i < flowIndex ? 'done' : i === flowIndex ? 'now' : 'next'}>{label}</span>
-          ))}
-        </div>
+        <nav className="flow" aria-label="Steps">
+          {FLOW.map(([id, label], i) => {
+            const reachable = id === 'input'
+              || (id === 'criteria' && criteria.length > 0)
+              || (id === 'result' && Boolean(run.data))
+            const busy = stage === 'analysing' || stage === 'scoring'
+            return (
+              <button
+                type="button" key={id} className="flow-step"
+                title={reachable ? undefined : id === 'criteria' ? 'Run the review first' : 'No result yet'}
+                data-state={i < flowIndex ? 'done' : i === flowIndex ? 'now' : 'next'}
+                disabled={!reachable || busy}
+                aria-current={i === flowIndex ? 'step' : undefined}
+                onClick={() => { setStage(id); window.scrollTo({ top: 0 }) }}
+              >
+                {label}
+              </button>
+            )
+          })}
+        </nav>
         <div className="meta">{sampleId ? 'Fictional sample data' : 'Your documents'}</div>
       </header>
 
