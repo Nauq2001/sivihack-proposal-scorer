@@ -2,6 +2,7 @@
 name = "rfp-analyst"
 version = "0.1.0"
 description = "RFP extraction and criterion resolution for the Proposal Scorer"
+license = "MIT"
 requires-python = ">=3.11"
 dependencies = [
   "pydantic>=2.10,<3",

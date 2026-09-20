@@ -242,3 +242,11 @@ Chi tiết schema từng field: `docs/api/review-contract.md`.
 - Logic chấm điểm, schema, quyết định kiến trúc: `CLAUDE.md`
 - RFP Analyst (package riêng): `agent/README.md`
 - RAG hybrid: `backend/rag/README.md`
+
+## 10. Giấy phép
+
+MIT — xem `LICENSE`. Bản quyền đứng tên chung *SiviHack 2026 Proposal Scorer
+contributors*, không riêng một người, vì repo có nhiều người viết.
+
+Dữ liệu mẫu trong `docs/challenge/` là tài liệu của BTC/nhà tài trợ, không thuộc
+giấy phép này.
