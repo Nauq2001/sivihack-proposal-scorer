@@ -232,8 +232,13 @@ Chi tiết schema từng field: `docs/api/review-contract.md`.
   lên Slack/Discord/Zalo công khai.**
 - Toàn bộ dữ liệu mẫu (RFP, proposal, tên công ty) đều là giả lập, không phải
   dữ liệu khách hàng thật.
-- Voucher n8n Cloud Pro (nếu cần dựng workflow automation): kích hoạt theo
-  hướng dẫn BTC gửi, mã `2026-COMMUNITY-HACKATHON-FRANKFURT-9AA2EB02`.
+- Voucher n8n Cloud Pro, API key và mọi thông tin BTC cấp riêng cho nhóm: để
+  trong password manager của team, **không viết vào README** — repo này có bản
+  mirror công khai trên GitHub.
+
+> **Bản tiếng Anh:** [`.github/README.md`](.github/README.md) — đây là bản
+> GitHub hiển thị ở trang chủ repo công khai. File này (tiếng Việt) là bản cho
+> team, GitLab hiển thị nó. Sửa nội dung thì nhớ sửa cả hai.
 
 ## 9. Tài liệu liên quan
 
