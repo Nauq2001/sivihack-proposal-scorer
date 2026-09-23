@@ -1,11 +1,12 @@
-# CLAUDE.md — SiviHack 2026, Track 1: Proposal Scorer (AI team scope)
+# Architecture & design record — SiviHack 2026, Track 1: Proposal Scorer
 
-This file is project context for Claude Code working in this repo, scoped to
-the **AI team member** working here (prompt design + scoring logic). The team
-splits work as: AI (this scope) / Backend (API routing, file upload, deploy) /
-Frontend (UI). Read "Architecture", "Your scope" and "Interface contract"
-first — they define what you own and what you hand off to the rest of the
-team.
+The design record for the AI side of this project: prompt design and scoring
+logic. The team splits the work as AI (this document) / Backend (API routing,
+file upload, deploy) / Frontend (UI). "Architecture", "Your scope" and the
+output schemas are the sections that define the boundary between them.
+
+It records not just what was built but why, including the alternatives that
+were considered and rejected — that reasoning is the part worth reading.
 
 ## What we're building
 

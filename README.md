@@ -244,7 +244,7 @@ Chi tiết schema từng field: `docs/api/review-contract.md`.
 
 - Đề bài đầy đủ: `docs/challenge/track-1-proposal-scorer.pdf`
 - Contract API chi tiết (field-by-field): `docs/api/review-contract.md`
-- Logic chấm điểm, schema, quyết định kiến trúc: `CLAUDE.md`
+- Logic chấm điểm, schema, quyết định kiến trúc: `docs/architecture.md`
 - RFP Analyst (package riêng): `agent/README.md`
 - RAG hybrid: `backend/rag/README.md`
 

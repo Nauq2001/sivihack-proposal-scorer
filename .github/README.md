@@ -345,7 +345,7 @@ Field-by-field schemas: `docs/api/review-contract.md`.
 ## 9. Related documentation
 
 - Field-by-field API contract: `docs/api/review-contract.md`
-- Scoring logic, schemas, architecture decisions: `CLAUDE.md`
+- Scoring logic, schemas, architecture decisions: `docs/architecture.md`
 - RFP Analyst (standalone package): `agent/README.md`
 - Hybrid RAG: `backend/rag/README.md`
 

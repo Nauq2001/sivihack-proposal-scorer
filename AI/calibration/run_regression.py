@@ -1,4 +1,4 @@
-"""The real regression check CLAUDE.md requires before every hand-off: run all
+"""The real regression check docs/architecture.md requires before every hand-off: run all
 4 sample proposals through score_proposal() against the one RFP.
 
 Needs a real key in backend/.env (GEMINI_API_KEY, or ANTHROPIC_API_KEY with
@@ -32,7 +32,7 @@ def main() -> None:
     rfp_analysis = RFPAnalysis.model_validate(json.loads(FIXTURE_PATH.read_text()))
     raw_rfp_text = (SAMPLE_DIR / "rfp_nordframe.md").read_text()
     # Default regression set: the 7 base criteria only (no custom criterion),
-    # matching CLAUDE.md's stated default.
+    # matching docs/architecture.md's stated default.
     confirmed_criteria = [c for c in rfp_analysis.suggested_criteria_weights]
 
     results = {}

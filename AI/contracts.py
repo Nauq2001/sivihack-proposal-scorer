@@ -1,6 +1,6 @@
 """Shared Pydantic contract between RFP Analyst and Proposal Analyst (Scoring Agent).
 
-Locked v1.1 — see CLAUDE.md "Output schemas" section. Both agents should import
+Locked v1.1 — see docs/architecture.md "Output schemas". Both agents should import
 these models directly instead of redefining them, so schema drift (field
 renames, criterion-name typos) fails fast at parse time instead of silently
 at runtime.

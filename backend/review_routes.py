@@ -1,5 +1,5 @@
 """
-Cac route noi hai agent lai voi nhau, theo CLAUDE.md muc "Interface contract".
+Cac route noi hai agent lai voi nhau, theo docs/architecture.md muc "Interface contract".
 
     POST /api/analyze-rfp   RFP Analyst  -> rfp_analysis + confirmed_criteria
     POST /api/score         Proposal Analyst -> scoring

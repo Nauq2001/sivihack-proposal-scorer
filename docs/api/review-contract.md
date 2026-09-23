@@ -58,7 +58,7 @@ Route `/api/analyze-rfp` gửi thêm `requirement_ids` cho mỗi tiêu chí, l�
 }
 ```
 
-Tên endpoint và hình dạng lấy từ `CLAUDE.md` mục "Interface contract" của nhánh AI.
+Tên endpoint và hình dạng lấy từ `docs/architecture.md` mục "Interface contract" của nhánh AI.
 
 ---
 
